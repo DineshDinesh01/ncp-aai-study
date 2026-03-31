@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transformer Architecture — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+
+<!-- COMPONENTS -->
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="home"></site-header>
+
+<div class="layout">
+<site-sidebar basepath=".." active=""></site-sidebar>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="content">
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb">
+      <a href="../index.html">Home</a>
+      <span class="sep">›</span>
+      <a href="#">LLM Fundamentals</a>
+      <span class="sep">›</span>
+      <span>Transformer Architecture</span>
+    </div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="tags">
+        <span class="tag tag-domain">LLM Fundamentals</span>
+        <span class="tag tag-pipeline">LLM Core</span>
+        <span class="tag tag-nvidia">NeMo Toolkit</span>
+        <span class="tag tag-difficulty-intermediate">Intermediate</span>
+      </div>
+      <h1 class="page-title">Transformer Architecture</h1>
+      <p class="page-subtitle">
+        The transformer is the foundational architecture behind every modern large language model — from BERT and GPT to Llama and Mixtral.
+        Understanding how attention, positional encoding, and feed-forward layers work together is essential for the NCP-AAI exam and for
+        building production AI systems on NVIDIA hardware.
+      </p>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="toc">
+      <div class="toc-title">Table of Contents</div>
+      <ul class="toc-list">
+        <li><a href="#what-is-transformer"><span class="toc-num">1</span> What Is a Transformer?</a></li>
+        <li><a href="#why-not-rnns"><span class="toc-num">2</span> Why Transformers Replaced RNNs</a></li>
+        <li><a href="#step-by-step"><span class="toc-num">3</span> Step-by-Step Forward Pass</a></li>
+        <li><a href="#pipeline-placement"><span class="toc-num">4</span> Pipeline Placement — LLM Core Stage</a></li>
+        <li><a href="#code"><span class="toc-num">5</span> Code: HuggingFace Inference &amp; Attention Weights</a></li>
+        <li><a href="#nemo-mapping"><span class="toc-num">6</span> NVIDIA NeMo Toolkit Mapping</a></li>
+        <li><a href="#lab"><span class="toc-num">7</span> Lab: GPT-2 vs BERT Attention Patterns</a></li>
+        <li><a href="#common-mistakes"><span class="toc-num">8</span> Common Mistakes</a></li>
+        <li><a href="#exam"><span class="toc-num">9</span> Exam Relevance &amp; Key Terms</a></li>
+      </ul>
+    </div>
+
+    <!-- SECTION 1 -->
+    <section class="section" id="what-is-transformer">
+      <h2 class="section-title">
+        <span class="section-number">1</span>
+        What Is a Transformer?
+      </h2>
+      <div class="section-content">
+        <p>
+          A <strong>transformer</strong> is a neural network architecture introduced by Vaswani et al. in 2017 in the paper
+          <em>"Attention Is All You Need."</em> It completely discards the recurrent and convolutional layers that dominated
+          NLP before it, replacing them with a mechanism called <strong>self-attention</strong> that can relate any token in a
+          sequence to any other token in a single operation — regardless of distance.
+        </p>
+        <p>
+          The original transformer has two halves:
+        </p>
+        <ul style="margin: 12px 0 12px 20px; color: var(--text-secondary);">
+          <li style="margin-bottom:8px;"><strong>Encoder</strong> — reads the full input sequence and builds a rich contextual
+            representation of it. Used in models like <strong>BERT</strong> that need to understand text (classification, Q&amp;A,
+            named-entity recognition).</li>
+          <li style="margin-bottom:8px;"><strong>Decoder</strong> — auto-regressively generates output tokens one at a time,
+            attending both to its own previous outputs and to the encoder's representation. Used in translation models.</li>
+          <li><strong>Decoder-only</strong> — a simplified design (no encoder cross-attention) that is the basis for all
+            GPT-family models, Llama, Mistral, and most modern LLMs used in agentic systems.</li>
+        </ul>
+        <p>
+          Each half is built from a stack of identical <strong>layers</strong>. GPT-2 Small has 12 layers; GPT-3 has 96.
+          Each layer contains two main sub-modules:
+        </p>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon">👁️</div>
+            <div class="card-title">Multi-Head Self-Attention</div>
+            <div class="card-desc">Computes how much each token should "attend to" every other token. Multiple attention heads
+              run in parallel, each learning different relationship patterns (syntax, coreference, semantics).</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Position-wise Feed-Forward Network</div>
+            <div class="card-desc">A two-layer MLP applied identically to each token position. This is where most of the
+              model's factual knowledge is believed to be stored. Typically 4× the model dimension.</div>
+          </div>
+        </div>
+        <p>
+          Both sub-modules are followed by <strong>Add &amp; LayerNorm</strong> — a residual connection that adds the
+          sub-module's input back to its output, then normalizes. This is critical for training deep stacks of layers
+          without gradient vanishing.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="section" id="why-not-rnns">
+      <h2 class="section-title">
+        <span class="section-number">2</span>
+        Why Transformers Replaced RNNs
+      </h2>
+      <div class="section-content">
+        <p>
+          Before transformers, the dominant NLP architecture was the <strong>Recurrent Neural Network (RNN)</strong> — and its
+          improved variants <strong>LSTM</strong> (Long Short-Term Memory) and <strong>GRU</strong> (Gated Recurrent Unit).
+          RNNs process tokens sequentially: the hidden state from step <em>t−1</em> is fed into step <em>t</em>.
+        </p>
+        <p>This sequential dependency creates three severe problems:</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th>RNN / LSTM</th>
+                <th>Transformer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Parallelism</strong></td>
+                <td>Must process tokens in order — cannot parallelize training across a sequence</td>
+                <td>All token positions computed simultaneously — trains on entire sequence in one pass</td>
+              </tr>
+              <tr>
+                <td><strong>Long-range dependencies</strong></td>
+                <td>Hidden state "forgets" information from hundreds of tokens ago despite LSTM gates</td>
+                <td>Any token can attend directly to any other token — distance is irrelevant</td>
+              </tr>
+              <tr>
+                <td><strong>Gradient flow</strong></td>
+                <td>Vanishing / exploding gradients over long sequences even with gating</td>
+                <td>Residual connections provide stable gradient highways through all layers</td>
+              </tr>
+              <tr>
+                <td><strong>GPU utilization</strong></td>
+                <td>Low — sequential ops can't saturate thousands of CUDA cores</td>
+                <td>High — attention is a batch matrix multiply, perfect for tensor cores</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The transformer's ability to parallelize made it possible to train on vastly larger datasets and scale to billions of
+          parameters. The GPU utilization advantage directly explains why NVIDIA hardware (A100, H100, H200) has become the
+          de-facto compute platform for LLM training and inference.
+        </p>
+        <div class="callout callout-tip">
+          <div class="callout-title">Key Insight</div>
+          <p>Transformers trade <strong>compute</strong> (attention is O(n²) in sequence length) for
+          <strong>parallelism</strong>. For typical context lengths (up to ~128K tokens), modern hardware handles this
+          trade-off well. Techniques like Flash Attention and sparse attention reduce the quadratic cost further.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="section" id="step-by-step">
+      <h2 class="section-title">
+        <span class="section-number">3</span>
+        Step-by-Step Forward Pass
+      </h2>
+      <div class="section-content">
+        <p>Let's trace a sentence through a decoder-only transformer layer by layer. Suppose the input is <code>"The cat sat"</code>.</p>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 8px;">Step 1 — Tokenization &amp; Input Embedding</h3>
+        <p>
+          The input text is tokenized into sub-word tokens using a vocabulary (e.g., BPE). Each token ID is looked up in an
+          <strong>embedding matrix</strong> of shape <code>[vocab_size, d_model]</code>, producing a dense vector of dimension
+          <code>d_model</code> (e.g., 768 for GPT-2 Small, 12288 for GPT-4). This converts discrete symbols into continuous
+          floating-point space where the model can do algebra.
+        </p>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 8px;">Step 2 — Positional Encoding</h3>
+        <p>
+          Self-attention is <em>position-agnostic</em> by default — it treats the input as a set, not a sequence. To inject
+          order, a <strong>positional encoding</strong> vector is added to each token embedding. Two main flavors:
+        </p>
+        <ul style="margin: 12px 0 12px 20px; color: var(--text-secondary);">
+          <li style="margin-bottom:6px;"><strong>Sinusoidal (original paper)</strong> — fixed sine/cosine functions at different
+            frequencies for each position. No learned parameters; generalizes to lengths not seen during training.</li>
+          <li style="margin-bottom:6px;"><strong>Learned absolute (BERT, GPT-2)</strong> — a trainable embedding per position
+            up to a maximum context length.</li>
+          <li><strong>Rotary Position Embedding — RoPE (Llama, Mistral)</strong> — encodes position by rotating query and key
+            vectors. Enables better length extrapolation and is now the standard in most new architectures.</li>
+        </ul>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 8px;">Step 3 — Multi-Head Self-Attention</h3>
+        <p>
+          This is the heart of the transformer. For each attention head, three linear projections are applied to the input:
+        </p>
+        <ul style="margin: 12px 0 12px 20px; color: var(--text-secondary);">
+          <li style="margin-bottom:6px;"><strong>Q (Query)</strong> — "What am I looking for?"</li>
+          <li style="margin-bottom:6px;"><strong>K (Key)</strong> — "What do I have to offer?"</li>
+          <li><strong>V (Value)</strong> — "What information do I actually contain?"</li>
+        </ul>
+        <p>
+          Attention scores are computed as dot products of queries and keys, scaled by <code>√d_k</code> to prevent
+          vanishing gradients in the softmax, then converted to probabilities:
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="lang-badge">MATH</span>
+            <span>Scaled Dot-Product Attention</span>
+          </div>
+          <pre><code>Attention(Q, K, V) = softmax( Q·Kᵀ / √d_k ) · V
+
+Where:
+  Q  = input × W_Q    (shape: [seq_len, d_k])
+  K  = input × W_K    (shape: [seq_len, d_k])
+  V  = input × W_V    (shape: [seq_len, d_v])
+  √d_k               (scaling factor to prevent tiny gradients)</code></pre>
+        </div>
+        <p>
+          <strong>Multi-head</strong> attention runs <em>h</em> independent attention heads in parallel, each with its own
+          W_Q, W_K, W_V projections, then concatenates and linearly projects the results. Different heads tend to specialize —
+          one might track subject-verb agreement, another coreference, another syntax structure.
+        </p>
+        <p>
+          In decoder-only models, a <strong>causal mask</strong> is applied before softmax: position <em>i</em> can only attend
+          to positions ≤ <em>i</em>. This enforces autoregressive generation (no "cheating" by looking at future tokens).
+        </p>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 8px;">Step 4 — Add &amp; LayerNorm</h3>
+        <p>
+          The attention output is added back to the original input (residual connection), then normalized:
+          <code>LayerNorm(x + Attention(x))</code>. The residual connection is not optional — without it, very deep networks
+          cannot be trained. LayerNorm stabilizes activations across the feature dimension.
+        </p>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 8px;">Step 5 — Position-wise Feed-Forward Network</h3>
+        <p>
+          Two linear layers with a non-linearity between them, applied independently to every token position:
+          <code>FFN(x) = max(0, xW₁ + b₁)W₂ + b₂</code>. Modern models use <strong>SwiGLU</strong> or <strong>GELU</strong>
+          activation instead of ReLU. The intermediate dimension is typically 4× d_model (e.g., 3072 for d_model=768).
+          This is where most of the model's "knowledge" is stored.
+        </p>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 8px;">Step 6 — Second Add &amp; LayerNorm</h3>
+        <p>Same residual + norm pattern: <code>LayerNorm(x + FFN(x))</code>. This completes one transformer block.
+          Stack N blocks and you have a full transformer.</p>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 8px;">Step 7 — Output &amp; Language Model Head</h3>
+        <p>
+          The final layer's output for the last token is projected through an <strong>LM Head</strong> — a linear layer mapping
+          from <code>d_model</code> to <code>vocab_size</code>. A softmax gives a probability distribution over the entire
+          vocabulary. The token with the highest probability (greedy decoding) or a sampled token (temperature/nucleus sampling)
+          is selected as the next token, appended to the context, and the process repeats.
+        </p>
+
+        <div class="pipeline">
+          <div class="pipeline-node">Token IDs</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Embedding</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">+ Pos Encoding</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node active">Multi-Head Attention</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Add &amp; Norm</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">FFN</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Add &amp; Norm</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">LM Head</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Next Token</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="section" id="pipeline-placement">
+      <h2 class="section-title">
+        <span class="section-number">4</span>
+        Pipeline Placement — LLM Core Stage
+      </h2>
+      <div class="section-content">
+        <p>
+          In the NCP-AAI exam's conceptual pipeline for agentic AI systems, the transformer sits at the <strong>LLM Core</strong>
+          stage — the reasoning engine that all other components revolve around.
+        </p>
+        <div class="pipeline">
+          <div class="pipeline-node">User Input</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Prompt Engineering</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node active">LLM Core (Transformer)</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Tool Use / RAG</div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Output / Safety</div>
+        </div>
+        <p>
+          The transformer's architecture directly impacts every performance consideration downstream:
+        </p>
+        <ul style="margin: 12px 0 12px 20px; color: var(--text-secondary);">
+          <li style="margin-bottom:8px;"><strong>Context window</strong> — determined by the maximum sequence length the
+            positional encoding supports. Longer context = more tokens in the KV cache = more GPU memory required.</li>
+          <li style="margin-bottom:8px;"><strong>KV Cache</strong> — during inference, the Key and Value matrices computed for
+            previous tokens are cached. This avoids recomputing them at every generation step. Memory usage = 2 × layers × heads
+            × d_head × context_length × bytes_per_element.</li>
+          <li style="margin-bottom:8px;"><strong>Model parallelism</strong> — very large models (70B+ parameters) are split
+            across multiple GPUs either by layer (pipeline parallelism) or by attention head / tensor dimension (tensor
+            parallelism). NVIDIA's NeMo and Megatron-LM implement both strategies.</li>
+          <li><strong>Quantization</strong> — reducing weight precision from FP32 → FP16 → INT8 → INT4 reduces memory
+            and increases throughput. NVIDIA TensorRT-LLM handles this automatically.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SECTION 5 — CODE -->
+    <section class="section" id="code">
+      <h2 class="section-title">
+        <span class="section-number">5</span>
+        Code: HuggingFace Inference &amp; Attention Weights
+      </h2>
+      <div class="section-content">
+        <p>
+          The following complete example loads GPT-2, runs text generation, and then extracts attention weights from all layers
+          and heads using the <code>output_attentions=True</code> flag. This is the same technique used in the BertViz
+          visualization library.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="lang-badge">PYTHON</span>
+            <span>transformer_inference.py</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code class="language-python">"""
+Transformer Architecture — HuggingFace Inference + Attention Weight Inspection
+Requires: pip install transformers torch bertviz
+"""
+
+import torch
+from transformers import GPT2Tokenizer, GPT2Model, GPT2LMHeadModel
+import matplotlib.pyplot as plt
+import numpy as np
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. Basic inference with GPT-2
+# ─────────────────────────────────────────────────────────────────────────────
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+lm_model = GPT2LMHeadModel.from_pretrained("gpt2")
+lm_model.eval()  # disable dropout for deterministic output
+
+prompt = "The transformer architecture changed natural language processing because"
+inputs = tokenizer(prompt, return_tensors="pt")
+
+with torch.no_grad():
+    # max_new_tokens limits generation; do_sample=False = greedy decoding
+    output_ids = lm_model.generate(
+        **inputs,
+        max_new_tokens=50,
+        do_sample=False,       # greedy — always picks highest probability token
+        temperature=1.0,       # ignored when do_sample=False
+        pad_token_id=tokenizer.eos_token_id
+    )
+
+generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+print("Generated text:")
+print(generated_text)
+print()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. Extract attention weights from all layers and heads
+#    output_attentions=True returns a tuple: one tensor per layer
+#    Each tensor shape: [batch_size, num_heads, seq_len, seq_len]
+# ─────────────────────────────────────────────────────────────────────────────
+base_model = GPT2Model.from_pretrained("gpt2")
+base_model.eval()
+
+text = "The cat sat on the mat near the window"
+enc = tokenizer(text, return_tensors="pt")
+token_labels = tokenizer.convert_ids_to_tokens(enc["input_ids"][0])
+
+with torch.no_grad():
+    outputs = base_model(
+        **enc,
+        output_attentions=True  # ← request all attention matrices
+    )
+
+# outputs.attentions is a tuple of length num_layers (12 for gpt2)
+# Each element: tensor of shape [1, num_heads, seq_len, seq_len]
+attentions = outputs.attentions
+print(f"Number of layers:   {len(attentions)}")
+print(f"Heads per layer:    {attentions[0].shape[1]}")
+print(f"Sequence length:    {attentions[0].shape[2]}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. Visualize attention from layer 0, head 0
+#    Rows = query tokens, Columns = key tokens
+#    Value = how much the row token attends to the column token
+# ─────────────────────────────────────────────────────────────────────────────
+layer_idx = 0
+head_idx  = 0
+attn_matrix = attentions[layer_idx][0, head_idx].numpy()  # [seq_len, seq_len]
+
+fig, ax = plt.subplots(figsize=(8, 7))
+im = ax.imshow(attn_matrix, cmap="Greens", vmin=0, vmax=attn_matrix.max())
+
+ax.set_xticks(range(len(token_labels)))
+ax.set_yticks(range(len(token_labels)))
+ax.set_xticklabels(token_labels, rotation=45, ha="right", fontsize=10)
+ax.set_yticklabels(token_labels, fontsize=10)
+ax.set_title(f"GPT-2  Layer {layer_idx}  Head {head_idx}\n(row token attends to column token)")
+plt.colorbar(im, ax=ax)
+plt.tight_layout()
+plt.savefig("attention_heatmap.png", dpi=150)
+plt.show()
+print("Saved attention_heatmap.png")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. Average attention across all heads for a given layer
+#    Useful for summarizing "where does this layer focus?"
+# ─────────────────────────────────────────────────────────────────────────────
+avg_attn = attentions[layer_idx][0].mean(dim=0).numpy()  # average over heads
+print(f"\nLayer {layer_idx} average attention shape: {avg_attn.shape}")
+
+# Which token does 'cat' (index 1 with Ġ prefix) attend to most on average?
+cat_idx = 1
+top_k = np.argsort(avg_attn[cat_idx])[::-1][:3]
+print(f"\n'cat' (index {cat_idx}) attends most to:")
+for idx in top_k:
+    print(f"  [{idx}] {token_labels[idx]:15s}  score={avg_attn[cat_idx][idx]:.4f}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. Using BertViz for interactive attention visualization (run in Jupyter)
+# ─────────────────────────────────────────────────────────────────────────────
+# from bertviz import head_view
+# from transformers import BertTokenizer, BertModel
+#
+# bert_tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+# bert_model     = BertModel.from_pretrained("bert-base-uncased")
+# bert_model.eval()
+#
+# sentence = "The bank can guarantee deposits will eventually cover future tuition"
+# inputs = bert_tokenizer(sentence, return_tensors="pt")
+# with torch.no_grad():
+#     outputs = bert_model(**inputs, output_attentions=True)
+#
+# # Interactive HTML widget showing all layers and heads
+# head_view(outputs.attentions, bert_tokenizer.convert_ids_to_tokens(inputs["input_ids"][0]))
+</code></pre>
+        </div>
+        <div class="callout callout-tip">
+          <div class="callout-title">Running the Code</div>
+          <p>Install dependencies: <code>pip install transformers torch matplotlib numpy bertviz</code>.
+          The BertViz section at the bottom requires a Jupyter notebook environment. The heatmap section
+          runs in any Python environment and saves <code>attention_heatmap.png</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section class="section" id="nemo-mapping">
+      <h2 class="section-title">
+        <span class="section-number">6</span>
+        NVIDIA NeMo Toolkit Mapping
+      </h2>
+      <div class="section-content">
+        <p>
+          NVIDIA's <strong>NeMo Toolkit</strong> is the production framework for building, training, and fine-tuning transformer
+          models at scale on NVIDIA hardware. It sits on top of PyTorch Lightning and provides ready-made transformer
+          implementations optimized for multi-GPU and multi-node training.
+        </p>
+        <a class="nvidia-badge" href="https://github.com/NVIDIA/NeMo" target="_blank">NVIDIA NeMo Toolkit on GitHub</a>
+
+        <div class="table-wrap" style="margin-top:16px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Transformer Component</th>
+                <th>NeMo Class / Config</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Token Embedding</td>
+                <td><code>VocabParallelEmbedding</code></td>
+                <td>Distributed across GPUs for large vocabularies</td>
+              </tr>
+              <tr>
+                <td>Self-Attention</td>
+                <td><code>MultiheadAttention</code> via Megatron-LM core</td>
+                <td>Flash Attention 2 enabled by default on Hopper GPUs</td>
+              </tr>
+              <tr>
+                <td>Positional Encoding</td>
+                <td>Configurable: <code>position_embedding_type: rope</code></td>
+                <td>RoPE for Llama-family; ALiBi also supported</td>
+              </tr>
+              <tr>
+                <td>Feed-Forward Network</td>
+                <td><code>FusedMLP</code> with SwiGLU activation</td>
+                <td>Fused CUDA kernel for speed; intermediate = 4× or 8/3× d_model</td>
+              </tr>
+              <tr>
+                <td>Layer Norm</td>
+                <td><code>RMSNorm</code> (pre-norm, not post-norm)</td>
+                <td>RMSNorm used in Llama/Mistral for stability and speed</td>
+              </tr>
+              <tr>
+                <td>Full Model Config</td>
+                <td><code>MegatronGPTModel</code> YAML config</td>
+                <td>Controls num_layers, hidden_size, num_attention_heads, seq_length</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:16px;">
+          NeMo uses <strong>Megatron-LM</strong> as its core for large-scale training. Megatron-LM was developed at NVIDIA
+          and introduced <em>tensor parallelism</em> — splitting individual transformer layers across multiple GPUs rather
+          than assigning whole layers to each GPU. This allows training models that are too large to fit in a single GPU's
+          memory even with pipeline parallelism alone.
+        </p>
+        <div class="callout callout-tip">
+          <div class="callout-title">NeMo + NVIDIA NIMs Connection</div>
+          <p>
+            Models trained or fine-tuned with NeMo can be exported to <strong>NVIDIA NIMs</strong> (NVIDIA Inference Microservices)
+            for deployment. NIMs wrap the model in a containerized, optimized inference server with a standard OpenAI-compatible API.
+            This is the recommended production path for NVIDIA Agentic AI deployments.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7 -->
+    <section class="section" id="lab">
+      <h2 class="section-title">
+        <span class="section-number">7</span>
+        Lab: Compare GPT-2 vs BERT Attention Patterns
+      </h2>
+      <div class="section-content">
+        <p>
+          This hands-on lab visualizes and compares attention patterns between a <strong>decoder-only</strong> model (GPT-2)
+          and an <strong>encoder-only</strong> model (BERT) using the BertViz library. You'll observe the key architectural
+          difference: GPT-2 uses causal masking (can only attend backward) while BERT uses bidirectional attention.
+        </p>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:16px 0 8px;">Lab Goals</h3>
+        <ul class="checklist">
+          <li><span class="check">✓</span> Install BertViz and set up a Jupyter notebook</li>
+          <li><span class="check">✓</span> Load GPT-2 and BERT with <code>output_attentions=True</code></li>
+          <li><span class="check">✓</span> Visualize attention for the same sentence in both models</li>
+          <li><span class="check">✓</span> Identify the causal mask pattern in GPT-2</li>
+          <li><span class="check">✓</span> Find a head in BERT that tracks subject-verb agreement</li>
+          <li><span class="check">✓</span> Compare layer 0 (syntactic) vs last layer (semantic) attention</li>
+        </ul>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:16px 0 8px;">Setup</h3>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="lang-badge">BASH</span>
+            <span>Environment setup</span>
+          </div>
+          <pre><code class="language-python"># Install in a virtual environment
+pip install transformers torch bertviz notebook matplotlib
+
+# Launch Jupyter
+jupyter notebook lab_attention_comparison.ipynb</code></pre>
+        </div>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:16px 0 8px;">Expected Observations</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Observation</th><th>GPT-2 (Decoder-only)</th><th>BERT (Encoder-only)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Attention pattern shape</td>
+                <td>Lower triangular (causal mask): each token only attends to itself and earlier tokens</td>
+                <td>Full matrix: every token attends to every other token in both directions</td>
+              </tr>
+              <tr>
+                <td>Layer 0 attention</td>
+                <td>Often attends to immediately preceding token (local syntactic structure)</td>
+                <td>Often broad/diffuse — gathering global context</td>
+              </tr>
+              <tr>
+                <td>Deep layers</td>
+                <td>Longer-range patterns emerge; subject pronoun agreement becomes visible</td>
+                <td>Task-specific patterns: [CLS] token aggregates sentence-level info</td>
+              </tr>
+              <tr>
+                <td>Special tokens</td>
+                <td>No [CLS]/[SEP]; <code>&lt;|endoftext|&gt;</code> at sequence boundaries</td>
+                <td>[CLS] at start accumulates global representation; [SEP] marks boundaries</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">Lab Note</div>
+          <p>
+            Attention weights are <em>not</em> a perfect explanation of what a model "thinks." Gradient-based attribution
+            methods (Integrated Gradients, SHAP) often disagree with attention. Use attention visualization for intuition,
+            not for rigorous explainability claims — the NCP-AAI exam tests this distinction.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8 -->
+    <section class="section" id="common-mistakes">
+      <h2 class="section-title">
+        <span class="section-number">8</span>
+        Common Mistakes
+      </h2>
+      <div class="section-content">
+
+        <div class="callout callout-mistake">
+          <div class="callout-title">Mistake 1 — Confusing Encoder-Only vs Decoder-Only</div>
+          <p>
+            <strong>BERT</strong> is encoder-only: it sees the entire sequence bidirectionally and produces contextual
+            embeddings. It cannot generate text autoregressively. <strong>GPT</strong> is decoder-only: it generates text
+            left-to-right with causal masking. Using BERT for generation or GPT for classification (without a head) are
+            both incorrect architectural choices. On the exam, know which tasks each variant is designed for.
+          </p>
+        </div>
+
+        <div class="callout callout-mistake">
+          <div class="callout-title">Mistake 2 — Forgetting Positional Encoding Is Not Optional</div>
+          <p>
+            Removing positional encoding means the model receives a <em>set</em>, not a <em>sequence</em>. The output would
+            be identical regardless of word order — "the dog bit the man" and "the man bit the dog" would produce identical
+            representations. Always include positional encoding; in modern models, RoPE is applied inside the attention
+            computation, not added to embeddings.
+          </p>
+        </div>
+
+        <div class="callout callout-mistake">
+          <div class="callout-title">Mistake 3 — Thinking Larger d_model Always Means Better Performance</div>
+          <p>
+            Scaling is about the <em>ratio</em> of parameters to training data, not just model size. A large model
+            under-trained on few tokens (not following the Chinchilla scaling laws) underperforms a smaller, well-trained
+            model. The NCP-AAI exam tests understanding of training compute efficiency, not just parameter counts.
+          </p>
+        </div>
+
+        <div class="callout callout-mistake">
+          <div class="callout-title">Mistake 4 — Misunderstanding the KV Cache</div>
+          <p>
+            The KV cache stores Keys and Values (not Queries) from previous tokens. Queries are computed fresh for each new
+            token because they represent "what the current token is looking for." Misidentifying what is cached is a common
+            exam trap.
+          </p>
+        </div>
+
+        <div class="callout callout-mistake">
+          <div class="callout-title">Mistake 5 — Treating Attention as Explainability</div>
+          <p>
+            High attention weight between two tokens does not definitively mean one causally depends on the other. Research
+            has shown attention can be manipulated without changing model outputs. Attention is a mechanism, not a transparent
+            window into model reasoning.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 9 -->
+    <section class="section" id="exam">
+      <h2 class="section-title">
+        <span class="section-number">9</span>
+        Exam Relevance &amp; Key Terms
+      </h2>
+      <div class="section-content">
+        <p>
+          The NCP-AAI exam places heavy emphasis on transformer fundamentals as the prerequisite knowledge for all
+          downstream topics: fine-tuning, RAG, agents, and deployment. Expect 8–12 questions testing these concepts.
+        </p>
+
+        <div class="callout callout-exam">
+          <div class="callout-title">Exam Focus — High-Probability Question Topics</div>
+          <ul style="margin: 8px 0 0 16px; color: var(--text-secondary);">
+            <li style="margin-bottom:6px;">The formula for scaled dot-product attention and why <code>√d_k</code> is needed</li>
+            <li style="margin-bottom:6px;">The difference between encoder-only (BERT), decoder-only (GPT), and encoder-decoder (T5) architectures and which tasks each suits</li>
+            <li style="margin-bottom:6px;">What Q, K, V represent conceptually and how they are computed</li>
+            <li style="margin-bottom:6px;">Why causal masking is required in autoregressive (decoder-only) models</li>
+            <li style="margin-bottom:6px;">The role of residual connections in enabling deep network training</li>
+            <li style="margin-bottom:6px;">Sinusoidal vs learned vs RoPE positional encoding — trade-offs</li>
+            <li style="margin-bottom:6px;">What the KV cache is, what it stores, and why it matters for inference latency</li>
+            <li>How NVIDIA NeMo relates to training transformers at scale</li>
+          </ul>
+        </div>
+
+        <h3 style="color:var(--text-primary);font-size:15px;margin:20px 0 10px;">Key Terms Glossary</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Self-Attention</strong></td><td>Mechanism by which each token in a sequence attends to all other tokens to build a contextual representation</td></tr>
+              <tr><td><strong>Multi-Head Attention</strong></td><td>Running h independent attention operations in parallel, then concatenating results</td></tr>
+              <tr><td><strong>Q / K / V</strong></td><td>Query, Key, Value — three linear projections of the input used to compute attention scores and output</td></tr>
+              <tr><td><strong>Positional Encoding</strong></td><td>Information added to token embeddings to inject sequence order into a position-agnostic architecture</td></tr>
+              <tr><td><strong>RoPE</strong></td><td>Rotary Position Embedding — encodes position by rotating Q and K vectors; used in Llama, Mistral, Gemma</td></tr>
+              <tr><td><strong>Causal Mask</strong></td><td>Triangular mask preventing decoder tokens from attending to future positions</td></tr>
+              <tr><td><strong>Residual Connection</strong></td><td>Adding a sub-layer's input to its output (x + f(x)) to enable gradient flow in deep networks</td></tr>
+              <tr><td><strong>LayerNorm / RMSNorm</strong></td><td>Normalization applied after residual connections to stabilize training</td></tr>
+              <tr><td><strong>KV Cache</strong></td><td>Cached Key and Value matrices for previously processed tokens; avoids recomputation during autoregressive generation</td></tr>
+              <tr><td><strong>BERT</strong></td><td>Bidirectional Encoder Representations from Transformers — encoder-only, masked language model pre-training</td></tr>
+              <tr><td><strong>GPT</strong></td><td>Generative Pre-trained Transformer — decoder-only, causal language model pre-training</td></tr>
+              <tr><td><strong>Flash Attention</strong></td><td>Algorithm that computes attention without materializing the full N×N attention matrix; 2–4× faster on NVIDIA GPUs</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOPIC NAV -->
+    <div class="topic-nav">
+      <a class="topic-nav-btn" href="../index.html">← Home</a>
+      <a class="topic-nav-btn" href="tokenization.html">Tokenization →</a>
+    </div>
+
+    <!-- FOOTER -->
+    <footer style="margin-top:48px; padding-top:24px; border-top:1px solid var(--border); color:var(--text-muted); font-size:12px;">
+      <p>NCP-AAI Study Guide — Community resource. Not affiliated with NVIDIA Corporation.</p>
+    </footer>
+
+  </div>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body>
+</html>

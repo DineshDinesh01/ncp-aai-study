@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Human-AI Interaction & HITL — NCP-AAI Study Guide</title>
+  <meta name="description" content="Human-in-the-Loop (HITL) with LangGraph: interrupt(), Command, MemorySaver, checkpointing, approval gates, and oversight patterns."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a><a class="sidebar-link" href="tokenization.html">Tokenization</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link active" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Human-AI Interaction</span><span class="sep">›</span><span>HITL &amp; Oversight</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Human-AI Interaction — 5%</span>
+      <span class="tag tag-nvidia">LangGraph HITL</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">Human-AI Interaction &amp; HITL Oversight</h1>
+    <p class="page-subtitle">Building agents that know when to ask for human approval — LangGraph interrupt() + Command pattern, checkpointing with MemorySaver/SqliteSaver, approval gates, escalation paths, time-travel debugging, and audit trails.</p>
+  </div>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>What Is Human-in-the-Loop (HITL)?</div>
+    <div class="section-content">
+      <p><strong>Human-in-the-Loop (HITL)</strong> is an architectural pattern where an AI agent pauses its execution at a defined checkpoint, presents its planned action (or a question) to a human, and waits for explicit approval or correction before continuing. This is critical for high-stakes actions: sending emails, executing financial transactions, modifying production databases, generating reports that go to external clients.</p>
+      <p>LangGraph provides first-class HITL support via the <code>interrupt()</code> function introduced in LangGraph 0.2.x and made part of LangGraph Platform GA at the "Interrupt 2025" conference.</p>
+    </div>
+  </div>
+
+  <div class="section" id="interrupt">
+    <div class="section-title"><span class="section-number">2</span>LangGraph interrupt() + Command Pattern</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — LangGraph HITL with interrupt()</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import interrupt, Command
+from typing import TypedDict
+
+class State(TypedDict):
+    draft_email: str
+    approved: bool
+    user_feedback: str
+
+def draft_agent(state: State) -> State:
+    """Agent drafts an email based on user request."""
+    return {"draft_email": "Dear Client, I am pleased to inform you..."}
+
+def human_review_node(state: State) -> Command:
+    """Pause here and wait for human to review the draft email."""
+    human_decision = interrupt({
+        "draft_email": state["draft_email"],
+        "instructions": "Please review this draft email. Reply 'approve' or provide feedback."
+    })
+    # human_decision is what the human provided via Command(resume=...)
+    if human_decision.lower() == "approve":
+        return Command(goto="send_email", update={"approved": True})
+    else:
+        return Command(goto="draft_agent", update={
+            "approved": False,
+            "user_feedback": human_decision
+        })
+
+def send_email(state: State) -> State:
+    """Only reached after human approval."""
+    print(f"Sending approved email: {state['draft_email']}")
+    return state
+
+# Build graph with checkpointing
+checkpointer = MemorySaver()
+builder = StateGraph(State)
+builder.add_node("draft_agent", draft_agent)
+builder.add_node("human_review", human_review_node)
+builder.add_node("send_email", send_email)
+builder.set_entry_point("draft_agent")
+builder.add_edge("draft_agent", "human_review")
+builder.add_edge("send_email", END)
+graph = builder.compile(checkpointer=checkpointer)
+
+# Run until interrupt
+config = {"configurable": {"thread_id": "email-task-001"}}
+result = graph.invoke({"draft_email": ""}, config=config)
+# → Graph pauses at interrupt() in human_review_node
+
+# Human reviews and resumes
+graph.invoke(Command(resume="approve"), config=config)
+# → Graph continues to send_email node
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="checkpointers">
+    <div class="section-title"><span class="section-number">3</span>Checkpointers — State Persistence</div>
+    <div class="section-content">
+      <p>Checkpointers save the agent's full state at every step. This enables: HITL (pause and resume), time-travel debugging (replay from any past state), and conversational memory across sessions.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Checkpointer</th><th>Storage</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td><strong>MemorySaver</strong></td><td>In-memory dictionary</td><td>Development, testing, single-session agents</td></tr>
+          <tr><td><strong>SqliteSaver</strong></td><td>SQLite file</td><td>Single-server production, persistent across restarts</td></tr>
+          <tr><td><strong>PostgresSaver</strong></td><td>PostgreSQL database</td><td>Multi-server production, high availability</td></tr>
+          <tr><td><strong>AsyncPostgresSaver</strong></td><td>PostgreSQL (async)</td><td>High-throughput async LangGraph deployments</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="time_travel">
+    <div class="section-title"><span class="section-number">4</span>Time-Travel Debugging</div>
+    <div class="section-content">
+      <p>Because checkpointers store every state, you can "time-travel" — inspect the agent's full state at any past step, replay from that point with a different input, or compare two execution paths. This is essential for debugging complex agentic failures.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Time-Travel with LangGraph</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+# Get full execution history
+history = list(graph.get_state_history(config))
+for state in history:
+    print(f"Step: {state.next}, Values: {state.values}")
+
+# Replay from a specific checkpoint
+past_config = history[2].config   # step 2
+graph.invoke(Command(resume="approve"), config=past_config)
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">5</span>Exam Angles</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Human-AI Interaction (5%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li><code>interrupt()</code> pauses graph execution at a node; <code>Command(resume=...)</code> continues it</li>
+          <li>MemorySaver: in-memory (dev). SqliteSaver: single-server. PostgresSaver: multi-server production</li>
+          <li>Thread ID (<code>thread_id</code>) in configurable identifies a specific conversation/task session</li>
+          <li>Time-travel = replay from any historical checkpoint using <code>get_state_history()</code></li>
+          <li>HITL use cases: email approval, financial transaction confirmation, external report generation</li>
+          <li>LangGraph Platform GA announced at "Interrupt 2025" conference</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="nemo-guardrails.html">← NeMo Guardrails</a>
+    <a class="topic-nav-btn" href="agent-observability.html">Agent Observability →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

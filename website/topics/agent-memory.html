@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agentic Memory & Checkpointing — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <!-- Abbreviated Sidebar -->
+    <div class="domain-group"><div class="domain-toggle open">🧠 Cognition & Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
+      <a class="sidebar-link" href="tree-of-thought.html">Tree of Thought</a>
+      <a class="sidebar-link active" href="agent-memory.html">Agentic Memory</a>
+    </div></div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics">
+      <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
+      <a class="sidebar-link" href="planning-architectures.html">Planning & Reflection</a>
+      <a class="sidebar-link" href="frameworks-deep-dive.html">Multi-Agent Frameworks</a>
+    </div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Cognition & Planning</span><span class="sep">›</span><span>Agentic Memory</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Cognition</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">Agentic Memory & Checkpointing</h1>
+    <p class="page-subtitle">Stateless LLMs forget everything between calls. Learn how memory frameworks transform chatbots into personalized assistants by persisting state across execution threads.</p>
+  </div>
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> Working Memory (The Prompt)</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> Episodic Memory (Conversation History)</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> Semantic Memory (Vector Stores)</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> State Checkpointing (LangGraph)</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Memory Abstractions (Mem0 / Zep)</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>Working Memory (The Prompt)</h2>
+    <div class="section-content">
+      <p>An LLM's true memory is its physical context window. Any state outside the prompt is lost. As tasks become complex, the agent builds a "working memory" directly inside the prompt (often via a <code>scratchpad</code>).</p>
+      <p>However, you cannot infinitely cram data into working memory because of token limits and performance degradation (the "lost in the middle" phenomenon). You must externalize memory.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>Episodic Memory (Conversation History)</h2>
+    <div class="section-content">
+      <p><strong>Episodic memory</strong> is raw, sequential history. You remember the exact sequence of events ("I said X, then you said Y").</p>
+      <p>This is commonly managed via rolling context buffers (e.g. <code>ConversationBufferWindowMemory</code> in LangChain or standard array trimming). To prevent overflow, older messages are either <strong>truncated</strong> or <strong>summarized</strong> recursively into a single "past interactions" summary note.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>Semantic Memory (Vector Stores)</h2>
+    <div class="section-content">
+      <p><strong>Semantic memory</strong> extracts meaning from episodes and saves them as factual knowledge. Rather than memorizing the exact words "My name is John and I live in Seattle" from 4 days ago, a background job extracts the facts "User Name: John", "User Location: Seattle".</p>
+      <p>These facts are then embedded and stored in a vector database. During runtime, the agent performs a similarity search on the incoming prompt against the vector database to inject relevant semantic facts back into the working memory.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>State Checkpointing (LangGraph)</h2>
+    <div class="section-content">
+      <p>While semantic memory stores facts, a <strong>Checkpoint</strong> stores the exact computational state of an agentic workflow. In frameworks like LangGraph, you construct a state dictionary. At every node execution step, LangGraph saves the exact values of this tree into a persistent Postgres or SQLite DB.</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang-badge">python</span><span>LangGraph Saver</span></div>
+        <pre><code class="language-python">from langgraph.checkpoint.sqlite import SqliteSaver
+
+memory = SqliteSaver.from_conn_string(":memory:")
+app = builder.compile(checkpointer=memory)
+
+# Resume earlier thread execution
+app.invoke({"messages": [new_input]}, config={"configurable": {"thread_id": "user_123"}})</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Exam Question Targets</h2>
+    <div class="section-content">
+      <div class="callout callout-warning">
+        <p><strong>Exam Trap</strong>: Which memory type allows an agent to "resume" a paused multi-step internal process that was halted awaiting user approval?</p>
+        <p><strong>Answer</strong>: State Checkpointing. Episodic/Semantic memory only stores facts, not the <em>graph execution frame</em>. State Checkpointers save the exact graph node traversal ID.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

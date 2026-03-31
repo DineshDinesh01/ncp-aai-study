@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RAG Pipeline — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🧠 LLM Fundamentals <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning with LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">✍️ Prompt Engineering <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Tool Use <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle open">🗄️ Memory &amp; RAG <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link active" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👥 Multi-Agent <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety &amp; Guardrails <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Memory &amp; RAG</span><span class="sep">›</span><span>RAG Pipeline</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Memory &amp; RAG</span><span class="tag tag-pipeline">Pipeline: Memory/RAG</span><span class="tag tag-nvidia">NVIDIA: NeMo Retriever NIM</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">RAG Pipeline</h1>
+    <p class="page-subtitle">Retrieval-Augmented Generation gives your LLM access to external knowledge — documents, databases, APIs — without retraining. It's the backbone of most production AI agents.</p>
+  </div>
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> Definition</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> Why It Exists</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> How It Works</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> Pipeline Placement</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Implementation</a></li>
+    <li><a href="#s6"><span class="toc-num">6</span> NVIDIA Ecosystem</a></li>
+    <li><a href="#s7"><span class="toc-num">7</span> Hands-On Lab</a></li>
+    <li><a href="#s8"><span class="toc-num">8</span> Common Mistakes</a></li>
+    <li><a href="#s9"><span class="toc-num">9</span> Exam Relevance</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>Definition</h2>
+    <div class="section-content">
+      <p><strong>RAG (Retrieval-Augmented Generation)</strong> is a technique where an LLM's response is grounded in documents retrieved at query time from an external knowledge source. Instead of relying solely on what the model learned during training, RAG fetches relevant information and injects it into the prompt.</p>
+      <p>The result: your LLM can answer questions about documents it never saw during training, always uses up-to-date information, and can cite its sources.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>Why It Exists</h2>
+    <div class="section-content">
+      <p><strong>Problem 1 — Knowledge cutoff:</strong> LLMs are trained on data up to a certain date. They cannot answer questions about events after that cutoff.</p>
+      <p><strong>Problem 2 — Hallucination:</strong> When an LLM doesn't know something, it often invents a plausible-sounding but incorrect answer.</p>
+      <p><strong>Problem 3 — Private data:</strong> LLMs cannot know about your company's internal documents, proprietary databases, or confidential information.</p>
+      <p>RAG solves all three. By retrieving real documents and placing them in the prompt, the LLM is grounded in factual, current, private knowledge.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>How It Works (Step-by-Step)</h2>
+    <div class="section-content">
+      <p><strong>Offline Phase (Index Building):</strong></p>
+      <p><strong>Step 1 — Load documents:</strong> PDFs, Word docs, web pages, Confluence pages → raw text</p>
+      <p><strong>Step 2 — Chunk:</strong> Split text into overlapping chunks (e.g., 512 tokens with 50-token overlap). Chunk size matters — too small loses context, too large dilutes relevance.</p>
+      <p><strong>Step 3 — Embed:</strong> Each chunk is converted to a dense vector (embedding) using an embedding model (e.g., text-embedding-3-small, NVIDIA NeMo Retriever). These vectors encode semantic meaning.</p>
+      <p><strong>Step 4 — Store:</strong> Vectors + metadata stored in a vector database (ChromaDB, Milvus, FAISS, pgvector).</p>
+      <p><strong>Online Phase (Query Time):</strong></p>
+      <p><strong>Step 5 — Embed query:</strong> The user's question is embedded using the same embedding model.</p>
+      <p><strong>Step 6 — Retrieve:</strong> ANN (Approximate Nearest Neighbor) search finds top-k most similar chunks from the vector store.</p>
+      <p><strong>Step 7 — Augment:</strong> Retrieved chunks are injected into the prompt: "Given the following context: [chunks]... Answer: [user question]"</p>
+      <p><strong>Step 8 — Generate:</strong> LLM generates an answer grounded in the retrieved context.</p>
+      <div class="pipeline">
+        <div class="pipeline-node">Documents</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Chunk</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Embed</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">Vector Store</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Retrieve</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Augment Prompt</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">LLM</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Answer</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>Where It Fits in the Pipeline</h2>
+    <div class="section-content">
+      <p>RAG sits in the <strong>Memory/RAG stage</strong> — it's the long-term knowledge store that feeds context to the LLM before generation.</p>
+      <div class="pipeline">
+        <div class="pipeline-node">User Query</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Agent/Orchestrator</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">RAG Retrieval</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">LLM + Context</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Answer</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Implementation</h2>
+    <div class="section-content">
+      <div class="code-block">
+        <div class="code-header"><span class="lang-badge">python</span><span>rag_pipeline.py</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-python"># pip install llama-index-core llama-index-vector-stores-chroma chromadb
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
+from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.core import StorageContext
+import chromadb
+
+# Step 1: Load documents (put your PDFs/text files in ./docs/)
+documents = SimpleDirectoryReader("./docs").load_data()
+print(f"Loaded {len(documents)} documents")
+
+# Step 2: Set up ChromaDB vector store (free, local)
+chroma_client = chromadb.PersistentClient(path="./chroma_db")
+collection = chroma_client.get_or_create_collection("study_notes")
+vector_store = ChromaVectorStore(chroma_collection=collection)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+# Step 3: Build the index (chunks + embeds + stores automatically)
+index = VectorStoreIndex.from_documents(
+    documents,
+    storage_context=storage_context,
+    show_progress=True
+)
+
+# Step 4: Query the index
+query_engine = index.as_query_engine(similarity_top_k=3)
+response = query_engine.query("What are the main topics covered?")
+
+print(f"\nAnswer: {response}")
+print(f"\nSource nodes used:")
+for node in response.source_nodes:
+    print(f"  Score: {node.score:.3f} | {node.text[:100]}...")</code></pre>
+      </div>
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Key Parameter: similarity_top_k</div>
+        <p><code>similarity_top_k=3</code> means retrieve the 3 most similar chunks. Increase for more context, decrease for precision. Typical values: 3–5 for QA, 8–10 for summarization.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s6">
+    <h2 class="section-title"><span class="section-number">6</span>NVIDIA Ecosystem</h2>
+    <div class="section-content">
+      <a class="nvidia-badge" href="https://github.com/NVIDIA/GenerativeAIExamples" target="_blank">NVIDIA GenerativeAI Examples — RAG Notebooks</a>
+      <div class="table-wrap"><table>
+        <thead><tr><th>RAG Component</th><th>NVIDIA Tool</th><th>Alternative (Free)</th></tr></thead>
+        <tbody>
+          <tr><td>Embedding model</td><td>NeMo Retriever Embedding NIM</td><td>HuggingFace sentence-transformers</td></tr>
+          <tr><td>Vector store</td><td>Milvus (NVIDIA-optimized)</td><td>ChromaDB (local, free)</td></tr>
+          <tr><td>LLM for generation</td><td>NVIDIA NIMs</td><td>Ollama (local, free)</td></tr>
+          <tr><td>RAG orchestration</td><td>LangChain + NVIDIA endpoints</td><td>LlamaIndex (open source)</td></tr>
+          <tr><td>Full pipeline example</td><td>GenerativeAIExamples/RAG/</td><td>See GitHub link above</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="s7">
+    <h2 class="section-title"><span class="section-number">7</span>Hands-On Lab</h2>
+    <div class="section-content">
+      <p><strong>Objective:</strong> Build a Q&amp;A bot over a PDF document. Measure how chunk size affects retrieval quality.</p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang-badge">python</span><span>lab_rag.py</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-python">"""
+LAB: RAG Q&A Bot — compare chunk sizes
+Run on: Google Colab (free)
+Install: pip install llama-index-core llama-index-vector-stores-chroma chromadb
+"""
+from llama_index.core import VectorStoreIndex, Document
+from llama_index.core.node_parser import SentenceSplitter
+import chromadb
+from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.core import StorageContext
+
+# Sample document (replace with your own PDF)
+text = """
+NVIDIA Triton Inference Server is an open-source inference serving software.
+It supports multiple frameworks including TensorFlow, PyTorch, and ONNX.
+Triton uses dynamic batching to maximize GPU utilization.
+The HTTP endpoint runs on port 8000, gRPC on port 8001.
+NeMo Guardrails is an open-source toolkit for adding programmable guardrails to LLMs.
+It uses Colang, a domain-specific language for dialogue flow definition.
+The five rail types are: input, dialog, retrieval, execution, and output rails.
+"""
+
+questions = [
+    "What port does Triton use for HTTP?",
+    "What is Colang used for?",
+    "How does Triton maximize GPU usage?"
+]
+
+# Test different chunk sizes
+for chunk_size in [128, 256, 512]:
+    print(f"\n{'='*50}")
+    print(f"Chunk size: {chunk_size}")
+    
+    chroma = chromadb.Client()
+    col = chroma.get_or_create_collection(f"test_{chunk_size}")
+    vs = ChromaVectorStore(chroma_collection=col)
+    sc = StorageContext.from_defaults(vector_store=vs)
+    
+    parser = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=20)
+    nodes = parser.get_nodes_from_documents([Document(text=text)])
+    print(f"  Chunks created: {len(nodes)}")
+    
+    index = VectorStoreIndex(nodes, storage_context=sc)
+    qe = index.as_query_engine(similarity_top_k=2)
+    
+    for q in questions:
+        r = qe.query(q)
+        print(f"  Q: {q}")
+        print(f"  A: {str(r)[:100]}")
+        
+# VERIFY: Smaller chunks = more precise retrieval for specific facts
+# VERIFY: Larger chunks = better for context-heavy questions</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s8">
+    <h2 class="section-title"><span class="section-number">8</span>Common Mistakes</h2>
+    <div class="section-content">
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 1 — Wrong Chunk Size</div><p>Chunks too small (50 tokens): lose sentence context, retrieval misses related info. Chunks too large (2048 tokens): dilute relevance, slow retrieval. <em>Fix: Start with 512 tokens, 10% overlap, then tune based on your retrieval quality metrics.</em></p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 2 — Embedding Model Mismatch</div><p>Using a different embedding model at query time vs. indexing time produces incompatible vectors — similarity search fails silently and returns garbage results. <em>Fix: Always use the same embedding model for both indexing and querying. Pin the model version.</em></p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 3 — Not Filtering Irrelevant Chunks</div><p>Injecting low-similarity chunks into the prompt confuses the LLM and introduces wrong information. <em>Fix: Add a similarity threshold (e.g., score &gt; 0.7) and filter chunks below it before injecting.</em></p></div>
+    </div>
+  </div>
+
+  <div class="section" id="s9">
+    <h2 class="section-title"><span class="section-number">9</span>Exam Relevance</h2>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <div class="callout-title">🎓 Exam Domain: Memory &amp; RAG (~15% of exam)</div>
+        <p><strong>Key terms:</strong> retrieval-augmented generation, embedding, cosine similarity, vector store, chunk size, top-k, similarity threshold, hallucination reduction, ANN, ChromaDB, Milvus, FAISS</p>
+        <p><strong>Sample question:</strong> "Your RAG system returns irrelevant chunks 30% of the time. What is the most likely cause?"<br/><strong>Answer:</strong> Chunk size is too large (diluting relevance) or the embedding model is mismatched between indexing and query time.</p>
+        <p><strong>Sample question 2:</strong> "Which NVIDIA tool provides production-grade embedding and retrieval for RAG pipelines?"<br/><strong>Answer:</strong> NeMo Retriever NIM — available at build.nvidia.com with free API credits.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="react-agent.html">← ReAct Agent Loop</a>
+    <a class="topic-nav-btn" href="vector-databases.html">Next: Vector Databases →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tree of Thought & MCTS — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <!-- Abbreviated Sidebar -->
+    <div class="domain-group"><div class="domain-toggle open">🧠 Cognition & Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
+      <a class="sidebar-link active" href="tree-of-thought.html">Tree of Thought</a>
+      <a class="sidebar-link" href="agent-memory.html">Agentic Memory</a>
+    </div></div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics">
+      <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
+      <a class="sidebar-link" href="planning-architectures.html">Planning & Reflection</a>
+      <a class="sidebar-link" href="frameworks-deep-dive.html">Multi-Agent Frameworks</a>
+    </div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Cognition & Planning</span><span class="sep">›</span><span>Tree of Thought</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Cognition</span><span class="tag tag-difficulty-advanced">Advanced</span></div>
+    <h1 class="page-title">Tree of Thought & MCTS Algorithms</h1>
+    <p class="page-subtitle">Standard prompt engineering limits models to linear thinking. Learn how advanced search algorithms like Tree of Thought (ToT) allow agents to explore alternative reasoning paths simultaneously.</p>
+  </div>
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> Chain vs Tree</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> Tree of Thought (ToT) Implementation</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> Monte Carlo Tree Search (MCTS)</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> Graph of Thought (GoT)</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Exam Question Targets</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>Chain vs Tree</h2>
+    <div class="section-content">
+      <p><strong>Chain-of-Thought (CoT)</strong> forces an LLM to output a sequence of reasoning steps (A → B → C). This is highly effective but suffers from <strong>fatal flaw error cascading</strong>: if the LLM makes a mistake on step A, steps B and C represent wasted compute down a broken path.</p>
+      <p><strong>Tree-of-Thought (ToT)</strong> allows the LLM to generate multiple alternative possibilities at step A, evaluate them locally, discard the weak ones (pruning), and continue investigating the most promising branches. It is essentially BFS or DFS search logic applied to LLM reasoning.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>Tree of Thought (ToT) Implementation</h2>
+    <div class="section-content">
+      <p>Implementing ToT requires four distinct functions inside your agent runner:</p>
+      <ul>
+        <li><strong>Decomposer:</strong> Breaks the large problem into smaller thought steps.</li>
+        <li><strong>Generator:</strong> Generates *k* distinct thoughts for the current step.</li>
+        <li><strong>Evaluator:</strong> Scored the generated thoughts (often by asking the LLM itself or an external tool).</li>
+        <li><strong>Search Algorithm:</strong> Decide whether to pursue depth-first (DFS) or breadth-first (BFS).</li>
+      </ul>
+      <p>You will significantly increase token usage, but the reliability in mathematical or logic puzzles skyrockets.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>Monte Carlo Tree Search (MCTS)</h2>
+    <div class="section-content">
+      <p>Extending ToT, <strong>MCTS</strong> borrows from reinforcement learning (famous for powering AlphaGo). It does not just score the immediate thought step; it dynamically simulates random "actions" downwards to the end of the tree, and backpropogates a win/loss score back up to the current branch.</p>
+      <p>This balances <strong>Exploitation</strong> (following known good paths) with <strong>Exploration</strong> (trying wild new steps to see if they yield better results).</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>Graph of Thought (GoT)</h2>
+    <div class="section-content">
+      <p>The next iteration beyond ToT. <strong>Graph of Thought</strong> recognizes that reasoning is rarely a pure tree. Sometimes, two distinct branches arrive at identical logical conclusions. GoT allows paths to merge back together, reducing redundant search queries.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Exam Question Targets</h2>
+    <div class="section-content">
+      <div class="callout callout-warning">
+        <p><strong>Exam Trap</strong>: You must know the tradeoff between ToT, CoT, and standard prompting in terms of <strong>Latency / Token Cost</strong> vs <strong>Accuracy</strong>.</p>
+        <p>ToT is vastly superior to CoT in reliability, but is extremely slow and expensive for real-time customer chatbots. It is best used for complex backend data extraction and long-running research tasks.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

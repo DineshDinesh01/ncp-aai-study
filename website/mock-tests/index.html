@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mock Tests — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    /* ── Config Panel ── */
+    .config-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:28px; }
+    .config-panel h3 { font-size:15px; font-weight:800; color:var(--text-primary); margin-bottom:16px; }
+    .config-row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px; }
+    .config-field { display:flex; flex-direction:column; gap:6px; }
+    .config-field label { font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+    .config-field select, .config-field input[type=number] {
+      background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px;
+      color:var(--text-primary); padding:8px 12px; font-size:13px; min-width:140px;
+    }
+    .config-field select:focus, .config-field input[type=number]:focus { outline:none; border-color:var(--nvidia-green); }
+
+    /* ── Domain Multi-Select ── */
+    .domain-checkboxes { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .domain-chip { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px;
+      border:1px solid var(--border-light); background:var(--bg-card); cursor:pointer; font-size:12px;
+      color:var(--text-muted); transition:all .2s; user-select:none; }
+    .domain-chip input { display:none; }
+    .domain-chip.checked { background:var(--nvidia-green); color:#000; border-color:var(--nvidia-green); font-weight:700; }
+    .domain-chip .chip-count { font-size:10px; opacity:.7; }
+
+    /* ── Timer ── */
+    .timer-box { background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+      padding:16px 24px; display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .timer-display { font-size:32px; font-weight:900; font-family:monospace; color:var(--nvidia-green); }
+    .timer-display.warning { color:var(--accent-orange); }
+    .timer-display.danger { color:var(--accent-red); }
+
+    /* ── Quiz ── */
+    .quiz-option.selected { border-color:var(--accent-blue); background:rgba(74,158,255,0.08); }
+    .quiz-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+    .q-number { font-size:11px; color:var(--text-muted); }
+
+    /* ── Score ── */
+    .score-box { background:var(--bg-card); border:1px solid var(--nvidia-green); border-radius:12px;
+      padding:28px; margin-top:32px; display:none; }
+    .score-big { font-size:56px; font-weight:900; color:var(--nvidia-green); text-align:center; }
+    .score-pct { text-align:center; font-size:28px; font-weight:700; margin-bottom:8px; }
+    .score-verdict { text-align:center; font-size:14px; padding:8px 20px; border-radius:20px;
+      display:inline-block; margin:0 auto 24px; }
+    .score-verdict.pass { background:rgba(118,185,0,.15); color:var(--nvidia-green); }
+    .score-verdict.fail { background:rgba(255,90,90,.12); color:var(--accent-red); }
+    .domain-score-row { display:flex; justify-content:space-between; align-items:center;
+      padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+    .domain-bar-wrap { width:120px; height:6px; background:var(--border); border-radius:3px; margin-left:8px; }
+    .domain-bar { height:6px; border-radius:3px; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
+    .empty-state .icon { font-size:48px; margin-bottom:12px; }
+
+    /* ── Score history ── */
+    #score-history-bar { display:none; background:var(--bg-secondary); border-radius:8px;
+      padding:10px 16px; margin-bottom:16px; font-size:12px; color:var(--text-muted); }
+
+    /* ── Actions ── */
+    .test-actions { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center; margin:32px 0; }
+  </style>
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="mock-tests"></site-header>
+<div class="layout">
+<site-sidebar basepath=".." active="mock-tests"></site-sidebar>
+<main class="main"><div class="content">
+
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">All Domains</span><span class="tag" id="total-q-tag">Loading…</span></div>
+    <h1 class="page-title">Interactive Mock Tests</h1>
+    <p class="page-subtitle" id="page-subtitle">Loading question bank…</p>
+  </div>
+
+  <!-- SCORE HISTORY -->
+  <div id="score-history-bar">
+    📈 Past scores: <span id="score-history-text"></span>
+    <span style="float:right;cursor:pointer;opacity:.5" onclick="clearHistory()">✕ clear</span>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       CONFIGURATION PANEL
+  ══════════════════════════════════════ -->
+  <div class="config-panel" id="config-panel">
+    <h3>⚙️ Configure Your Test</h3>
+
+    <!-- Domain multi-select (generated dynamically) -->
+    <div style="margin-bottom:10px">
+      <span style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">Select Domains</span>
+      <span style="font-size:11px;color:var(--text-muted);margin-left:8px">
+        (<a href="#" onclick="selectAllDomains();return false" style="color:var(--nvidia-green)">all</a> /
+         <a href="#" onclick="clearAllDomains();return false" style="color:var(--nvidia-green)">none</a>)
+      </span>
+    </div>
+    <div class="domain-checkboxes" id="domain-chips">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- Number of questions + time + mode -->
+    <div class="config-row">
+      <div class="config-field">
+        <label>Number of Questions</label>
+        <select id="cfg-count">
+          <option value="10">10 — Quick drill</option>
+          <option value="20">20 — Practice set</option>
+          <option value="30">30 — Half exam</option>
+          <option value="50" selected>50 — Near full exam</option>
+          <option value="all">All available</option>
+        </select>
+      </div>
+      <div class="config-field">
+        <label>Time Limit</label>
+        <select id="cfg-time">
+          <option value="0">No timer</option>
+          <option value="600">10 min — Quick drill</option>
+          <option value="1200">20 min</option>
+          <option value="2400">40 min</option>
+          <option value="4200">70 min — Half exam</option>
+          <option value="7200" selected>120 min — Full exam</option>
+        </select>
+      </div>
+      <div class="config-field">
+        <label>Mode</label>
+        <select id="cfg-mode">
+          <option value="practice">Practice (check each answer)</option>
+          <option value="exam">Exam (submit all at end)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="startTest()" id="start-btn">🚀 Start Test</button>
+      <span id="available-count" style="font-size:13px;color:var(--text-muted)"></span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ACTIVE TEST UI (hidden until started)
+  ══════════════════════════════════════ -->
+  <div id="test-ui" style="display:none">
+
+    <!-- Timer + progress -->
+    <div class="timer-box">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:2px" id="test-label">Practice Mode</div>
+        <div style="font-size:12px;color:var(--text-muted)" id="progress-label">0 of 0 answered</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="timer-display" id="timer">--:--</div>
+        <button class="btn btn-primary" id="timer-btn" onclick="toggleTimer()">▶ Start</button>
+        <button class="btn btn-secondary" onclick="resetTest()">↺ New Test</button>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div id="questions-container"></div>
+
+    <!-- Actions -->
+    <div class="test-actions">
+      <button class="btn btn-primary" style="font-size:15px;padding:13px 32px" onclick="submitTest()">📊 Submit &amp; See Score</button>
+      <button class="btn btn-secondary" id="retry-btn" onclick="retryWrong()" style="display:none">🔁 Retry Wrong Answers</button>
+      <button class="btn btn-secondary" onclick="resetTest()">↺ New Test</button>
+    </div>
+
+    <!-- Score box -->
+    <div class="score-box" id="score-box">
+      <div class="score-big" id="score-display">—</div>
+      <div style="text-align:center">
+        <div class="score-pct" id="score-pct">—</div>
+        <span class="score-verdict" id="score-verdict">—</span>
+      </div>
+      <p style="text-align:center;color:var(--text-muted);margin:20px 0 12px;font-size:13px;font-weight:700">Domain Breakdown</p>
+      <div id="domain-breakdown"></div>
+      <div style="margin-top:20px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+        <strong style="color:var(--text-primary)">📚 Next Steps:</strong>
+        <p style="color:var(--text-secondary);font-size:13px;margin-top:8px" id="next-steps-text">
+          Review domains below 70%. Re-read the topic page, run the lab, then retest with that domain filter selected.
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /test-ui -->
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DOMAIN METADATA
+═══════════════════════════════════════════════════════ */
+const DOMAIN_META = {
+  architecture: { label:"🤖 Agent Architecture",  color:"tag-nvidia"   },
+  agentdev:     { label:"🔧 Agent Development",   color:"tag-domain"   },
+  evaluation:   { label:"📊 Evaluation & Tuning", color:"tag-domain"   },
+  deploy:       { label:"🚀 Deployment",           color:"tag-domain"   },
+  cognition:    { label:"🧠 Cognition & Planning", color:"tag-pipeline" },
+  knowledge:    { label:"🗄️ Knowledge & RAG",      color:"tag-pipeline" },
+  nvidia:       { label:"⬡ NVIDIA Platform",      color:"tag-nvidia"   },
+  safety:       { label:"🛡️ Safety",               color:"tag-domain"   },
+  hitl:         { label:"👤 HITL & Oversight",     color:"tag-domain"   },
+  monitor:      { label:"📡 Monitoring",           color:"tag-pipeline" },
+};
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let allQuestions = [];       // raw JSON data
+let activeQuestions = [];    // questions in current test
+let timerInterval = null;
+let secondsLeft = 0;
+let timerRunning = false;
+let testMode = "practice";   // "practice" | "exam"
+
+/* ═══════════════════════════════════════════════════════
+   LOAD QUESTION BANK
+═══════════════════════════════════════════════════════ */
+async function loadQuestions() {
+  try {
+    const res = await fetch('../assets/data/mock-questions.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    allQuestions = await res.json();
+    initUI();
+  } catch (e) {
+    document.getElementById('config-panel').innerHTML =
+      `<div class="empty-state"><div class="icon">⚠️</div>
+       <p style="color:var(--accent-red)">Failed to load questions.<br/>
+       Make sure you're running via HTTP server:<br/>
+       <code>python3 -m http.server 8080</code></p></div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT UI — runs after questions are loaded
+═══════════════════════════════════════════════════════ */
+function initUI() {
+  // Count per domain
+  const counts = {};
+  allQuestions.forEach(q => { counts[q.d] = (counts[q.d] || 0) + 1; });
+
+  // Update page header
+  document.getElementById('total-q-tag').textContent = `${allQuestions.length} Questions`;
+  document.getElementById('page-subtitle').textContent =
+    `${allQuestions.length} exam-style questions across ${Object.keys(counts).length} domains, aligned with the official NCP-AAI blueprint. Configure your test below — choose domains, count, and time limit.`;
+
+  // Build domain chips
+  const container = document.getElementById('domain-chips');
+  container.innerHTML = '';
+  Object.entries(counts).forEach(([d, n]) => {
+    const meta = DOMAIN_META[d] || { label: d, color: 'tag-domain' };
+    const chip = document.createElement('label');
+    chip.className = 'domain-chip checked';
+    chip.dataset.domain = d;
+    chip.innerHTML = `<input type="checkbox" value="${d}" checked onchange="onChipChange()">
+      ${meta.label} <span class="chip-count">(${n})</span>`;
+    chip.addEventListener('click', () => {
+      setTimeout(() => {
+        const cb = chip.querySelector('input');
+        chip.classList.toggle('checked', cb.checked);
+        onChipChange();
+      }, 0);
+    });
+    container.appendChild(chip);
+  });
+
+  updateAvailableCount();
+  showHistory();
+}
+
+function onChipChange() {
+  updateAvailableCount();
+}
+
+function getSelectedDomains() {
+  return [...document.querySelectorAll('#domain-chips input:checked')].map(i => i.value);
+}
+
+function updateAvailableCount() {
+  const domains = getSelectedDomains();
+  const n = allQuestions.filter(q => domains.includes(q.d)).length;
+  const cfgCount = document.getElementById('cfg-count').value;
+  const requested = cfgCount === 'all' ? n : Math.min(parseInt(cfgCount), n);
+  document.getElementById('available-count').textContent =
+    `${n} questions available → will serve ${requested}`;
+}
+
+function selectAllDomains() {
+  document.querySelectorAll('#domain-chips input').forEach(cb => {
+    cb.checked = true;
+    cb.closest('.domain-chip').classList.add('checked');
+  });
+  updateAvailableCount();
+}
+
+function clearAllDomains() {
+  document.querySelectorAll('#domain-chips input').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.domain-chip').classList.remove('checked');
+  });
+  updateAvailableCount();
+}
+
+/* ═══════════════════════════════════════════════════════
+   START TEST
+═══════════════════════════════════════════════════════ */
+function startTest() {
+  const domains = getSelectedDomains();
+  if (!domains.length) {
+    alert('Please select at least one domain.');
+    return;
+  }
+
+  const pool = shuffle(allQuestions.filter(q => domains.includes(q.d)));
+  const cfgCount = document.getElementById('cfg-count').value;
+  activeQuestions = cfgCount === 'all' ? pool : pool.slice(0, parseInt(cfgCount));
+
+  if (!activeQuestions.length) {
+    alert('No questions match your selection. Choose different domains or count.');
+    return;
+  }
+
+  testMode = document.getElementById('cfg-mode').value;
+
+  // Hide config, show test UI
+  document.getElementById('config-panel').style.display = 'none';
+  document.getElementById('test-ui').style.display = 'block';
+  document.getElementById('score-box').style.display = 'none';
+  document.getElementById('retry-btn').style.display = 'none';
+
+  document.getElementById('test-label').textContent =
+    testMode === 'exam' ? '📝 Exam Mode — select all answers then submit' : '✅ Practice Mode — check each answer as you go';
+
+  renderQuestions(activeQuestions);
+  updateProgress();
+
+  // Timer
+  const cfgTime = parseInt(document.getElementById('cfg-time').value);
+  if (cfgTime > 0) {
+    secondsLeft = cfgTime;
+    renderTimer();
+    document.getElementById('timer-btn').style.display = '';
+    document.getElementById('timer').style.display = '';
+  } else {
+    document.getElementById('timer').textContent = '∞';
+    document.getElementById('timer-btn').style.display = 'none';
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetTest() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  activeQuestions = [];
+  document.getElementById('config-panel').style.display = '';
+  document.getElementById('test-ui').style.display = 'none';
+  document.getElementById('questions-container').innerHTML = '';
+  document.getElementById('timer-btn').textContent = '▶ Start';
+  updateAvailableCount();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER QUESTIONS
+═══════════════════════════════════════════════════════ */
+function renderQuestions(qs) {
+  const c = document.getElementById('questions-container');
+  c.innerHTML = qs.map((q, i) => {
+    const meta = DOMAIN_META[q.d] || { label: q.d, color: 'tag-domain' };
+    const opts = q.opts.map((o, j) => {
+      const key = String.fromCharCode(65 + j);
+      // Sanitize option text to prevent XSS
+      const safe = o.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<div class="quiz-option" data-value="${key}">
+        <span class="opt-key">${key}</span> ${safe}
+      </div>`;
+    }).join('');
+
+    const safeQ = q.q.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeExp = q.exp.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    const checkBtn = testMode === 'practice'
+      ? `<button class="quiz-check-btn">Check Answer</button>` : '';
+
+    return `<div class="quiz-question" data-answer="${q.ans}" data-domain="${q.d}" data-index="${i}">
+      <div class="quiz-meta">
+        <span class="tag ${meta.color}">${meta.label}</span>
+        <span class="q-number">Q${i+1} of ${qs.length}</span>
+      </div>
+      <div class="quiz-q-text">${safeQ}</div>
+      <div class="quiz-options">${opts}</div>
+      ${checkBtn}
+      <div class="quiz-feedback">${safeExp}</div>
+    </div>`;
+  }).join('');
+
+  attachHandlers();
+}
+
+function attachHandlers() {
+  document.querySelectorAll('.quiz-question').forEach(qEl => {
+    const opts = qEl.querySelectorAll('.quiz-option');
+    const btn  = qEl.querySelector('.quiz-check-btn');
+    const fb   = qEl.querySelector('.quiz-feedback');
+    let selected = null;
+
+    opts.forEach(o => o.addEventListener('click', () => {
+      if (qEl.dataset.answered) return; // locked after check
+      opts.forEach(x => x.classList.remove('selected'));
+      o.classList.add('selected');
+      selected = o.dataset.value;
+      updateProgress();
+    }));
+
+    if (btn) {
+      btn.addEventListener('click', () => {
+        if (!selected) { btn.textContent = 'Pick an option first!'; return; }
+        revealAnswer(qEl, selected, opts, fb, btn);
+      });
+    }
+  });
+}
+
+function revealAnswer(qEl, selected, opts, fb, btn) {
+  const correct = qEl.dataset.answer;
+  opts.forEach(o => {
+    if (o.dataset.value === correct) o.classList.add('correct');
+    else if (o.dataset.value === selected && selected !== correct) o.classList.add('wrong');
+  });
+  if (fb) fb.classList.add('show', selected === correct ? 'correct-fb' : 'wrong-fb');
+  if (btn) btn.disabled = true;
+  qEl.dataset.answered = selected === correct ? 'correct' : 'wrong';
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = document.querySelectorAll('.quiz-question').length;
+  const answered = document.querySelectorAll('.quiz-question[data-answered]').length;
+  document.getElementById('progress-label').textContent = `${answered} of ${total} answered`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUBMIT & SCORE
+═══════════════════════════════════════════════════════ */
+function submitTest() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+
+  const qEls = document.querySelectorAll('.quiz-question');
+
+  // In exam mode: reveal all answers now
+  if (testMode === 'exam') {
+    qEls.forEach(qEl => {
+      const opts = qEl.querySelectorAll('.quiz-option');
+      const fb   = qEl.querySelector('.quiz-feedback');
+      const selected = [...opts].find(o => o.classList.contains('selected'))?.dataset.value;
+      if (!qEl.dataset.answered) {
+        if (selected) revealAnswer(qEl, selected, opts, fb, null);
+        else {
+          // Unanswered — just reveal correct
+          opts.forEach(o => { if (o.dataset.value === qEl.dataset.answer) o.classList.add('correct'); });
+          if (fb) fb.classList.add('show', 'wrong-fb');
+          qEl.dataset.answered = 'wrong';
+        }
+      }
+    });
+  }
+
+  // Tally
+  let correct = 0;
+  const domainCorrect = {}, domainTotal = {};
+  qEls.forEach(qEl => {
+    const d = qEl.dataset.domain;
+    domainTotal[d] = (domainTotal[d] || 0) + 1;
+    if (qEl.dataset.answered === 'correct') {
+      correct++;
+      domainCorrect[d] = (domainCorrect[d] || 0) + 1;
+    }
+  });
+  const total = qEls.length;
+  const pct = total ? Math.round(correct / total * 100) : 0;
+
+  // Save to history
+  saveScore(correct, total, pct);
+  showHistory();
+
+  // Render score
+  const scoreEl = document.getElementById('score-display');
+  scoreEl.textContent = `${correct} / ${total}`;
+  scoreEl.style.color = pct >= 80 ? 'var(--nvidia-green)' : pct >= 70 ? 'var(--accent-orange)' : 'var(--accent-red)';
+
+  document.getElementById('score-pct').textContent = `${pct}%`;
+  document.getElementById('score-pct').style.color = scoreEl.style.color;
+
+  const verdict = document.getElementById('score-verdict');
+  if (pct >= 70) {
+    verdict.textContent = '✅ PASS threshold reached';
+    verdict.className = 'score-verdict pass';
+  } else {
+    verdict.textContent = '❌ Below 70% pass threshold';
+    verdict.className = 'score-verdict fail';
+  }
+
+  // Domain breakdown
+  const weakDomains = [];
+  let html = '';
+  Object.entries(domainTotal).sort((a,b) => {
+    const pa = Math.round(((domainCorrect[a[0]]||0)/a[1])*100);
+    const pb = Math.round(((domainCorrect[b[0]]||0)/b[1])*100);
+    return pa - pb; // weakest first
+  }).forEach(([d, tot]) => {
+    const c = domainCorrect[d] || 0;
+    const p = Math.round(c / tot * 100);
+    const color = p >= 80 ? 'var(--nvidia-green)' : p >= 70 ? 'var(--accent-orange)' : 'var(--accent-red)';
+    const meta = DOMAIN_META[d] || { label: d };
+    if (p < 70) weakDomains.push(meta.label.replace(/^.{2}/,'').trim());
+    html += `<div class="domain-score-row">
+      <span style="color:var(--text-primary)">${meta.label}</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="domain-bar-wrap"><div class="domain-bar" style="width:${p}%;background:${color}"></div></div>
+        <span style="color:${color};font-weight:700;min-width:60px;text-align:right">${c}/${tot} (${p}%)</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('domain-breakdown').innerHTML = html;
+
+  // Next steps
+  if (weakDomains.length) {
+    document.getElementById('next-steps-text').textContent =
+      `Focus on: ${weakDomains.join(', ')}. Re-read those topic pages (sections 8 & 9), run the related lab, then use the domain filter to retest only those areas.`;
+  } else {
+    document.getElementById('next-steps-text').textContent =
+      `Excellent! All domains above 70%. Keep practicing with different question subsets to maintain retention. Aim for 85%+ before booking the exam.`;
+  }
+
+  document.getElementById('score-box').style.display = 'block';
+  document.getElementById('retry-btn').style.display = 'inline-block';
+  document.getElementById('score-box').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════════════════════════
+   RETRY WRONG
+═══════════════════════════════════════════════════════ */
+function retryWrong() {
+  const wrongIndices = [];
+  document.querySelectorAll('.quiz-question[data-answered="wrong"]').forEach(el => {
+    const idx = parseInt(el.dataset.index);
+    if (!isNaN(idx) && activeQuestions[idx]) wrongIndices.push(activeQuestions[idx]);
+  });
+  if (!wrongIndices.length) { alert('No wrong answers to retry!'); return; }
+
+  activeQuestions = shuffle(wrongIndices);
+  document.getElementById('score-box').style.display = 'none';
+  document.getElementById('retry-btn').style.display = 'none';
+  renderQuestions(activeQuestions);
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIMER
+═══════════════════════════════════════════════════════ */
+function renderTimer() {
+  const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+  const s = (secondsLeft % 60).toString().padStart(2, '0');
+  const el = document.getElementById('timer');
+  el.textContent = `${m}:${s}`;
+  el.className = 'timer-display' + (secondsLeft < 300 ? ' danger' : secondsLeft < 600 ? ' warning' : '');
+}
+
+function toggleTimer() {
+  const btn = document.getElementById('timer-btn');
+  if (!timerRunning) {
+    timerRunning = true;
+    btn.textContent = '⏸ Pause';
+    timerInterval = setInterval(() => {
+      if (secondsLeft <= 0) {
+        clearInterval(timerInterval);
+        document.getElementById('timer').textContent = '00:00';
+        alert('Time is up! Submitting your test.');
+        submitTest();
+        return;
+      }
+      secondsLeft--;
+      renderTimer();
+    }, 1000);
+  } else {
+    timerRunning = false;
+    btn.textContent = '▶ Resume';
+    clearInterval(timerInterval);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCORE HISTORY
+═══════════════════════════════════════════════════════ */
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem('mock_scores') || '[]'); } catch { return []; }
+}
+function saveScore(c, t, p) {
+  const h = loadHistory();
+  h.unshift({ score: c, total: t, pct: p, date: new Date().toLocaleDateString() });
+  localStorage.setItem('mock_scores', JSON.stringify(h.slice(0, 8)));
+}
+function showHistory() {
+  const h = loadHistory();
+  if (!h.length) return;
+  const bar = document.getElementById('score-history-bar');
+  document.getElementById('score-history-text').textContent =
+    h.map(s => `${s.score}/${s.total} (${s.pct}%) on ${s.date}`).join(' · ');
+  bar.style.display = 'block';
+}
+function clearHistory() {
+  localStorage.removeItem('mock_scores');
+  document.getElementById('score-history-bar').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════════════ */
+function shuffle(a) {
+  const b = [...a];
+  for (let i = b.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [b[i], b[j]] = [b[j], b[i]];
+  }
+  return b;
+}
+
+// Recalculate available count when count dropdown changes
+document.getElementById('cfg-count').addEventListener('change', updateAvailableCount);
+
+// Bootstrap
+loadQuestions();
+</script>
+<script src="../assets/js/script.js"></script>
+</body>
+</html>

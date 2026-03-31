@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tool Use &amp; Function Calling — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🧠 LLM Fundamentals <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a></div></div>
+    <div class="domain-group"><div class="domain-toggle open">🔧 Tool Use <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link active" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Memory &amp; RAG <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👥 Multi-Agent <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Tool Use &amp; Function Calling</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Tool Use &amp; Function Calling</span><span class="tag tag-pipeline">Pipeline: Tool Use</span><span class="tag tag-nvidia">NVIDIA: NIMs</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">Tool Use &amp; Function Calling</h1>
+    <p class="page-subtitle">Function calling lets an LLM invoke external tools — APIs, databases, calculators, code executors — by outputting structured JSON that your code parses and executes. This is how agents gain real-world capabilities.</p>
+  </div>
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> Definition</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> Why It Exists</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> How It Works</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> Pipeline Placement</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Implementation</a></li>
+    <li><a href="#s6"><span class="toc-num">6</span> NVIDIA Ecosystem</a></li>
+    <li><a href="#s7"><span class="toc-num">7</span> Hands-On Lab</a></li>
+    <li><a href="#s8"><span class="toc-num">8</span> Common Mistakes</a></li>
+    <li><a href="#s9"><span class="toc-num">9</span> Exam Relevance</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>Definition</h2>
+    <div class="section-content">
+      <p><strong>Function calling (tool use)</strong> is a capability that allows LLMs to signal that they want to call a specific function with specific arguments, rather than answering in plain text. The LLM outputs a structured JSON object; your application code receives it, executes the corresponding function, and returns the result back to the LLM.</p>
+      <p>Example: Instead of making up a stock price, the LLM outputs <code>{"name": "get_stock_price", "arguments": {"ticker": "NVDA"}}</code>. Your code calls the real API, gets the real price, and feeds it back to the LLM for the final answer.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>Why It Exists</h2>
+    <div class="section-content">
+      <p><strong>Problem:</strong> LLMs have a knowledge cutoff, can't do precise arithmetic, can't access live data, and can't modify external systems. A pure text-generation LLM is fundamentally limited as an agent.</p>
+      <p><strong>Solution:</strong> Function calling turns the LLM into a <em>controller</em> — it decides WHAT action to take and with WHAT parameters. Your application executes the action. The LLM synthesizes the result into a natural language response.</p>
+      <p>This is what separates a chatbot from an agent: <strong>agents take actions in the world</strong>.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>How It Works</h2>
+    <div class="section-content">
+      <p><strong>Step 1 — Define tools as JSON schemas:</strong> Each tool has a name, description, and parameter schema. The LLM receives this as part of its context.</p>
+      <p><strong>Step 2 — LLM receives user message + tool list</strong></p>
+      <p><strong>Step 3 — LLM decides to call a tool:</strong> Output is a tool_call object with function name + JSON arguments (not regular text)</p>
+      <p><strong>Step 4 — Your code executes the function</strong> and gets a real result</p>
+      <p><strong>Step 5 — Result injected as tool message:</strong> The LLM receives the result and generates the final user-facing answer</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">json</span><span>Tool Schema Structure</span></div>
+      <pre><code>{
+  "type": "function",
+  "function": {
+    "name": "get_weather",
+    "description": "Get current weather for a city. Use this when the user asks about weather.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "The city name, e.g. 'San Jose'"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["celsius", "fahrenheit"],
+          "description": "Temperature unit"
+        }
+      },
+      "required": ["city"]
+    }
+  }
+}</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>Pipeline Placement</h2>
+    <div class="section-content">
+      <div class="pipeline">
+        <div class="pipeline-node">User Query</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">LLM Reasoning</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">Tool Call Decision</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Tool Execution</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Result Injection</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">LLM Final Answer</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Implementation</h2>
+    <div class="section-content">
+      <div class="code-block">
+        <div class="code-header"><span class="lang-badge">python</span><span>tool_calling_agent.py</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-python"># pip install langchain-community langchain-openai duckduckgo-search
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain_community.tools import DuckDuckGoSearchRun
+from langchain.tools import StructuredTool
+from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
+import math
+
+# ── Define custom tools ──────────────────────────────────
+
+class CalcInput(BaseModel):
+    expression: str
+
+def calculator(expression: str) -> str:
+    """Safely evaluate a math expression."""
+    try:
+        # Safe eval: only allow math operations
+        allowed = {k: v for k, v in math.__dict__.items() if not k.startswith("_")}
+        result = eval(expression, {"__builtins__": {}}, allowed)
+        return str(result)
+    except Exception as e:
+        return f"Error: {e}"
+
+calc_tool = StructuredTool.from_function(
+    func=calculator,
+    name="calculator",
+    description="Evaluate math expressions. Input: a string like '2 * 3.14 * 5'",
+    args_schema=CalcInput
+)
+
+search_tool = DuckDuckGoSearchRun()
+tools = [search_tool, calc_tool]
+
+# ── Set up LLM (use NVIDIA NIM endpoint for free) ────────
+# Replace with: base_url="https://integrate.api.nvidia.com/v1"
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+
+# ── ReAct prompt ─────────────────────────────────────────
+prompt = PromptTemplate.from_template("""
+Answer the question using the available tools.
+
+Tools available:
+{tools}
+
+Tool names: {tool_names}
+
+Format:
+Thought: [your reasoning]
+Action: [tool name]
+Action Input: [tool input]
+Observation: [tool result]
+... (repeat as needed)
+Thought: I now have the final answer
+Final Answer: [your answer]
+
+Question: {input}
+{agent_scratchpad}
+""")
+
+# ── Build and run agent ──────────────────────────────────
+agent = create_react_agent(llm, tools, prompt)
+executor = AgentExecutor(agent=agent, tools=tools, verbose=True, max_iterations=5)
+
+result = executor.invoke({"input": "What is NVIDIA's stock ticker, and what is 2 * pi * 76?"})
+print(f"\nFinal Answer: {result['output']}")</code></pre>
+      </div>
+
+      <p><strong>NVIDIA NIM Tool Calling:</strong></p>
+      <div class="code-block">
+        <div class="code-header"><span class="lang-badge">python</span><span>nim_tool_calling.py</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-python"># Direct NIM function calling (build.nvidia.com — free credits)
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key="nvapi-YOUR_FREE_KEY"
+)
+
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_gpu_specs",
+        "description": "Get technical specifications for an NVIDIA GPU model",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "model": {"type": "string", "description": "GPU model name e.g. 'H100'"},
+                "spec": {"type": "string", "enum": ["memory", "cuda_cores", "tdp"]}
+            },
+            "required": ["model"]
+        }
+    }
+}]
+
+response = client.chat.completions.create(
+    model="meta/llama-3.1-70b-instruct",
+    messages=[{"role": "user", "content": "What memory does the H100 GPU have?"}],
+    tools=tools,
+    tool_choice="auto"
+)
+
+tool_call = response.choices[0].message.tool_calls[0]
+print(f"Tool called: {tool_call.function.name}")
+print(f"Arguments: {tool_call.function.arguments}")</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s6">
+    <h2 class="section-title"><span class="section-number">6</span>NVIDIA Ecosystem</h2>
+    <div class="section-content">
+      <a class="nvidia-badge" href="https://build.nvidia.com" target="_blank">NVIDIA NIMs — Free Function Calling API</a>
+      <p>NVIDIA NIMs support OpenAI-compatible function calling with models like <code>meta/llama-3.1-70b-instruct</code> and <code>nvidia/nemotron-4-340b-instruct</code>. Sign up at <strong>build.nvidia.com</strong> for free API credits.</p>
+      <p>The official <strong>NIM Tool Calling 101</strong> notebook is available at: <code>github.com/NVIDIA/GenerativeAIExamples</code> under the notebooks folder.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s7">
+    <h2 class="section-title"><span class="section-number">7</span>Hands-On Lab</h2>
+    <div class="section-content">
+      <p><strong>Objective:</strong> Build a 3-tool agent (web search + calculator + file reader). Observe the full Think→Act→Observe loop in the output.</p>
+      <p><strong>Steps:</strong></p>
+      <p>1. Install: <code>pip install langchain-community duckduckgo-search langchain-openai</code></p>
+      <p>2. Copy the code from Section 5 above</p>
+      <p>3. Run with verbose=True and observe the scratchpad output</p>
+      <p>4. Add a third tool: a file reader that reads a local text file</p>
+      <p>5. Ask: "Read the file 'notes.txt' and calculate how many characters it has"</p>
+      <p><strong>Verify:</strong> You should see the agent decide which tool to call, call it, receive a result, then call the next tool. It should NOT hallucinate the answer.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s8">
+    <h2 class="section-title"><span class="section-number">8</span>Common Mistakes</h2>
+    <div class="section-content">
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 1 — Vague Tool Descriptions</div><p>The LLM decides WHICH tool to call based on the description. A vague description like "does stuff" means the LLM won't know when to call it. <em>Fix: Write descriptions that tell the LLM exactly WHEN to use this tool, e.g. "Use this when the user asks about current weather."</em></p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 2 — No max_iterations Limit</div><p>An agent without a max_iterations cap can loop forever if it keeps making wrong tool calls. <em>Fix: Always set max_iterations=5 to 10. Handle the "reached max iterations" case gracefully.</em></p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 3 — Tool Output Too Large for Context</div><p>If a tool returns 50,000 tokens (e.g., a full web page), it exceeds the context window. <em>Fix: Truncate tool output before returning it to the LLM. Common limit: 2000 characters per tool result.</em></p></div>
+    </div>
+  </div>
+
+  <div class="section" id="s9">
+    <h2 class="section-title"><span class="section-number">9</span>Exam Relevance</h2>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <div class="callout-title">🎓 Exam Domain: Tool Use &amp; Function Calling (~15% of exam)</div>
+        <p><strong>Key terms:</strong> function calling, JSON schema, tool_choice, parallel tool calls, tool routing, ReAct, scratchpad, max_iterations, StructuredTool, AgentExecutor</p>
+        <p><strong>Sample question:</strong> "What data format does an LLM use to describe a tool it wants to call?"<br/><strong>Answer:</strong> JSON schema — with name, description, and parameters object.</p>
+        <p><strong>Sample question 2:</strong> "Which NVIDIA product exposes an OpenAI-compatible function calling API?"<br/><strong>Answer:</strong> NVIDIA NIMs (Inference Microservices) — available at build.nvidia.com with free credits.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="react-agent.html">← ReAct Agent Loop</a>
+    <a class="topic-nav-btn" href="rag-pipeline.html">Next: RAG Pipeline →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

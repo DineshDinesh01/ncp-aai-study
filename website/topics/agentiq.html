@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NVIDIA AgentIQ — Agentic Workflow Toolkit | NCP-AAI Study Guide</title>
+  <meta name="description" content="NVIDIA AgentIQ: composable agentic workflows, profiling, evaluation, langgraph_wrapper, AgentIQ vs NIMs distinction, and exam preparation."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="crewai.html">CrewAI</a><a class="sidebar-link" href="autogen.html">AutoGen</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a><a class="sidebar-link" href="agent-error-handling.html">Error Handling</a><a class="sidebar-link" href="tokenization.html">Tokenization</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group open"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▼</span></div>
+      <div class="domain-topics" style="display:block;">
+        <a class="sidebar-link active" href="agentiq.html">AgentIQ</a>
+        <a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a>
+        <a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a>
+        <a class="sidebar-link" href="nemo-microservices.html">NeMo Microservices</a>
+      </div>
+    </div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>NVIDIA Platform Implementation</span><span class="sep">›</span><span>AgentIQ</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">NVIDIA Platform Implementation</span>
+      <span class="tag tag-nvidia">AgentIQ</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">NVIDIA AgentIQ</h1>
+    <p class="page-subtitle">Open-source toolkit for composable, observable agentic workflows — profiling, evaluation, langgraph_wrapper, and how AgentIQ fits alongside NIMs in the NVIDIA stack.</p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#what">1. What Is AgentIQ?</a>
+    <a href="#vs-nims">2. AgentIQ vs NIMs — Key Distinction</a>
+    <a href="#architecture">3. AgentIQ Architecture</a>
+    <a href="#workflows">4. Workflow Types</a>
+    <a href="#code">5. Code Examples</a>
+    <a href="#profiling">6. Profiling and Evaluation</a>
+    <a href="#lab">7. Lab Exercise</a>
+    <a href="#mistakes">8. Common Mistakes</a>
+    <a href="#exam">9. Exam Prep</a>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="what">
+    <div class="section-title"><span class="section-number">1</span>What Is AgentIQ?</div>
+    <div class="section-content">
+      <p><strong>NVIDIA AgentIQ</strong> is an open-source Python toolkit for building, composing, profiling, and evaluating agentic AI workflows. It is framework-agnostic — it wraps existing LangGraph, CrewAI, or custom agents and adds NVIDIA-native capabilities on top.</p>
+      <p style="margin-top:12px;">Key capabilities:</p>
+      <ul style="margin:8px 0 0 24px; line-height:2.2;">
+        <li><strong>Composable workflows</strong> — define agents as YAML-configurable functions, compose them into pipelines</li>
+        <li><strong>Built-in profiling</strong> — wall-clock timing, token counts, and cost per agent step</li>
+        <li><strong>Evaluation integration</strong> — connect to NeMo Evaluator for accuracy benchmarking</li>
+        <li><strong>Framework wrapping</strong> — wrap existing LangGraph graphs via <code>langgraph_wrapper</code></li>
+        <li><strong>Concurrent execution</strong> — run multiple agent functions in parallel with async primitives</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="vs-nims">
+    <div class="section-title"><span class="section-number">2</span>AgentIQ vs NIMs — The Critical Distinction</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 This is a direct exam question</div>
+        <p>The NCP-AAI exam explicitly tests whether you understand the difference between AgentIQ and NIMs. Many candidates confuse them.</p>
+      </div>
+      <div class="table-wrap" style="margin-top:16px;"><table>
+        <thead><tr><th>Dimension</th><th>NVIDIA NIMs</th><th>NVIDIA AgentIQ</th></tr></thead>
+        <tbody>
+          <tr><td><strong>What it is</strong></td><td>Containerized inference microservices for model serving</td><td>Open-source Python toolkit for agentic workflows</td></tr>
+          <tr><td><strong>Primary job</strong></td><td>Serve LLM/model inference via OpenAI-compatible API</td><td>Orchestrate, profile, and evaluate agent pipelines</td></tr>
+          <tr><td><strong>Deployment</strong></td><td>Docker container on GPU infrastructure</td><td>Python library in your application code</td></tr>
+          <tr><td><strong>Input/Output</strong></td><td>HTTP REST requests → model predictions</td><td>Agent function calls → structured workflow results</td></tr>
+          <tr><td><strong>Relationship</strong></td><td colspan="2">AgentIQ workflows CALL NIM endpoints for LLM inference</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout callout-tip" style="margin-top:16px;"><div class="callout-title">💡 Analogy</div>
+        <p>NIMs = the engine (model serving). AgentIQ = the vehicle (workflow orchestration). You need both: AgentIQ orchestrates the agent logic; NIMs serve the LLM calls the agent makes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="architecture">
+    <div class="section-title"><span class="section-number">3</span>AgentIQ Architecture</div>
+    <div class="section-content">
+      <p>AgentIQ is built around three layers:</p>
+      <div class="pipeline" style="margin:20px 0; flex-wrap:wrap; gap:8px;">
+        <div class="pipeline-step">Functions<br/><small>Python callables with AgentIQ decorators</small></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">Workflows<br/><small>Composed pipelines (YAML or code config)</small></div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">Profiler + Evaluator<br/><small>Automatic timing, cost, accuracy metrics</small></div>
+      </div>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — AgentIQ Function Registration</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from aiq.builder.function_info import FunctionInfo
+from aiq.builder.framework_enum import LLMFrameworkEnum
+
+# Register a Python function as an AgentIQ tool/agent function
+@FunctionInfo.create(
+    name="research_agent",
+    description="Research a technical topic using web search",
+    input_type=str,
+    output_type=str,
+)
+async def research_agent(query: str, **kwargs) -> str:
+    """AgentIQ wraps this function with profiling and evaluation."""
+    llm = kwargs["llm"]
+    tools = kwargs["tools"]
+    # Your agent logic here
+    result = await run_react_loop(llm, tools, query)
+    return result
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="workflows">
+    <div class="section-title"><span class="section-number">4</span>Workflow Types</div>
+    <div class="section-content">
+      <p>AgentIQ supports multiple workflow types for different use cases:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Workflow Type</th><th>Description</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><code>react_agent</code></td><td>Standard ReAct loop with registered tools</td><td>Single-agent tool use</td></tr>
+          <tr><td><code>langgraph_wrapper</code></td><td>Wraps an existing LangGraph StateGraph</td><td>Adding AgentIQ profiling to existing LangGraph agents</td></tr>
+          <tr><td><code>tool_calling_agent</code></td><td>OpenAI-style function calling agent</td><td>Structured tool-call workflows</td></tr>
+          <tr><td><code>custom</code></td><td>Fully custom Python async function</td><td>Arbitrary agentic logic</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="code">
+    <div class="section-title"><span class="section-number">5</span>Code Examples</div>
+    <div class="section-content">
+      <h3 style="margin:0 0 8px; color:var(--text-primary);">Using langgraph_wrapper</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Wrap Existing LangGraph Agent with AgentIQ</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from langgraph.graph import StateGraph, END
+from aiq.builder.workflow_builder import WorkflowBuilder
+
+# Your existing LangGraph agent (unchanged)
+def build_my_graph():
+    graph = StateGraph(AgentState)
+    graph.add_node("researcher", research_node)
+    graph.add_node("writer", write_node)
+    graph.add_edge("researcher", "writer")
+    graph.add_edge("writer", END)
+    return graph.compile()
+
+# Wrap it with AgentIQ for profiling + evaluation
+builder = WorkflowBuilder()
+builder.add_workflow(
+    workflow_type="langgraph_wrapper",
+    workflow_config={
+        "graph_factory": build_my_graph,
+        "input_key": "messages",
+        "output_key": "final_answer",
+    }
+)
+
+# AgentIQ now adds:
+# - Step-level timing (wall-clock and CPU)
+# - Token counts per node
+# - Cost estimates per NIM call
+# - Evaluation hooks for NeMo Evaluator
+workflow = builder.build()
+result = await workflow.run({"messages": [{"role": "user", "content": "Research LLM quantization"}]})
+
+print(result.output)
+print(result.profile)   # AgentIQ profiling data
+# profile contains: {'total_latency_ms': 3241, 'total_tokens': 1847, 'total_cost_usd': 0.00184, 'steps': [...]}
+</code></pre></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">YAML Configuration</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">YAML — AgentIQ Workflow Config</span><button class="copy-btn">Copy</button></div><pre><code class="language-python"># config.yml — AgentIQ workflow definition
+workflow:
+  type: react_agent
+  llm:
+    provider: nvidia_nim
+    model: meta/llama-3.1-70b-instruct
+    base_url: https://integrate.api.nvidia.com/v1
+    temperature: 0.1
+  tools:
+    - name: web_search
+      type: serper
+    - name: code_executor
+      type: python_repl
+  max_iterations: 10
+
+evaluation:
+  dataset: ./eval_data/golden_dataset.jsonl
+  metrics:
+    - faithfulness
+    - answer_relevancy
+  evaluator: nemo_evaluator   # Send results to NeMo Evaluator
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="profiling">
+    <div class="section-title"><span class="section-number">6</span>Profiling and Evaluation</div>
+    <div class="section-content">
+      <p>AgentIQ's profiling and evaluation layer is what differentiates it from raw LangGraph or CrewAI:</p>
+
+      <h3 style="margin:12px 0 8px; color:var(--text-primary);">Profiling Output</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Reading AgentIQ Profile Data</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">result = await workflow.run(input_data)
+
+profile = result.profile
+print(f"Total latency: {profile['total_latency_ms']}ms")
+print(f"Total tokens: {profile['total_tokens']}")
+print(f"Estimated cost: ${profile['total_cost_usd']:.4f}")
+
+# Per-step breakdown
+for step in profile['steps']:
+    print(f"  [{step['name']}] {step['latency_ms']}ms "
+          f"| {step['tokens']} tokens "
+          f"| ${step['cost_usd']:.5f}")
+# Output example:
+# [researcher] 1230ms | 843 tokens | $0.00084
+# [writer] 1020ms | 712 tokens | $0.00071
+# [reviewer] 991ms | 292 tokens | $0.00029
+</code></pre></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">NeMo Evaluator Integration</h3>
+      <p>AgentIQ can pipe evaluation results directly to NeMo Evaluator for CI/CD-integrated benchmark tracking:</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — AgentIQ + NeMo Evaluator</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from aiq.eval.evaluator import run_evaluation
+
+# Run evaluation against a golden dataset
+eval_results = await run_evaluation(
+    workflow=workflow,
+    dataset_path="./eval_data/rag_golden.jsonl",
+    metrics=["faithfulness", "answer_relevancy", "context_recall"],
+    evaluator_endpoint="http://nemo-evaluator:8080",  # NeMo Evaluator service
+)
+
+print(eval_results.summary)
+# {'faithfulness': 0.91, 'answer_relevancy': 0.88, 'context_recall': 0.83}
+# Results automatically pushed to NeMo Evaluator dashboard
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="lab">
+    <div class="section-title"><span class="section-number">7</span>Lab Exercise</div>
+    <div class="section-content">
+      <div class="callout callout-lab"><div class="callout-title">🔬 Lab: Wrap a LangGraph Agent with AgentIQ</div>
+        <p><strong>Objective:</strong> Take an existing LangGraph ReAct agent and add AgentIQ profiling to measure per-step cost and latency.</p>
+        <ol style="margin:12px 0 0 20px; line-height:2.2;">
+          <li>Clone AgentIQ: <code>git clone https://github.com/NVIDIA/AgentIQ</code></li>
+          <li>Install: <code>pip install aiq</code></li>
+          <li>Build a simple LangGraph graph with 2 nodes (researcher + synthesizer)</li>
+          <li>Wrap with <code>langgraph_wrapper</code> workflow type</li>
+          <li>Run 3 test queries and compare <code>result.profile</code> across them</li>
+          <li>Identify which node consumes the most tokens / cost</li>
+          <li><strong>Extension:</strong> Run <code>run_evaluation()</code> against a 5-question golden dataset and output RAGAS faithfulness scores</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="mistakes">
+    <div class="section-title"><span class="section-number">8</span>Common Mistakes</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Mistake</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Confusing AgentIQ with NIMs</td><td>AgentIQ = workflow toolkit; NIMs = model inference endpoints. They work together.</td></tr>
+          <tr><td>Thinking AgentIQ replaces LangGraph</td><td>AgentIQ wraps LangGraph via langgraph_wrapper — it's additive, not a replacement</td></tr>
+          <tr><td>Skipping profiling in development</td><td>Profile from day 1 — latency and cost surprises are common at scale</td></tr>
+          <tr><td>Not using YAML configs for agent definitions</td><td>YAML configs make agents swappable without code changes — key for prod deployments</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Prep</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — AgentIQ (NVIDIA Platform ~7%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2.2;">
+          <li><strong>AgentIQ</strong> = open-source NVIDIA toolkit for agentic workflow composition, profiling, and evaluation</li>
+          <li><strong>NIMs</strong> = containerized inference microservices; AgentIQ <em>calls</em> NIM endpoints — they are complementary</li>
+          <li><strong>langgraph_wrapper</strong> = wrap existing LangGraph StateGraph with AgentIQ profiling — no rewrite required</li>
+          <li><strong>Profiling output:</strong> total_latency_ms, total_tokens, total_cost_usd, per-step breakdown</li>
+          <li><strong>Evaluation:</strong> integrates with NeMo Evaluator via REST API for CI/CD benchmark tracking</li>
+          <li><strong>Workflow types:</strong> react_agent, langgraph_wrapper, tool_calling_agent, custom</li>
+          <li><strong>Config approach:</strong> YAML-driven workflow definitions for environment-agnostic deployment</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="nvidia-nims.html">← NVIDIA NIMs</a>
+    <a class="topic-nav-btn" href="nemo-toolkit.html">NeMo Toolkit →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

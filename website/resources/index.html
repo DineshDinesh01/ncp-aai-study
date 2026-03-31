@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free Resources — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="index.html" class="active">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link active" href="index.html"><span class="link-icon">📚</span> Free Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+    <a class="sidebar-link" href="../graph/index.html"><span class="link-icon">🕸️</span> Knowledge Graph</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Resource Types</div>
+    <a class="sidebar-link" href="#nvidia">⬡ NVIDIA Official</a>
+    <a class="sidebar-link" href="#agents">🤖 AI Agents Courses</a>
+    <a class="sidebar-link" href="#llm">🧠 LLM &amp; RAG</a>
+    <a class="sidebar-link" href="#docs">📄 Key Docs</a>
+    <a class="sidebar-link" href="#github">🐙 GitHub Repos</a>
+    <a class="sidebar-link" href="#mock">📝 Mock Tests</a>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">All Domains</span></div>
+    <h1 class="page-title">Free Study Resources</h1>
+    <p class="page-subtitle">Every resource listed here is <strong>100% free</strong>. No credit card. No paywall. Verified and curated for NCP-AAI exam preparation.</p>
+  </div>
+
+  <div id="nvidia" class="section">
+    <h2 class="section-title"><span class="section-number">⬡</span>Official NVIDIA Resources</h2>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Resource</th><th>Type</th><th>What You Learn</th><th>Domains</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://www.nvidia.com/en-us/training/" target="_blank">NVIDIA DLI Free Courses</a></td><td>Courses</td><td>Triton, deployment, RAG agents with LLMs</td><td>Deployment, RAG</td></tr>
+          <tr><td><a href="https://github.com/NVIDIA/GenerativeAIExamples" target="_blank">NVIDIA GenerativeAI Examples</a></td><td>GitHub</td><td>RAG notebooks, NIM tool calling, agentic RAG, human-in-the-loop, knowledge graphs</td><td>All</td></tr>
+          <tr><td><a href="https://docs.nvidia.com/nemo-framework/" target="_blank">NVIDIA NeMo Docs</a></td><td>Docs</td><td>NeMo fine-tuning, training, PEFT methods</td><td>LLM Fundamentals</td></tr>
+          <tr><td><a href="https://docs.nvidia.com/deeplearning/triton-inference-server/" target="_blank">NVIDIA Triton Docs</a></td><td>Docs</td><td>Model serving, dynamic batching, gRPC API</td><td>Deployment</td></tr>
+          <tr><td><a href="https://build.nvidia.com" target="_blank">NVIDIA NIMs — Free Credits</a></td><td>API</td><td>Run hosted LLMs with function calling. Sign up = free credits.</td><td>All</td></tr>
+          <tr><td><a href="https://github.com/NVIDIA/NeMo-Guardrails" target="_blank">NeMo Guardrails GitHub</a></td><td>GitHub</td><td>Safety rails, Colang DSL, jailbreak prevention</td><td>Safety</td></tr>
+          <tr><td><a href="https://github.com/NVIDIA/TensorRT-LLM" target="_blank">TensorRT-LLM GitHub</a></td><td>GitHub</td><td>LLM quantization, optimization, fast inference</td><td>Deployment</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div id="agents" class="section">
+    <h2 class="section-title"><span class="section-number">🤖</span>AI Agents Courses (Free, Verified)</h2>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Course</th><th>Platform</th><th>What You Learn</th><th>Certificate</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://huggingface.co/learn/agents-course/" target="_blank">⭐ HuggingFace AI Agents Course</a></td><td>HuggingFace</td><td>Agents from beginner→expert: smolagents, LangGraph, LlamaIndex. 4 units + final challenge.</td><td>Free certificate ✓</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">Agentic AI — Andrew Ng</a></td><td>DeepLearning.AI</td><td>Building agentic systems with multi-step workflows</td><td>—</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">AI Agents in LangGraph</a></td><td>DeepLearning.AI</td><td>LangGraph stateful agents, checkpointing, human-in-the-loop</td><td>—</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">Multi AI Agent Systems with crewAI</a></td><td>DeepLearning.AI</td><td>Multi-agent coordination, role-based agents</td><td>—</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">Agent Memory</a></td><td>DeepLearning.AI</td><td>Short-term, long-term, cross-session memory for agents</td><td>—</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">Building Coding Agents</a></td><td>DeepLearning.AI</td><td>Code execution agents in sandboxed environments</td><td>—</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">Semantic Caching for AI Agents</a></td><td>DeepLearning.AI</td><td>Optimize agent performance with semantic response caching</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div id="llm" class="section">
+    <h2 class="section-title"><span class="section-number">🧠</span>LLM, RAG &amp; Foundational Courses</h2>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Course</th><th>Platform</th><th>What You Learn</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://huggingface.co/learn/nlp-course/" target="_blank">HuggingFace NLP Course</a></td><td>HuggingFace</td><td>Transformers, tokenizers, fine-tuning, BERT, GPT — essential foundation</td></tr>
+          <tr><td><a href="https://www.fast.ai/" target="_blank">Fast.ai Practical Deep Learning</a></td><td>fast.ai</td><td>Deep learning fundamentals, PyTorch — beginner-friendly</td></tr>
+          <tr><td>Let's Build GPT (Andrej Karpathy)</td><td>YouTube</td><td>Build a transformer from scratch. Search "Andrej Karpathy Let's build GPT"</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">LangChain: Chat with Your Data</a></td><td>DeepLearning.AI</td><td>RAG pipeline with LangChain, document loaders, vector stores</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">Building and Evaluating Data Agents</a></td><td>DeepLearning.AI</td><td>Multi-step data agents, evaluation frameworks</td></tr>
+          <tr><td><a href="https://www.kaggle.com/learn" target="_blank">Kaggle Learn — LLMs</a></td><td>Kaggle</td><td>Interactive exercises on ML, Python, LLMs — free graded</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div id="docs" class="section">
+    <h2 class="section-title"><span class="section-number">📄</span>Key Documentation</h2>
+    <div class="section-content">
+      <div class="card-grid">
+        <a class="card" href="https://python.langchain.com/docs/" target="_blank"><div class="card-icon">🦜</div><div class="card-title">LangChain Docs</div><div class="card-desc">Agents, tools, chains, memory, LCEL — the most used agent framework</div></a>
+        <a class="card" href="https://langchain-ai.github.io/langgraph/" target="_blank"><div class="card-icon">🔗</div><div class="card-title">LangGraph Docs</div><div class="card-desc">Stateful agent orchestration, nodes, edges, checkpointing</div></a>
+        <a class="card" href="https://docs.llamaindex.ai/" target="_blank"><div class="card-icon">🦙</div><div class="card-title">LlamaIndex Docs</div><div class="card-desc">RAG pipelines, data connectors, query engines, agents</div></a>
+        <a class="card" href="https://huggingface.co/docs/smolagents/" target="_blank"><div class="card-icon">🤗</div><div class="card-title">smolagents Docs</div><div class="card-desc">Lightweight HuggingFace agent framework — used in HF Agents Course</div></a>
+        <a class="card" href="https://docs.trychroma.com/" target="_blank"><div class="card-icon">🗄️</div><div class="card-title">ChromaDB Docs</div><div class="card-desc">Free local vector database — easiest to get started with</div></a>
+        <a class="card" href="https://docs.nvidia.com/nemo/guardrails/" target="_blank"><div class="card-icon">🛡️</div><div class="card-title">NeMo Guardrails Docs</div><div class="card-desc">Colang reference, rail types, configuration examples</div></a>
+      </div>
+    </div>
+  </div>
+
+  <div id="github" class="section">
+    <h2 class="section-title"><span class="section-number">🐙</span>GitHub Repos to Study</h2>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Repo</th><th>Why Study It</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://github.com/NVIDIA/GenerativeAIExamples" target="_blank">NVIDIA/GenerativeAIExamples</a></td><td>Official NVIDIA RAG + agent notebooks. Run these on Colab.</td></tr>
+          <tr><td><a href="https://github.com/NVIDIA/NeMo-Guardrails" target="_blank">NVIDIA/NeMo-Guardrails</a></td><td>Official safety toolkit. Contains working examples and Colang samples.</td></tr>
+          <tr><td><a href="https://github.com/NVIDIA/TensorRT-LLM" target="_blank">NVIDIA/TensorRT-LLM</a></td><td>LLM optimization examples. Understand quantization options.</td></tr>
+          <tr><td><a href="https://github.com/langchain-ai/langgraph" target="_blank">langchain-ai/langgraph</a></td><td>Core agent orchestration framework. Study the examples/ folder.</td></tr>
+          <tr><td><a href="https://github.com/microsoft/autogen" target="_blank">microsoft/autogen</a></td><td>Multi-agent framework. 18 sample projects in python/samples/.</td></tr>
+          <tr><td><a href="https://github.com/huggingface/agents-course" target="_blank">huggingface/agents-course</a></td><td>All notebooks and code from the HF AI Agents Course.</td></tr>
+          <tr><td><a href="https://github.com/run-llama/llama_index" target="_blank">run-llama/llama_index</a></td><td>RAG framework. Study the RAG pipeline and query engine examples.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div id="mock" class="section">
+    <h2 class="section-title"><span class="section-number">📝</span>Free Mock Test Sources</h2>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Source</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://www.nvidia.com/en-us/training/" target="_blank">NVIDIA DLI Assessments</a></td><td>Official</td><td>Most relevant — check end of each DLI course</td></tr>
+          <tr><td><a href="https://huggingface.co/learn/agents-course/" target="_blank">HF AI Agents Course Quizzes</a></td><td>Per-unit</td><td>Quiz at end of every unit — earns free certificate</td></tr>
+          <tr><td><a href="https://huggingface.co/learn/nlp-course/" target="_blank">HF NLP Course Quizzes</a></td><td>Per-chapter</td><td>Covers transformers, fine-tuning, BERT/GPT</td></tr>
+          <tr><td><a href="https://www.deeplearning.ai/short-courses/" target="_blank">DeepLearning.AI Course Quizzes</a></td><td>Per-lesson</td><td>Available in every free short course</td></tr>
+          <tr><td><a href="https://www.kaggle.com/learn" target="_blank">Kaggle Learn Exercises</a></td><td>Interactive</td><td>Graded Python and ML exercises — free</td></tr>
+          <tr><td><a href="../mock-tests/index.html">This Site — Mock Tests</a></td><td>Custom</td><td>15 domain-mapped questions with explanations</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="../assets/js/script.js"></script>
+</body></html>

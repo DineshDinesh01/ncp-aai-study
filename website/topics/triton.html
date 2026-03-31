@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NVIDIA Triton Inference Server — NCP-AAI Study Guide</title>
+  <meta name="description" content="NVIDIA Triton Inference Server: model repository, gRPC vs HTTP, backends, perf_analyzer, production deployment."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Hands-On Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link active" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Deployment &amp; Scaling</span><span class="sep">›</span><span>NVIDIA Triton</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Deployment &amp; Scaling — 13%</span>
+      <span class="tag tag-nvidia">Triton Inference Server</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">NVIDIA Triton Inference Server</h1>
+    <p class="page-subtitle">Production-grade model serving at scale — model repository layout, gRPC vs HTTP protocols, backends (TensorRT-LLM, vLLM, ONNX), dynamic batching, and perf_analyzer benchmarking.</p>
+  </div>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>What Is Triton?</div>
+    <div class="section-content">
+      <p><strong>NVIDIA Triton Inference Server</strong> is an open-source, production-grade inference serving platform that can host any AI model on any NVIDIA GPU hardware. It supports simultaneous serving of multiple models across multiple frameworks (PyTorch, TensorRT, ONNX, vLLM, TensorRT-LLM) through a unified API.</p>
+      <div class="pipeline">
+        <div class="pipeline-node">Client (Agent)</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">Triton Server</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Backend Engine</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">GPU</div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Protocol</th><th>Port</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td>gRPC</td><td><strong>8001</strong></td><td>High-performance, production, bi-directional streaming, binary data</td></tr>
+          <tr><td>HTTP/REST</td><td><strong>8000</strong></td><td>Debugging, simple clients, browser access</td></tr>
+          <tr><td>Metrics (Prometheus)</td><td><strong>8002</strong></td><td>Monitoring, observability, Grafana dashboards</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="why">
+    <div class="section-title"><span class="section-number">2</span>Why Triton Exists</div>
+    <div class="section-content">
+      <p>Deploying models directly via Python inference loops does not scale. Triton provides: <strong>dynamic batching</strong> (combines multiple requests into efficient GPU batches), <strong>concurrent model execution</strong> (multiple model instances on one GPU), <strong>model versioning</strong> (blue/green deployments), and <strong>ensemble models</strong> (chain preprocessing + model + postprocessing into a single API call).</p>
+    </div>
+  </div>
+
+  <div class="section" id="internal">
+    <div class="section-title"><span class="section-number">3</span>Model Repository Layout</div>
+    <div class="section-content">
+      <p>Triton loads models from a <strong>model repository</strong> — a directory with a specific layout:</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Shell — Triton Model Repository Structure</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+model_repository/
+├── my_llm/                    # model name (matches API endpoint)
+│   ├── config.pbtxt           # REQUIRED: model configuration
+│   ├── 1/                     # version 1 (numerically named)
+│   │   └── model.plan         # TensorRT engine / onnx / weights
+│   └── 2/                     # version 2 (for blue/green rollout)
+│       └── model.plan
+└── my_preprocessor/
+    ├── config.pbtxt
+    └── 1/
+        └── model.py           # Python backend
+</code></pre></div>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Protobuf — config.pbtxt Example</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+name: "my_llm"
+backend: "tensorrtllm"          # or "onnxruntime", "pytorch", "vllm"
+max_batch_size: 8
+
+input [
+  { name: "input_ids"    data_type: TYPE_INT32  dims: [-1] },
+  { name: "attention_mask" data_type: TYPE_INT32 dims: [-1] }
+]
+output [
+  { name: "logits"  data_type: TYPE_FP32  dims: [-1, 32000] }
+]
+
+dynamic_batching {
+  preferred_batch_size: [4, 8]
+  max_queue_delay_microseconds: 1000
+}
+
+instance_group [
+  { count: 2  kind: KIND_GPU  gpus: [0, 1] }     # 2 instances on GPUs 0,1
+]
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="placement">
+    <div class="section-title"><span class="section-number">4</span>Starting Triton &amp; Making Requests</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Shell — Launch Triton</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+docker run --gpus all -p 8000:8000 -p 8001:8001 -p 8002:8002 \
+  -v /path/to/model_repository:/models \
+  nvcr.io/nvidia/tritonserver:25.01-py3 \
+  tritonserver --model-repository=/models
+</code></pre></div>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — gRPC Client (Preferred)</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+import tritonclient.grpc as grpcclient
+import numpy as np
+
+client = grpcclient.InferenceServerClient(url="localhost:8001")
+
+# Check server health
+print(client.is_server_ready())  # True
+
+# Prepare input
+input_ids = np.array([[101, 2054, 2003, 2115, 102]], dtype=np.int32)
+inputs = [grpcclient.InferInput("input_ids", input_ids.shape, "INT32")]
+inputs[0].set_data_from_numpy(input_ids)
+
+# Infer
+outputs = [grpcclient.InferRequestedOutput("logits")]
+result = client.infer("my_llm", inputs, outputs=outputs)
+logits = result.as_numpy("logits")
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="implementation">
+    <div class="section-title"><span class="section-number">5</span>perf_analyzer Benchmarking</div>
+    <div class="section-content">
+      <p><code>perf_analyzer</code> is Triton's official benchmarking CLI tool — measures latency and throughput under various load conditions.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Shell — perf_analyzer Usage</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+# Concurrency mode: measure at 8 concurrent requests
+perf_analyzer -m my_llm -u localhost:8001 --protocol grpc \
+  --concurrency-range 1:16:2 \
+  --measurement-interval 5000 \
+  --output-shared-memory none
+
+# Output includes:
+# Concurrency: 8
+# Throughput: 452.3 infer/sec
+# p50 latency: 17.6 ms
+# p95 latency: 23.1 ms
+# p99 latency: 28.4 ms
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="nvidia">
+    <div class="section-title"><span class="section-number">6</span>NVIDIA Ecosystem — Triton + TensorRT-LLM</div>
+    <div class="section-content">
+      <p>In the NVIDIA production stack, Triton is the <strong>serving frontend</strong> and <strong>TensorRT-LLM</strong> is the backend engine. They are deployed together: TensorRT-LLM handles model optimization (quantization, kernel fusion), Triton handles request routing, batching, and autoscaling.</p>
+      <p>NVIDIA NIMs are pre-packaged containers that bundle Triton + TensorRT-LLM + model weights into a single deployable unit with an OpenAI-compatible REST API — you get Triton's performance without manually configuring it.</p>
+      <a class="nvidia-badge" href="https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/" target="_blank" rel="noopener">Triton Official Docs →</a>
+    </div>
+  </div>
+
+  <div class="section" id="lab">
+    <div class="section-title"><span class="section-number">7</span>Hands-On Lab</div>
+    <div class="section-content">
+      <div class="callout callout-tip">
+        <div class="callout-title">🔬 Lab: Deploy a Model on Triton</div>
+        <p>1. Create model repository with an ONNX ResNet-50 model<br/>
+        2. Write config.pbtxt with dynamic batching<br/>
+        3. Launch Triton via Docker<br/>
+        4. Run perf_analyzer to measure throughput at concurrency 1, 4, 8, 16<br/>
+        5. Plot latency vs throughput curve</p>
+      </div>
+      <a href="../labs/index.html" class="btn btn-primary">🔬 Open Labs</a>
+    </div>
+  </div>
+
+  <div class="section" id="mistakes">
+    <div class="section-title"><span class="section-number">8</span>Common Mistakes</div>
+    <div class="section-content">
+      <div class="callout callout-mistake"><div class="callout-title">❌ Using HTTP When gRPC Is Available</div><p>gRPC (port 8001) is significantly faster than HTTP (8000) for production — binary serialization, multiplexing, bi-directional streaming. Always prefer gRPC in production agents.</p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Wrong Port in Agent Code</div><p>A common exam trick: agents hang or timeout because they call port 8000 (HTTP) but have gRPC configured, or vice versa. Match client protocol to server configuration.</p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Missing config.pbtxt</div><p>Triton refuses to load any model without a valid config.pbtxt. Even if you use auto-completion, explicitly specifying inputs/outputs is required for most backends.</p></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Relevance</div>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <div class="callout-title">🎯 Exam Angle — Deployment &amp; Scaling Domain (13%)</div>
+        <ul style="margin:12px 0;padding-left:20px;line-height:2">
+          <li>Triton gRPC port → <strong>8001 (preferred for production)</strong></li>
+          <li>Triton HTTP port → <strong>8000</strong></li>
+          <li>Triton metrics port → <strong>8002 (Prometheus)</strong></li>
+          <li>Model repository: each model needs a <strong>numerically versioned subdirectory</strong> and <strong>config.pbtxt</strong></li>
+          <li>Dynamic batching: Triton groups multiple requests into one GPU batch automatically</li>
+          <li>perf_analyzer modes: concurrency mode, request rate mode, custom interval mode</li>
+          <li>Triton + TensorRT-LLM backend: enables in-flight batching + paged KV cache</li>
+          <li>Production branches: PB 25h1 (March 2025), PB 25h2 (October 2025)</li>
+        </ul>
+      </div>
+      <p><strong>Key Terms:</strong> model repository, config.pbtxt, gRPC (8001), HTTP (8000), metrics (8002), dynamic batching, instance group, perf_analyzer, ensemble model, backend, TensorRT-LLM backend, vLLM backend</p>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="vector-databases.html">← Vector Databases</a>
+    <a class="topic-nav-btn" href="tensorrt-llm.html">TensorRT-LLM →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

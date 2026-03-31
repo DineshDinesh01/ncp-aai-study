@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Agent Orchestration — NCP-AAI Study Guide</title>
+  <meta name="description" content="Multi-agent systems: AutoGen, CrewAI, supervisor pattern, semantic router, blackboard coordination, and production considerations."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a><a class="sidebar-link" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">�� Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agent Architecture & Design — 15%</span><span class="sep">›</span><span>Multi-Agent Orchestration</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Agent Architecture & Design — 15%</span><span class="tag tag-nvidia">NVIDIA NCP-AAI</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">Multi-Agent Orchestration</h1>
+  </div>
+
+  <p class="page-subtitle">Designing systems where multiple specialized agents collaborate — AutoGen Mixture-of-Agents, CrewAI Flows, supervisor pattern, semantic routing, hierarchical vs peer-to-peer vs blackboard coordination.</p>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>What Is Multi-Agent Orchestration?</div>
+    <div class="section-content">
+      <p>A <strong>multi-agent system</strong> is an architecture where multiple distinct AI agents collaborate to solve tasks no single agent could handle well. Each agent has a specialized role, model, or capability. An orchestrator coordinates their work.</p>
+      <p><strong>Key patterns:</strong></p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Pattern</th><th>Structure</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Hierarchical</strong></td><td>Manager agent → worker agents</td><td>Task decomposition, delegation</td></tr>
+          <tr><td><strong>Peer-to-Peer</strong></td><td>Agents communicate directly via shared state</td><td>Collaborative reasoning, critique</td></tr>
+          <tr><td><strong>Blackboard</strong></td><td>Shared knowledge board all agents read/write</td><td>Complex, multi-phase problem solving</td></tr>
+          <tr><td><strong>Mixture-of-Agents (MoA)</strong></td><td>Multiple LLMs → aggregator</td><td>Consensus, ensemble quality improvement</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="autogen">
+    <div class="section-title"><span class="section-number">2</span>AutoGen — Conversational Multi-Agent</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — AutoGen 3-Agent Setup</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+import autogen
+
+config = {"model": "meta/llama-3.1-70b-instruct",
+          "base_url": "https://integrate.api.nvidia.com/v1",
+          "api_key": "nvapi-xxx"}
+
+# Orchestrator (human proxy)
+user_proxy = autogen.UserProxyAgent(
+    name="User",
+    human_input_mode="NEVER",      # fully automated
+    code_execution_config={"work_dir": "coding"}
+)
+
+# Specialized agents
+researcher = autogen.AssistantAgent(
+    name="Researcher",
+    system_message="Research facts and provide accurate information.",
+    llm_config={"config_list": [config]}
+)
+
+critic = autogen.AssistantAgent(
+    name="Critic",
+    system_message="Review responses and identify errors or gaps. Be concise.",
+    llm_config={"config_list": [config]}
+)
+
+# GroupChat: all agents see all messages
+groupchat = autogen.GroupChat(
+    agents=[user_proxy, researcher, critic],
+    messages=[],
+    max_round=6
+)
+manager = autogen.GroupChatManager(groupchat=groupchat,
+                                    llm_config={"config_list": [config]})
+
+# Start conversation
+user_proxy.initiate_chat(manager, message="Explain HNSW indexing.")
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="crewai">
+    <div class="section-title"><span class="section-number">3</span>CrewAI — Role-Based Production Agents</div>
+    <div class="section-content">
+      <p>CrewAI uses an <strong>Agents → Tasks → Crew</strong> architecture. Each Agent has a role, goal, and backstory. The Crew executes Tasks in sequence or in parallel. CrewAI Flows provide explicit state management and conditional branching for production workflows.</p>
+      <div class="callout callout-tip"><div class="callout-title">💡 CrewAI Production Scale</div><p>CrewAI has executed 10 million+ agents in 30 days in real enterprise deployments. It's production-ready, not just a demo framework. Used by major enterprises for customer service, research, and code review pipelines.</p></div>
+    </div>
+  </div>
+
+  <div class="section" id="semantic_router">
+    <div class="section-title"><span class="section-number">4</span>Semantic Router — Intelligent Agent Dispatch</div>
+    <div class="section-content">
+      <p>A <strong>semantic router</strong> routes incoming user requests to the most appropriate agent based on <em>semantic similarity</em> rather than keyword matching. Each agent has a description; the router embeds the user request and finds the closest agent description.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Semantic Router Pattern</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Agent registry
+agents = {
+    "financial_agent": "Handle financial analysis, stock prices, portfolio management",
+    "code_agent": "Write, review, and debug Python, JavaScript, SQL code",
+    "research_agent": "Search and summarize academic papers and technical documents",
+}
+
+def route_to_agent(user_query: str) -> str:
+    query_emb = model.encode(user_query)
+    agent_embs = {name: model.encode(desc) for name, desc in agents.items()}
+
+    scores = {
+        name: np.dot(query_emb, emb) / (np.linalg.norm(query_emb) * np.linalg.norm(emb))
+        for name, emb in agent_embs.items()
+    }
+    return max(scores, key=scores.get)
+
+print(route_to_agent("What is the P/E ratio of Apple stock?"))
+# → financial_agent
+print(route_to_agent("Write a FastAPI endpoint for user authentication"))
+# → code_agent
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">5</span>Exam Angles</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Agent Architecture (15%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li>AutoGen: <code>UserProxyAgent</code>, <code>AssistantAgent</code>, <code>GroupChatManager</code> — conversational, event-driven</li>
+          <li>CrewAI: <code>Agent</code> → <code>Task</code> → <code>Crew</code> — role-based, structured workflows</li>
+          <li>AutoGen consolidated into Microsoft Agent Framework (Oct 2025) — enters maintenance mode</li>
+          <li>Hierarchical pattern: manager agent delegates to workers (CrewAI&#39;s process=hierarchical)</li>
+          <li>Blackboard pattern: shared state all agents read/write — common in complex planning</li>
+          <li>Semantic router: embedding-based routing vs keyword-based routing</li>
+          <li>Stateless subagents: recommended for parallel execution and predictable behavior</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="langgraph.html">← LangGraph</a>
+    <a class="topic-nav-btn" href="tokenization.html">Tokenization →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

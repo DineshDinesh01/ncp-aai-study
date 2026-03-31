@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Engineering — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">LLM Fundamentals</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="llm-fundamentals.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/transformer-architecture.html">Transformer Architecture</a>
+          <a class="sidebar-link" href="../topics/tokenization.html">Tokenization</a>
+          <a class="sidebar-link" href="../topics/fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Prompt Engineering</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="prompt-engineering.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/prompt-engineering.html">Prompt Engineering</a>
+          <a class="sidebar-link" href="../topics/chain-of-thought.html">Chain-of-Thought</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Agentic System Design</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="agentic-system-design.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/react-agent.html">ReAct Agent Loop</a>
+          <a class="sidebar-link" href="../topics/langgraph.html">LangGraph</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Tool Use</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="tool-use.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/tool-use.html">Tool Use & Function Calling</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Memory & RAG</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="memory-rag.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/rag-pipeline.html">RAG Pipeline</a>
+          <a class="sidebar-link" href="../topics/vector-databases.html">Vector Databases</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Multi-Agent</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="multi-agent.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/multi-agent.html">Multi-Agent Orchestration</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Deployment</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="deployment.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/triton.html">NVIDIA Triton</a>
+          <a class="sidebar-link" href="../topics/tensorrt-llm.html">TensorRT-LLM</a>
+          <a class="sidebar-link" href="../topics/nvidia-nims.html">NVIDIA NIMs</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Safety & Guardrails</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="safety-guardrails.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/nemo-guardrails.html">NeMo Guardrails</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #3b82f6; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#3b82f6; color:#fff; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 2</span>
+          <span class="badge" style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~10% of exam</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">Prompt Engineering</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">How to write instructions that get reliable, accurate responses from LLMs — the most practical skill in the exam.</p>
+      </div>
+
+      <section class="content-section">
+        <h2>Why This Domain Matters</h2>
+        <p>An LLM is only as good as the instructions you give it. Prompt engineering is the skill of crafting inputs that reliably produce the output you want. In agentic systems, every single LLM call has a prompt — and a bad prompt means a broken agent. This domain is ~10% of the exam but 100% of day-to-day AI development.</p>
+        <div class="callout callout-tip">
+          <strong>Exam tip:</strong> The exam tests practical application — "which prompting technique would you use for X?" Know zero-shot, few-shot, chain-of-thought, and ReAct prompting cold.
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/prompt-engineering.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">✍</span>
+              <h3 class="card-title">Prompt Engineering</h3>
+            </div>
+            <p class="card-desc">Zero-shot, few-shot, system prompts, role prompting, output formatting, and prompt injection defense.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(59,130,246,0.1); color:#60a5fa; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">NVIDIA NIMs</span>
+            </div>
+          </a>
+          <a class="card" href="../topics/chain-of-thought.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🔗</span>
+              <h3 class="card-title">Chain-of-Thought Prompting</h3>
+            </div>
+            <p class="card-desc">How adding "think step by step" dramatically improves reasoning. When to use CoT vs direct prompting.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(59,130,246,0.1); color:#60a5fa; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">Conceptual</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Prompting Techniques Cheat Sheet</h2>
+        <table class="resource-table">
+          <thead>
+            <tr><th>Technique</th><th>When to Use</th><th>Example</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Zero-shot</strong></td>
+              <td>Simple, well-defined tasks</td>
+              <td>"Classify this text as positive or negative: ..."</td>
+            </tr>
+            <tr>
+              <td><strong>Few-shot</strong></td>
+              <td>Specific output format needed</td>
+              <td>Give 2-3 examples before the real query</td>
+            </tr>
+            <tr>
+              <td><strong>Chain-of-Thought</strong></td>
+              <td>Multi-step reasoning, math, logic</td>
+              <td>"Think step by step before giving your answer."</td>
+            </tr>
+            <tr>
+              <td><strong>ReAct</strong></td>
+              <td>Agent loops with tool use</td>
+              <td>Thought → Action → Observation format</td>
+            </tr>
+            <tr>
+              <td><strong>Self-Consistency</strong></td>
+              <td>High-stakes decisions</td>
+              <td>Run prompt N times, pick majority answer</td>
+            </tr>
+            <tr>
+              <td><strong>Role Prompting</strong></td>
+              <td>Domain-specific answers</td>
+              <td>"You are an expert Python developer. ..."</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="content-section">
+        <h2>Exam Tips</h2>
+        <div class="callout callout-warning">
+          <strong>Common exam trap:</strong> Chain-of-Thought only improves reasoning in models large enough to follow it (usually 7B+ parameters). Applying CoT to tiny models can hurt performance.
+        </div>
+        <ul style="line-height:2;">
+          <li>Know the difference between <strong>zero-shot and few-shot</strong> — and when few-shot is worth the extra tokens</li>
+          <li>Know what a <strong>system prompt</strong> is and what it controls</li>
+          <li>Know what <strong>prompt injection</strong> is — and that NeMo Guardrails defends against it</li>
+          <li>Know that <strong>ReAct prompting</strong> is what makes the Thought→Action→Observation loop work</li>
+          <li>Know that <strong>output format instructions</strong> (JSON, markdown) in the prompt improve parseability</li>
+        </ul>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="llm-fundamentals.html" style="color:var(--nvidia-green); text-decoration:none;">← LLM Fundamentals</a>
+        <a href="agentic-system-design.html" style="color:var(--nvidia-green); text-decoration:none;">Agentic System Design →</a>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeMo Toolkit — NCP-AAI Study Guide</title>
+  <meta name="description" content="NVIDIA NeMo Toolkit: training, SFT, data curation, NeMo Launcher, and the NeMo microservices platform for production AI agents."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a><a class="sidebar-link" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">�� Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>NVIDIA Platform Implementation — 7%</span><span class="sep">›</span><span>NeMo Toolkit</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">NVIDIA Platform Implementation — 7%</span><span class="tag tag-nvidia">NVIDIA NCP-AAI</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">NeMo Toolkit</h1>
+  </div>
+
+  <p class="page-subtitle">NVIDIA&#39;s end-to-end framework for building, training, and fine-tuning large language models — NeMo Launcher, Megatron-LM backend, and the five NeMo microservices (Customizer, Evaluator, Guardrails, Retriever, Curator).</p>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>What Is the NeMo Toolkit?</div>
+    <div class="section-content">
+      <p><strong>NVIDIA NeMo Toolkit</strong> is an open-source framework for building LLMs from scratch or fine-tuning existing ones at scale. It uses <strong>Megatron-LM</strong> as its training backend, which provides tensor parallelism (split model layers across GPUs) and pipeline parallelism (split model stages across nodes) for multi-GPU, multi-node training.</p>
+      <div class="callout callout-warning"><div class="callout-title">⚠️ NeMo Toolkit ≠ NeMo Guardrails</div><p>These are two separate tools. <strong>NeMo Toolkit</strong> = training and fine-tuning framework. <strong>NeMo Guardrails</strong> = safety policy enforcement toolkit. Confusing them is a common exam mistake.</p></div>
+    </div>
+  </div>
+
+  <div class="section" id="microservices">
+    <div class="section-title"><span class="section-number">2</span>NeMo Microservices (GA April 2025)</div>
+    <div class="section-content">
+      <p>The NeMo ecosystem now includes five managed microservices forming a "data flywheel" — continuously improving agents through evaluation-driven iteration:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Microservice</th><th>Role in Pipeline</th><th>Key Capability</th></tr></thead>
+        <tbody>
+          <tr><td><strong>NeMo Curator</strong></td><td>Data preparation</td><td>Text/image/video/audio curation, deduplication, synthetic data generation</td></tr>
+          <tr><td><strong>NeMo Customizer</strong></td><td>Fine-tuning</td><td>LoRA, SFT, DPO via REST API, Helm chart for K8s</td></tr>
+          <tr><td><strong>NeMo Evaluator</strong></td><td>Evaluation</td><td>100+ benchmarks, LLM-as-a-judge, RAG + agent-specific metrics</td></tr>
+          <tr><td><strong>NeMo Guardrails</strong></td><td>Safety enforcement</td><td>Colang topical/input/output rails, PII detection, jailbreak prevention</td></tr>
+          <tr><td><strong>NeMo Retriever</strong></td><td>Knowledge retrieval</td><td>Multimodal document extraction, NV-Embed, NV-Rerank NIMs</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="pipeline">
+    <div class="section-title"><span class="section-number">3</span>The NeMo Production Pipeline</div>
+    <div class="section-content">
+      <div class="pipeline">
+        <div class="pipeline-node">Raw Data</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">NeMo Curator</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">NeMo Customizer</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">NeMo Evaluator</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">NIM Deployment</div>
+      </div>
+      <p>The evaluation results feed back into data curation and customization — this is the "data flywheel" concept. Better data → better model → evaluation identifies gaps → curate more targeted data → repeat.</p>
+    </div>
+  </div>
+
+  <div class="section" id="implementation">
+    <div class="section-title"><span class="section-number">4</span>NeMo Customizer API Call</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — NeMo Customizer REST API</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+import requests
+
+# Create a fine-tuning job
+job = requests.post(
+    "https://customizer.api.nvidia.com/v1/customization/jobs",
+    headers={"Authorization": "Bearer nvapi-xxx"},
+    json={
+        "model": "meta/llama-3.1-8b-instruct",
+        "method": "lora",
+        "hyperparameters": {
+            "training_type": "sft",
+            "finetuning_type": "lora",
+            "lora": {"adapter_dim": 16, "alpha": 32},
+            "epochs": 3,
+            "learning_rate": 0.0002
+        },
+        "dataset": {"name": "my-agent-dataset", "format": "sharegpt"}
+    }
+).json()
+
+print(job["id"])  # job-id for polling status
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">5</span>Exam Angles</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — NVIDIA Platform (7%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li>NeMo Toolkit uses <strong>Megatron-LM</strong> for tensor + pipeline parallelism in training</li>
+          <li>NeMo microservices GA: <strong>April 23, 2025</strong></li>
+          <li>Five microservices: Curator → Customizer → Evaluator + Guardrails + Retriever</li>
+          <li>Data flywheel: evaluation results feed back into data curation</li>
+          <li>NeMo Customizer supports LoRA, full SFT, and DPO</li>
+          <li>AgentIQ uses <code>langgraph_wrapper</code> to onboard LangGraph agents with profiling</li>
+          <li>KEY DISTINCTION: NeMo Toolkit (training) ≠ NeMo Guardrails (safety)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="nvidia-nims.html">← NVIDIA NIMs</a>
+    <a class="topic-nav-btn" href="nemo-guardrails.html">NeMo Guardrails →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

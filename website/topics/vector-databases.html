@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vector Databases — NCP-AAI Study Guide</title>
+  <meta name="description" content="Vector databases for RAG: HNSW indexing, ANN search, ChromaDB, Milvus, pgvector, and NVIDIA NeMo Retriever integration."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a><a class="sidebar-link" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">�� Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Knowledge Integration & Data — 10%</span><span class="sep">›</span><span>Vector Databases</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Knowledge Integration & Data — 10%</span><span class="tag tag-nvidia">NVIDIA NCP-AAI</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">Vector Databases</h1>
+  </div>
+
+  <p class="page-subtitle">How vector databases power RAG systems — HNSW indexing, approximate nearest-neighbor (ANN) search, ChromaDB vs Milvus vs pgvector, cosine vs dot-product vs Euclidean similarity, and NVIDIA NeMo Retriever integration.</p>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>What Is a Vector Database?</div>
+    <div class="section-content">
+      <p>A <strong>vector database</strong> stores high-dimensional embedding vectors and enables efficient similarity search — finding the K nearest vectors to a query vector in milliseconds, even across millions of documents. This is the core retrieval mechanism of every RAG pipeline.</p>
+      <p>Unlike traditional databases that match exact values (WHERE field = value), vector databases match by <strong>semantic similarity</strong> — two vectors are "close" if the texts they represent have similar meaning.</p>
+    </div>
+  </div>
+
+  <div class="section" id="hnsw">
+    <div class="section-title"><span class="section-number">2</span>HNSW — How Vector Search Actually Works</div>
+    <div class="section-content">
+      <p><strong>HNSW (Hierarchical Navigable Small World)</strong> is the dominant indexing algorithm used by ChromaDB, Milvus, Weaviate, and most production vector stores. It builds a multi-layer graph where each layer is a random subgraph of the full dataset.</p>
+      <p><strong>Search process:</strong> Start at the top layer (sparse, long-range connections) → navigate greedily toward query → descend to lower layers (denser, short-range) → final exact search in bottom layer. Result: O(log N) search time vs O(N) for brute-force.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Distance Metric</th><th>Formula</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td>Cosine Similarity</td><td>cos(θ) = A·B / (|A||B|)</td><td>Text embeddings (direction matters, not magnitude)</td></tr>
+          <tr><td>Dot Product</td><td>A·B</td><td>When vectors are normalized; slightly faster</td></tr>
+          <tr><td>Euclidean (L2)</td><td>√Σ(Aᵢ-Bᵢ)²</td><td>Image embeddings, absolute position matters</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="comparison">
+    <div class="section-title"><span class="section-number">3</span>Vector Database Comparison</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Database</th><th>Type</th><th>Best For</th><th>Scale</th></tr></thead>
+        <tbody>
+          <tr><td><strong>ChromaDB</strong></td><td>Embedded / in-process</td><td>Prototyping, notebooks, dev</td><td>Millions</td></tr>
+          <tr><td><strong>Milvus</strong></td><td>Distributed microservice</td><td>Production, billions of vectors</td><td>Billions</td></tr>
+          <tr><td><strong>pgvector</strong></td><td>PostgreSQL extension</td><td>Existing Postgres stack, ACID compliance</td><td>Tens of millions</td></tr>
+          <tr><td><strong>Weaviate</strong></td><td>Graph + vector hybrid</td><td>Structured + semantic search</td><td>Hundreds of millions</td></tr>
+          <tr><td><strong>NeMo Retriever</strong></td><td>NVIDIA managed service</td><td>Enterprise, multimodal, production</td><td>Unlimited (cloud)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="implementation">
+    <div class="section-title"><span class="section-number">4</span>Implementation</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — ChromaDB Ingest + Search</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+import chromadb
+from chromadb.utils import embedding_functions
+
+# Setup
+client = chromadb.PersistentClient(path="./chroma_db")
+embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+    model_name="all-MiniLM-L6-v2"  # 384-dim embeddings
+)
+collection = client.get_or_create_collection(
+    name="ncp_aai_docs",
+    metadata={"hnsw:space": "cosine"},  # distance metric
+    embedding_function=embed_fn
+)
+
+# Ingest documents
+documents = [
+    "NVIDIA Triton uses gRPC on port 8001",
+    "TensorRT-LLM supports FP8 on H100 GPUs",
+    "NeMo Guardrails uses Colang language for rules"
+]
+collection.add(
+    documents=documents,
+    ids=["doc1","doc2","doc3"]
+)
+
+# Query (similarity search)
+results = collection.query(
+    query_texts=["What port does Triton use for gRPC?"],
+    n_results=2
+)
+print(results["documents"])
+# [["NVIDIA Triton uses gRPC on port 8001", ...]]
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="nvidia">
+    <div class="section-title"><span class="section-number">5</span>NVIDIA NeMo Retriever</div>
+    <div class="section-content">
+      <p><strong>NeMo Retriever</strong> (GA: April 2025) is a managed microservice for enterprise RAG pipelines. It handles multimodal document ingestion (text, tables, charts, images from PDFs), embedding via specialized NVIDIA NIMs (NV-Embed-QA, NV-RerankQA), and vector search at scale.</p>
+      <a class="nvidia-badge" href="https://docs.nvidia.com/nemo/retriever/" target="_blank" rel="noopener">NeMo Retriever Docs →</a>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">6</span>Exam Angles</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Knowledge Integration (10%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li>HNSW = Hierarchical Navigable Small World = dominant vector search algorithm</li>
+          <li>ANN (Approximate Nearest Neighbor) vs exact KNN — ANN trades tiny accuracy for massive speed</li>
+          <li>Cosine similarity is standard for text embedding RAG (use dot-product when vectors are L2-normalized)</li>
+          <li>ChromaDB default space: cosine. Milvus default: L2 (Euclidean)</li>
+          <li>NeMo Retriever: multimodal extraction (tables, charts from PDFs) + NV-Embed-QA + NV-RerankQA NIMs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="rag-pipeline.html">← RAG Pipeline</a>
+    <a class="topic-nav-btn" href="triton.html">NVIDIA Triton →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

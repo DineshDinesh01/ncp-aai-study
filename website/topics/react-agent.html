@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ReAct Agent Loop — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🧠 LLM Fundamentals <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a></div></div>
+    <div class="domain-group"><div class="domain-toggle open">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link active" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Tool Use <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Memory &amp; RAG <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👥 Multi-Agent <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agentic System Design</span><span class="sep">›</span><span>ReAct Agent Loop</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Agentic System Design</span><span class="tag tag-pipeline">Pipeline: Orchestration</span><span class="tag tag-nvidia">NVIDIA: NIMs</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">ReAct Agent Loop</h1>
+    <p class="page-subtitle">ReAct (Reasoning + Acting) is the core pattern for agentic AI. The agent interleaves reasoning (Thought) with tool execution (Action) and observes results — looping until it can answer. This is the exam's most tested agentic pattern.</p>
+  </div>
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> Definition</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> Why It Exists</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> How It Works</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> Pipeline Placement</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Implementation</a></li>
+    <li><a href="#s6"><span class="toc-num">6</span> NVIDIA Ecosystem</a></li>
+    <li><a href="#s7"><span class="toc-num">7</span> Hands-On Lab</a></li>
+    <li><a href="#s8"><span class="toc-num">8</span> Common Mistakes</a></li>
+    <li><a href="#s9"><span class="toc-num">9</span> Exam Relevance</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>Definition</h2>
+    <div class="section-content">
+      <p><strong>ReAct</strong> (Yao et al., 2022) is an agent prompting strategy that combines <strong>Reasoning</strong> (producing a Thought step) with <strong>Acting</strong> (executing a tool call). The LLM produces interleaved Thought → Action → Observation triplets in a loop until it has enough information to produce a final answer.</p>
+      <p>Unlike pure chain-of-thought (reasoning only) or pure tool use (acting only), ReAct does both simultaneously — the agent reasons about what it needs, takes action to get it, observes the result, and reasons again.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>Why It Exists</h2>
+    <div class="section-content">
+      <p><strong>Problem with pure CoT:</strong> Chain-of-thought reasoning is powerful but the LLM can only reason about what it knows at training time. It hallucinates when it needs external information.</p>
+      <p><strong>Problem with pure tool use:</strong> Without reasoning, the agent blindly calls tools without explaining why or checking if the result is reasonable.</p>
+      <p><strong>ReAct's solution:</strong> The agent reasons ("I need the current stock price") before acting ("Call get_stock_price"), then reasons about what it got ("The price is $134, now I can answer"). This produces more reliable, auditable agent behavior.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>How It Works</h2>
+    <div class="section-content">
+      <p>The ReAct loop in action — here's what the LLM actually outputs in the scratchpad:</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">text</span><span>ReAct Scratchpad Example</span></div>
+      <pre><code>User: What is NVIDIA's latest GPU and how many CUDA cores does it have?
+
+Thought: I need to find NVIDIA's latest GPU. I'll search for it.
+Action: search
+Action Input: NVIDIA latest GPU 2024 2025
+Observation: NVIDIA's latest GPU is the H200, announced in 2023 with 16,896 CUDA cores...
+
+Thought: I found the GPU name and CUDA core count. I can now answer.
+Final Answer: NVIDIA's latest GPU is the H200, which has 16,896 CUDA cores.</code></pre></div>
+
+      <p>The loop has a <strong>maximum iteration limit</strong> (default 10 in LangChain). If the agent doesn't reach a "Final Answer" within this limit, it returns an error or partial answer.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>Pipeline Placement</h2>
+    <div class="section-content">
+      <div class="pipeline">
+        <div class="pipeline-node">User Query</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">ReAct Loop</div><span class="pipeline-arrow">↔</span>
+        <div class="pipeline-node">Tools</div><span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">Final Answer</div>
+      </div>
+      <p>ReAct is the <strong>central orchestration layer</strong>. It receives the user query and decides which tools to call, in what order, to arrive at the answer.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Implementation</h2>
+    <div class="section-content">
+      <div class="code-block">
+        <div class="code-header"><span class="lang-badge">python</span><span>react_agent.py</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-python"># pip install langchain-community langchain-openai duckduckgo-search
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+
+# Tools
+tools = [DuckDuckGoSearchRun(name="search")]
+
+# LLM (replace with NVIDIA NIM for free usage)
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+
+# ReAct prompt template
+react_prompt = PromptTemplate.from_template("""
+You are a helpful research assistant with access to the following tools:
+
+{tools}
+
+Tool Names: {tool_names}
+
+To answer the question, use this exact format:
+Thought: What do I need to find out?
+Action: tool_name
+Action Input: what to pass to the tool
+Observation: result from the tool
+... (repeat Thought/Action/Observation as needed)
+Thought: I now have enough information
+Final Answer: the complete answer
+
+Question: {input}
+{agent_scratchpad}
+""")
+
+# Build agent + executor
+agent = create_react_agent(llm, tools, react_prompt)
+executor = AgentExecutor(
+    agent=agent,
+    tools=tools,
+    verbose=True,          # shows the full reasoning trace
+    max_iterations=7,      # prevent infinite loops
+    handle_parsing_errors=True  # graceful error recovery
+)
+
+# Run it
+result = executor.invoke({
+    "input": "What is NVIDIA's NeMo Guardrails and what language does it use for dialogue flows?"
+})
+print(f"\nFinal Answer: {result['output']}")</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s6">
+    <h2 class="section-title"><span class="section-number">6</span>NVIDIA Ecosystem</h2>
+    <div class="section-content">
+      <a class="nvidia-badge" href="https://build.nvidia.com" target="_blank">Use NVIDIA NIMs as the ReAct LLM Backend</a>
+      <div class="code-block">
+        <div class="code-header"><span class="lang-badge">python</span><span>react_with_nim.py</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-python">from langchain_openai import ChatOpenAI
+
+# Drop-in replacement — use NVIDIA NIM instead of OpenAI
+llm = ChatOpenAI(
+    model="meta/llama-3.1-70b-instruct",
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key="nvapi-YOUR_FREE_KEY",
+    temperature=0
+)
+# Then use exactly the same create_react_agent() code as above</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s7">
+    <h2 class="section-title"><span class="section-number">7</span>Hands-On Lab</h2>
+    <div class="section-content">
+      <p><strong>Objective:</strong> Build a research agent that traces its full reasoning. Ask it a question that requires 2+ tool calls.</p>
+      <p><strong>Steps:</strong> 1. Install dependencies. 2. Copy Section 5 code. 3. Run with verbose=True. 4. Ask: "What is NVIDIA's latest LLM model and what context length does it support?" 5. Read the scratchpad output — identify each Thought, Action, Observation.</p>
+      <p><strong>Challenge:</strong> Add a second tool (calculator) and ask: "If an H100 GPU costs $30,000 and I need 8 of them, what is the total cost in USD and EUR at 1.08 exchange rate?"</p>
+      <p><strong>Verify:</strong> The agent should call search once, then calculator once, then give the final answer. The scratchpad should show exactly 2 tool calls.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s8">
+    <h2 class="section-title"><span class="section-number">8</span>Common Mistakes</h2>
+    <div class="section-content">
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 1 — No max_iterations</div><p>Without a limit, a confused agent loops forever burning API credits. <em>Fix: Always set max_iterations=5 to 10.</em></p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 2 — Tool Output Too Long</div><p>A search result might be 10,000 tokens. Passing it all to the LLM wastes context and may truncate the rest of the conversation. <em>Fix: Truncate tool output to ~1500 characters before returning it as an observation.</em></p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Mistake 3 — Wrong Prompt Format</div><p>The ReAct prompt requires exact formatting (Thought:/Action:/Action Input:/Observation:). Any deviation confuses the output parser. <em>Fix: Use handle_parsing_errors=True and the LangChain ReAct prompt template exactly as provided.</em></p></div>
+    </div>
+  </div>
+
+  <div class="section" id="s9">
+    <h2 class="section-title"><span class="section-number">9</span>Exam Relevance</h2>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <div class="callout-title">🎓 Exam Domain: Agentic System Design (~20% of exam)</div>
+        <p><strong>Key terms:</strong> ReAct, Thought-Action-Observation, scratchpad, max_iterations, AgentExecutor, tool routing, handle_parsing_errors, grounding, hallucination reduction</p>
+        <p><strong>Sample question:</strong> "In the ReAct framework, what is the correct sequence of outputs produced by the LLM?"<br/><strong>Answer:</strong> Thought → Action → (your code runs tool) → Observation → repeat → Final Answer</p>
+        <p><strong>Sample question 2:</strong> "An agent is stuck in a loop calling the same tool repeatedly. What should you check first?"<br/><strong>Answer:</strong> Check max_iterations limit and whether handle_parsing_errors is enabled. Also verify the tool description is clear enough for the LLM to know when to stop.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="transformer-architecture.html">← Transformer Architecture</a>
+    <a class="topic-nav-btn" href="langgraph.html">Next: LangGraph →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

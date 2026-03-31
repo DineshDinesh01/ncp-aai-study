@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic System Design — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">LLM Fundamentals</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="llm-fundamentals.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/transformer-architecture.html">Transformer Architecture</a>
+          <a class="sidebar-link" href="../topics/tokenization.html">Tokenization</a>
+          <a class="sidebar-link" href="../topics/fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Prompt Engineering</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="prompt-engineering.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/prompt-engineering.html">Prompt Engineering</a>
+          <a class="sidebar-link" href="../topics/chain-of-thought.html">Chain-of-Thought</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Agentic System Design</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="agentic-system-design.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/react-agent.html">ReAct Agent Loop</a>
+          <a class="sidebar-link" href="../topics/langgraph.html">LangGraph</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Tool Use</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="tool-use.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/tool-use.html">Tool Use & Function Calling</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Memory & RAG</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="memory-rag.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/rag-pipeline.html">RAG Pipeline</a>
+          <a class="sidebar-link" href="../topics/vector-databases.html">Vector Databases</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Multi-Agent</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="multi-agent.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/multi-agent.html">Multi-Agent Orchestration</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Deployment</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="deployment.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/triton.html">NVIDIA Triton</a>
+          <a class="sidebar-link" href="../topics/tensorrt-llm.html">TensorRT-LLM</a>
+          <a class="sidebar-link" href="../topics/nvidia-nims.html">NVIDIA NIMs</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Safety & Guardrails</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="safety-guardrails.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/nemo-guardrails.html">NeMo Guardrails</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #f59e0b; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#f59e0b; color:#000; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 3</span>
+          <span class="badge" style="background:rgba(245,158,11,0.15); color:#fbbf24; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~20% of exam — HEAVIEST DOMAIN</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">Agentic System Design</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">How to design AI systems that reason, plan, and act autonomously — the core of this certification.</p>
+      </div>
+
+      <section class="content-section">
+        <h2>Why This Is the Most Important Domain</h2>
+        <p>This domain carries ~20% of the exam — more than any other. An <strong>agent</strong> is an AI system that doesn't just answer questions — it takes actions, uses tools, checks results, and keeps going until the task is done. You need to understand <em>how agents are structured</em>, <em>how they make decisions</em>, and <em>how to implement them with LangGraph</em>.</p>
+        <div class="callout callout-tip">
+          <strong>Priority:</strong> If you only have time to go deep on two domains, make this one of them. The exam will have scenario-based questions like "You need to build an agent that does X — which architecture do you use?"
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>The Core Agent Loop</h2>
+        <p>Every agent follows the same fundamental pattern, called the <strong>ReAct loop</strong>:</p>
+        <div class="pipeline-diagram">
+          <div class="pipeline-node">Thought<span class="pipeline-sub">LLM reasons about the task</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Action<span class="pipeline-sub">LLM picks a tool + args</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Observation<span class="pipeline-sub">Tool result returned</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Repeat or Answer<span class="pipeline-sub">Keep going or finish</span></div>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/react-agent.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🔄</span>
+              <h3 class="card-title">ReAct Agent Loop</h3>
+            </div>
+            <p class="card-desc">Reasoning + Acting. The fundamental pattern behind every LLM agent. Thought → Action → Observation — repeated until task is done.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(245,158,11,0.1); color:#fbbf24; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">LangChain</span>
+              <span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">Hands-On</span>
+            </div>
+          </a>
+          <a class="card" href="../topics/langgraph.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">📊</span>
+              <h3 class="card-title">LangGraph Stateful Agents</h3>
+            </div>
+            <p class="card-desc">Build stateful, cyclical agent workflows. Nodes, edges, conditional routing, checkpointing, and human-in-the-loop patterns.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(245,158,11,0.1); color:#fbbf24; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">LangGraph</span>
+              <span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">Hands-On</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>ReAct vs LangGraph — When to Use Which</h2>
+        <table class="resource-table">
+          <thead>
+            <tr><th>Feature</th><th>ReAct (LangChain)</th><th>LangGraph</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>State management</td><td>Implicit (prompt history)</td><td>Explicit TypedDict state</td></tr>
+            <tr><td>Branching logic</td><td>LLM decides</td><td>Defined conditional edges</td></tr>
+            <tr><td>Checkpointing</td><td>No built-in</td><td>Built-in MemorySaver / PostgresSaver</td></tr>
+            <tr><td>Human-in-the-loop</td><td>Hard to add</td><td>Native interrupt support</td></tr>
+            <tr><td>Debugging</td><td>Trace logs</td><td>LangSmith + explicit state inspection</td></tr>
+            <tr><td>Best for</td><td>Simple tool-calling agents</td><td>Complex, multi-step, production agents</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="content-section">
+        <h2>Exam Scenario Practice</h2>
+        <div class="callout callout-warning">
+          <strong>Scenario:</strong> You need to build a research agent that: (1) searches the web for information, (2) checks if it found enough, (3) if not, refines the search and tries again (max 3 times), (4) synthesizes a final answer. Which framework? How do you implement the retry loop?
+        </div>
+        <p><strong>Answer:</strong> Use LangGraph. Create a StateGraph with: a <code>search</code> node, a <code>check_results</code> node with conditional edge (if enough → synthesize, else → search again), and a counter in state to enforce the max 3 limit. ReAct can't enforce the retry limit without extra code — LangGraph makes it explicit.</p>
+      </section>
+
+      <section class="content-section">
+        <h2>Key Terms to Know</h2>
+        <ul style="line-height:2.2;">
+          <li><strong>Agent</strong> — An LLM + tools + a loop that keeps running until done</li>
+          <li><strong>Node</strong> — A function in a LangGraph graph (processes state, returns updates)</li>
+          <li><strong>Edge</strong> — A connection between nodes (can be conditional)</li>
+          <li><strong>State</strong> — A TypedDict that flows through the graph and accumulates results</li>
+          <li><strong>Checkpoint</strong> — A snapshot of state saved to memory (enables session persistence)</li>
+          <li><strong>Human-in-the-loop</strong> — An interrupt that pauses execution for human approval</li>
+          <li><strong>Scratchpad</strong> — The intermediate reasoning steps in a ReAct agent's prompt</li>
+        </ul>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="prompt-engineering.html" style="color:var(--nvidia-green); text-decoration:none;">← Prompt Engineering</a>
+        <a href="tool-use.html" style="color:var(--nvidia-green); text-decoration:none;">Tool Use →</a>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CrewAI — Role-Based Multi-Agent Framework | NCP-AAI Study Guide</title>
+  <meta name="description" content="CrewAI deep dive: Agent, Task, Crew primitives, Flows, hierarchical delegation, parallel execution, NVIDIA NIM integration, and exam preparation."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group open"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▼</span></div>
+      <div class="domain-topics" style="display:block;">
+        <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
+        <a class="sidebar-link" href="langgraph.html">LangGraph</a>
+        <a class="sidebar-link active" href="crewai.html">CrewAI</a>
+        <a class="sidebar-link" href="autogen.html">AutoGen</a>
+        <a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a>
+      </div>
+    </div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a><a class="sidebar-link" href="agent-error-handling.html">Error Handling</a><a class="sidebar-link" href="tokenization.html">Tokenization</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agentiq.html">AgentIQ</a><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agent Architecture &amp; Design — 15%</span><span class="sep">›</span><span>CrewAI</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Agent Architecture &amp; Design — 15%</span>
+      <span class="tag tag-nvidia">NVIDIA NIMs</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">CrewAI</h1>
+    <p class="page-subtitle">Role-based multi-agent framework — Agent → Task → Crew primitives, hierarchical delegation, Flows for stateful pipelines, and production deployment with NVIDIA NIMs.</p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#what">1. What Is CrewAI?</a>
+    <a href="#why">2. Why CrewAI Exists</a>
+    <a href="#primitives">3. Core Primitives: Agent, Task, Crew</a>
+    <a href="#flows">4. CrewAI Flows — Stateful Pipelines</a>
+    <a href="#code">5. Full Python Example</a>
+    <a href="#nvidia">6. NVIDIA NIM Integration</a>
+    <a href="#lab">7. Lab Exercise</a>
+    <a href="#mistakes">8. Common Mistakes</a>
+    <a href="#exam">9. Exam Prep</a>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="what">
+    <div class="section-title"><span class="section-number">1</span>What Is CrewAI?</div>
+    <div class="section-content">
+      <p><strong>CrewAI</strong> is an open-source Python framework for orchestrating <em>role-based, collaborative</em> multi-agent systems. It models real-world teams: each AI agent has a defined <strong>role</strong>, a <strong>goal</strong>, and a <strong>backstory</strong> that shapes its behavior. Agents are assigned <strong>Tasks</strong> and the <strong>Crew</strong> coordinates their execution.</p>
+      <p style="margin-top:12px;">Released in late 2023 and battle-tested with <strong>10 million+ agent executions in 30 days</strong> in enterprise production, CrewAI is one of the most widely deployed multi-agent frameworks available.</p>
+      <div class="callout callout-tip"><div class="callout-title">💡 Mental Model</div>
+        <p>Think of CrewAI as running a consulting firm: you hire specialists (Agents), give them projects (Tasks), and the firm director (Crew) assigns work and collects results. The framework handles turn-taking, context passing, and output formatting automatically.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="why">
+    <div class="section-title"><span class="section-number">2</span>Why CrewAI Exists</div>
+    <div class="section-content">
+      <p>Single-agent architectures break down when a task requires:</p>
+      <ul style="margin:12px 0 0 24px; line-height:2.2;">
+        <li>Different <strong>expertise domains</strong> (research + coding + writing)</li>
+        <li><strong>Verification and critique</strong> of generated outputs</li>
+        <li><strong>Parallel workstreams</strong> that can run simultaneously</li>
+        <li>Long multi-step pipelines with <strong>state across tasks</strong></li>
+        <li>Clear <strong>accountability</strong> — knowing which agent produced what</li>
+      </ul>
+      <div class="callout callout-exam" style="margin-top:16px;"><div class="callout-title">🎯 Exam Angle</div>
+        <p>CrewAI vs LangGraph: CrewAI is <strong>role-centric</strong> (who does what) while LangGraph is <strong>graph-centric</strong> (how execution flows). CrewAI excels at structured team workflows; LangGraph excels at complex cyclic stateful orchestration with fine-grained control.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="primitives">
+    <div class="section-title"><span class="section-number">3</span>Core Primitives: Agent, Task, Crew</div>
+    <div class="section-content">
+      <p>Everything in CrewAI is built from three core primitives:</p>
+
+      <div class="table-wrap"><table>
+        <thead><tr><th>Primitive</th><th>Purpose</th><th>Key Attributes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Agent</strong></td><td>A specialized AI worker with a defined persona</td><td>role, goal, backstory, tools, llm, verbose, allow_delegation</td></tr>
+          <tr><td><strong>Task</strong></td><td>A unit of work with expected output</td><td>description, expected_output, agent, context, output_file, async_execution</td></tr>
+          <tr><td><strong>Crew</strong></td><td>The orchestrator that manages agent + task execution</td><td>agents, tasks, process, verbose, memory, embedder</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">Agent Attributes in Depth</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Agent Definition</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from crewai import Agent
+from crewai_tools import SerperDevTool
+
+researcher = Agent(
+    role="Senior Research Analyst",          # Persona label
+    goal="Uncover groundbreaking AI papers",  # What the agent is optimizing for
+    backstory="""You are an expert at analyzing academic papers,
+    identifying key contributions, and explaining complex topics clearly.
+    You always verify information from multiple sources.""",
+    tools=[SerperDevTool()],                 # Tools this agent can use
+    llm="nvidia/meta/llama-3.1-70b-instruct",
+    verbose=True,                            # Log agent reasoning steps
+    allow_delegation=False,                  # Can this agent assign subtasks?
+    max_iter=5,                              # Max ReAct-style reasoning loops
+    memory=True,                             # Enable agent-level memory
+)
+</code></pre></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">Task Attributes in Depth</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Task Definition</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from crewai import Task
+
+research_task = Task(
+    description="""Research the latest advancements in LLM quantization.
+    Focus on INT4 AWQ, INT8 SmoothQuant, and FP8 approaches.
+    Include specific benchmark numbers where available.""",
+    expected_output="""A structured report with:
+    1. Executive summary (3 sentences)
+    2. Comparison table of quantization methods
+    3. Recommended approach per GPU type
+    4. Three key citations""",
+    agent=researcher,                        # Which agent handles this task
+    context=[prev_task],                     # Output of prev_task added as context
+    output_file="research_report.md",        # Save output to file
+    async_execution=False,                   # Set True for parallel execution
+)
+</code></pre></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">Crew Process Types</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Process</th><th>Behavior</th><th>When to Use</th></tr></thead>
+        <tbody>
+          <tr><td><code>Process.sequential</code></td><td>Tasks run in order, each gets previous output as context</td><td>Linear pipelines with dependencies</td></tr>
+          <tr><td><code>Process.hierarchical</code></td><td>Manager agent delegates tasks to workers dynamically</td><td>Complex tasks requiring dynamic assignment</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="flows">
+    <div class="section-title"><span class="section-number">4</span>CrewAI Flows — Stateful Pipelines</div>
+    <div class="section-content">
+      <p><strong>CrewAI Flows</strong> (introduced 2024) add explicit <em>state management</em> and <em>conditional routing</em> to multi-crew pipelines. A Flow is a Python class where methods are decorated with <code>@start()</code>, <code>@listen()</code>, and <code>@router()</code> to define execution order.</p>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — CrewAI Flow with State</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from crewai.flow.flow import Flow, listen, start, router
+from pydantic import BaseModel
+
+class ResearchState(BaseModel):
+    topic: str = ""
+    research_output: str = ""
+    quality_score: float = 0.0
+    requires_revision: bool = False
+
+class ResearchFlow(Flow[ResearchState]):
+
+    @start()
+    def initialize(self):
+        self.state.topic = "NVIDIA TensorRT-LLM quantization"
+        print(f"Starting research on: {self.state.topic}")
+
+    @listen(initialize)
+    def run_research(self):
+        # Kick off a full Crew
+        result = research_crew.kickoff(
+            inputs={"topic": self.state.topic}
+        )
+        self.state.research_output = result.raw
+        # Score quality (could call another LLM here)
+        self.state.quality_score = evaluate_quality(result.raw)
+
+    @router(run_research)
+    def check_quality(self):
+        if self.state.quality_score >= 0.8:
+            return "approved"
+        else:
+            self.state.requires_revision = True
+            return "revision_needed"
+
+    @listen("approved")
+    def publish(self):
+        print("Research approved! Publishing...")
+        save_to_database(self.state.research_output)
+
+    @listen("revision_needed")
+    def revise(self):
+        print("Quality too low. Triggering revision crew...")
+        revision_crew.kickoff(
+            inputs={"draft": self.state.research_output}
+        )
+
+# Run the flow
+flow = ResearchFlow()
+flow.kickoff()
+</code></pre></div>
+      <div class="callout callout-tip"><div class="callout-title">💡 Flows vs Crews</div>
+        <p><strong>Crew</strong> = one team working on a set of related tasks. <strong>Flow</strong> = orchestration of multiple Crews with shared state, routing, and branching logic. Use Flows when you need to chain multiple Crews together or add conditional logic between them.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="code">
+    <div class="section-title"><span class="section-number">5</span>Full Python Example — Research & Writing Pipeline</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Complete CrewAI Pipeline</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from crewai import Agent, Task, Crew, Process
+from crewai_tools import SerperDevTool, FileReadTool
+from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
+# 1. Configure LLM (NVIDIA NIM)
+llm = ChatNVIDIA(
+    model="meta/llama-3.1-70b-instruct",
+    base_url="https://integrate.api.nvidia.com/v1",
+    temperature=0.1,
+)
+
+# 2. Define Agents
+researcher = Agent(
+    role="Research Specialist",
+    goal="Find accurate, up-to-date information on the given topic",
+    backstory="Expert researcher who verifies facts across multiple sources.",
+    tools=[SerperDevTool()],
+    llm=llm,
+    verbose=True,
+    allow_delegation=False,
+)
+
+writer = Agent(
+    role="Technical Writer",
+    goal="Transform research into clear, structured documentation",
+    backstory="Experienced technical writer who creates developer-friendly content.",
+    tools=[],
+    llm=llm,
+    verbose=True,
+    allow_delegation=False,
+)
+
+reviewer = Agent(
+    role="Quality Reviewer",
+    goal="Ensure technical accuracy and completeness of written content",
+    backstory="Senior engineer who catches errors and identifies gaps.",
+    tools=[],
+    llm=llm,
+    verbose=True,
+    allow_delegation=True,   # Can delegate back to researcher if gaps found
+)
+
+# 3. Define Tasks (sequential with context chaining)
+research_task = Task(
+    description="Research NVIDIA TensorRT-LLM quantization methods. Include benchmarks.",
+    expected_output="Structured research with quantization methods, benchmarks, and citations.",
+    agent=researcher,
+)
+
+writing_task = Task(
+    description="""Using the research provided, write a developer guide on TensorRT-LLM quantization.
+    Include code examples for INT4 AWQ and FP8. Audience: ML engineers.""",
+    expected_output="A complete developer guide with code examples, tables, and clear explanations.",
+    agent=writer,
+    context=[research_task],    # Writing task receives research output as context
+)
+
+review_task = Task(
+    description="""Review the developer guide for: (1) Technical accuracy, (2) Code correctness,
+    (3) Missing information. Provide specific improvement suggestions.""",
+    expected_output="Detailed review with specific issues listed and severity (critical/minor).",
+    agent=reviewer,
+    context=[research_task, writing_task],
+    output_file="review_output.md",
+)
+
+# 4. Create and Run Crew
+crew = Crew(
+    agents=[researcher, writer, reviewer],
+    tasks=[research_task, writing_task, review_task],
+    process=Process.sequential,
+    verbose=True,
+    memory=True,              # Enable cross-task memory
+    embedder={
+        "provider": "nvidia",
+        "config": {"model": "NV-Embed-QA"}
+    }
+)
+
+result = crew.kickoff()
+print(result.raw)             # Final output (last task's result)
+print(crew.usage_metrics)     # Token counts per task per agent
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="nvidia">
+    <div class="section-title"><span class="section-number">6</span>NVIDIA NIM Integration</div>
+    <div class="section-content">
+      <p>CrewAI integrates with NVIDIA NIMs via two methods:</p>
+
+      <h3 style="margin:16px 0 8px; color:var(--text-primary);">Method 1: LangChain NVIDIA Endpoints</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — NVIDIA NIM via LangChain</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from langchain_nvidia_ai_endpoints import ChatNVIDIA
+
+llm = ChatNVIDIA(
+    model="nvidia/llama-3.1-nemotron-70b-instruct",  # NVIDIA-tuned model
+    base_url="https://integrate.api.nvidia.com/v1",
+    api_key="nvapi-xxx",
+    temperature=0.1,
+    max_tokens=2048,
+)
+
+agent = Agent(role="Analyst", goal="...", backstory="...", llm=llm)
+</code></pre></div>
+
+      <h3 style="margin:16px 0 8px; color:var(--text-primary);">Method 2: OpenAI-Compatible Client (Self-Hosted NIMs)</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Self-Hosted NIM</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from openai import OpenAI
+
+# Self-hosted NIM on your infrastructure
+client = OpenAI(
+    base_url="http://your-nim-server:8000/v1",
+    api_key="not-needed-for-local"
+)
+
+# Use with CrewAI via LiteLLM
+agent = Agent(
+    role="Analyst",
+    llm="openai/meta-llama-3.1-70b-instruct",  # LiteLLM format
+    llm_config={"base_url": "http://your-nim-server:8000/v1"}
+)
+</code></pre></div>
+
+      <div class="callout callout-tip"><div class="callout-title">💡 Best Model Choices for CrewAI Roles</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Agent Role</th><th>Recommended NIM Model</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td>Researcher / Analyst</td><td>llama-3.1-70b-instruct</td><td>Strong reasoning, instruction following</td></tr>
+            <tr><td>Coder</td><td>llama-3.1-70b-instruct or starcoder2</td><td>Code generation accuracy</td></tr>
+            <tr><td>Reviewer / Critic</td><td>nemotron-70b-instruct</td><td>NVIDIA RLHF-tuned for critique tasks</td></tr>
+            <tr><td>Summarizer</td><td>llama-3.1-8b-instruct</td><td>Fast, cost-efficient for simple tasks</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="lab">
+    <div class="section-title"><span class="section-number">7</span>Lab Exercise</div>
+    <div class="section-content">
+      <div class="callout callout-lab"><div class="callout-title">🔬 Lab: Build a 3-Agent Research Pipeline</div>
+        <p><strong>Objective:</strong> Create a CrewAI pipeline that researches a topic, writes a report, and reviews it for quality.</p>
+        <ol style="margin:12px 0 0 20px; line-height:2.2;">
+          <li>Install: <code>pip install crewai crewai-tools langchain-nvidia-ai-endpoints</code></li>
+          <li>Set <code>NVIDIA_API_KEY</code> environment variable</li>
+          <li>Create a Researcher agent with SerperDevTool and llama-3.1-70b via NVIDIA NIMs</li>
+          <li>Create a Writer agent (no tools) that takes research context</li>
+          <li>Create a Reviewer agent with <code>allow_delegation=True</code></li>
+          <li>Run with <code>Process.sequential</code> and observe context passing between tasks</li>
+          <li><strong>Extension:</strong> Add a Flow with a quality router — if Reviewer score &lt; 0.7, trigger a revision task</li>
+        </ol>
+        <p style="margin-top:12px;"><strong>Expected output:</strong> A multi-section research report with reviewer feedback demonstrating context chaining between tasks.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="mistakes">
+    <div class="section-title"><span class="section-number">8</span>Common Mistakes</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Mistake</th><th>Impact</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Setting <code>allow_delegation=True</code> on all agents</td><td>Agents delegate instead of executing, infinite loops</td><td>Only the orchestrator/manager needs delegation</td></tr>
+          <tr><td>Vague <code>expected_output</code></td><td>Agents produce inconsistent formats</td><td>Describe exact structure: sections, format, length</td></tr>
+          <tr><td>No <code>context</code> chain between dependent tasks</td><td>Writer doesn't see researcher output</td><td>Pass upstream tasks in <code>context=[]</code></td></tr>
+          <tr><td>Same LLM for all agents</td><td>Expensive; overkill for simple roles</td><td>Use smaller models for summarizers, larger for critics</td></tr>
+          <tr><td>Ignoring <code>usage_metrics</code></td><td>No visibility into token costs per agent</td><td>Log <code>crew.usage_metrics</code> after every kickoff</td></tr>
+          <tr><td>Confusing Process.hierarchical with Flow routing</td><td>Wrong architecture for the task</td><td>hierarchical = dynamic delegation within one crew; Flow = routing between multiple crews</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Prep</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — CrewAI (Agent Architecture 15%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2.2;">
+          <li><strong>Primitives:</strong> Agent (role + goal + backstory + tools) → Task (description + expected_output + agent + context) → Crew (agents + tasks + process)</li>
+          <li><strong>Process.sequential:</strong> tasks run in order; each task receives previous task output via <code>context</code></li>
+          <li><strong>Process.hierarchical:</strong> manager agent dynamically assigns tasks to worker agents based on capability</li>
+          <li><strong>allow_delegation=True:</strong> agent can sub-delegate tasks to other agents in the crew</li>
+          <li><strong>CrewAI Flows:</strong> use <code>@start()</code>, <code>@listen()</code>, <code>@router()</code> decorators; share state via Pydantic model</li>
+          <li><strong>vs LangGraph:</strong> CrewAI = role-centric team workflow; LangGraph = graph-centric cyclic state machine</li>
+          <li><strong>vs AutoGen:</strong> CrewAI = structured task assignment; AutoGen = conversational turn-taking</li>
+          <li><strong>memory=True:</strong> enables cross-task and cross-session memory using embeddings</li>
+          <li><strong>Scale:</strong> 10M+ agent executions in 30 days in production — production-grade, not demo-only</li>
+          <li><strong>NVIDIA integration:</strong> via <code>langchain_nvidia_ai_endpoints.ChatNVIDIA</code> or OpenAI-compatible NIM endpoint</li>
+        </ul>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px;"><table>
+        <thead><tr><th>Question Pattern</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>CrewAI core 3 primitives in order</td><td>Agent → Task → Crew</td></tr>
+          <tr><td>Which process type for dynamic agent assignment?</td><td>Process.hierarchical</td></tr>
+          <tr><td>How do tasks share output in sequential process?</td><td>context=[upstream_task] parameter</td></tr>
+          <tr><td>CrewAI Flow decorator for conditional routing</td><td>@router()</td></tr>
+          <tr><td>How to see per-agent token costs?</td><td>crew.usage_metrics after kickoff()</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="langgraph.html">← LangGraph</a>
+    <a class="topic-nav-btn" href="autogen.html">AutoGen →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

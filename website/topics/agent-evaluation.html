@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agent Evaluation & RAGAS — NCP-AAI Study Guide</title>
+  <meta name="description" content="Agent evaluation: RAGAS metrics (Context Precision, Faithfulness, Answer Relevancy), agent KPIs, NeMo Evaluator, A/B testing, LLM-as-a-judge."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a><a class="sidebar-link" href="tokenization.html">Tokenization</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link active" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Evaluation &amp; Tuning</span><span class="sep">›</span><span>Agent Evaluation</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Evaluation &amp; Tuning — 13%</span>
+      <span class="tag tag-nvidia">NeMo Evaluator</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">Agent Evaluation &amp; RAGAS</h1>
+    <p class="page-subtitle">How to measure whether your agent is actually working — RAGAS metrics for RAG eval, agent-specific KPIs (task completion rate, reasoning accuracy, latency per step, cost per interaction), LLM-as-a-judge, A/B testing, and NVIDIA NeMo Evaluator.</p>
+  </div>
+
+  <div class="section" id="why">
+    <div class="section-title"><span class="section-number">1</span>Why Evaluation Matters</div>
+    <div class="section-content">
+      <p>Without rigorous evaluation, you cannot tell if your agent is improving or degrading after changes. The NCP-AAI exam treats evaluation as a first-class skill — 13% of the exam covers benchmarking, A/B testing, and continuous monitoring. In 2025, 70% of engineers using RAG in production integrate evaluation into their CI/CD pipelines.</p>
+    </div>
+  </div>
+
+  <div class="section" id="ragas">
+    <div class="section-title"><span class="section-number">2</span>RAGAS — RAG System Evaluation</div>
+    <div class="section-content">
+      <p><strong>RAGAS (Retrieval-Augmented Generation Assessment)</strong> is the standard open-source framework for evaluating RAG pipelines. It is "reference-free" — it uses LLMs to evaluate quality without requiring hand-labeled ground truth for every question.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Metric</th><th>What It Measures</th><th>Input Required</th><th>Good Score</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Context Precision</strong></td><td>Signal-to-noise ratio in retrieved contexts</td><td>question, contexts, ground_truth</td><td>&gt; 0.8</td></tr>
+          <tr><td><strong>Context Recall</strong></td><td>Was all necessary info retrieved?</td><td>question, contexts, ground_truth</td><td>&gt; 0.75</td></tr>
+          <tr><td><strong>Faithfulness</strong></td><td>Is the answer grounded in retrieved context?</td><td>question, contexts, answer</td><td>&gt; 0.9</td></tr>
+          <tr><td><strong>Answer Relevancy</strong></td><td>Does the answer address the question?</td><td>question, answer</td><td>&gt; 0.85</td></tr>
+          <tr><td><strong>Answer Correctness</strong></td><td>Factual accuracy vs ground truth</td><td>question, answer, ground_truth</td><td>&gt; 0.7</td></tr>
+        </tbody>
+      </table></div>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — RAGAS Evaluation</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+from ragas import evaluate
+from ragas.metrics import (
+    context_precision, context_recall,
+    faithfulness, answer_relevancy
+)
+from datasets import Dataset
+
+data = {
+    "question": ["What port does Triton gRPC use?"],
+    "answer": ["Triton uses gRPC on port 8001."],
+    "contexts": [["NVIDIA Triton uses gRPC on port 8001 (preferred for production) and HTTP on port 8000."]],
+    "ground_truth": ["Triton gRPC port is 8001."]
+}
+dataset = Dataset.from_dict(data)
+
+results = evaluate(
+    dataset,
+    metrics=[context_precision, context_recall, faithfulness, answer_relevancy]
+)
+print(results)
+# {'context_precision': 1.0, 'faithfulness': 1.0, 'answer_relevancy': 0.97, ...}
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="agent_metrics">
+    <div class="section-title"><span class="section-number">3</span>Agent-Specific KPIs</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Metric</th><th>Definition</th><th>How to Measure</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Task Completion Rate</strong></td><td>% of tasks fully completed without human intervention</td><td>Pass/fail test suite on diverse task set</td></tr>
+          <tr><td><strong>Reasoning Accuracy</strong></td><td>Correct intermediate reasoning steps / total steps</td><td>LLM-as-a-judge on CoT traces</td></tr>
+          <tr><td><strong>Latency per Step</strong></td><td>Average time per LLM call or tool invocation</td><td>Timing instrumentation in agent loop</td></tr>
+          <tr><td><strong>Cost per Interaction</strong></td><td>Total tokens × price per token for one user task</td><td>Token counter × NIM pricing</td></tr>
+          <tr><td><strong>Tool Call Accuracy</strong></td><td>% of tool calls with correct name + valid arguments</td><td>Schema validation + expected call comparison</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="llm_judge">
+    <div class="section-title"><span class="section-number">4</span>LLM-as-a-Judge</div>
+    <div class="section-content">
+      <p>Using an LLM to evaluate another LLM's output is becoming the standard approach in 2025 (used by 70%+ of production RAG systems). The judge LLM scores the response on criteria like accuracy, relevance, coherence, and safety on a 1–5 scale.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — LLM-as-a-Judge Pattern</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+from openai import OpenAI
+
+client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key="nvapi-xxx")
+
+def llm_judge(question: str, answer: str, context: str) -> dict:
+    prompt = f"""Rate this RAG answer on a scale of 1-5 for each criterion.
+
+Question: {question}
+Retrieved Context: {context}
+Agent Answer: {answer}
+
+Criteria:
+1. Faithfulness (is the answer supported by the context?): 1-5
+2. Relevancy (does it answer the question?): 1-5
+3. Completeness (is all important info included?): 1-5
+
+Respond ONLY as JSON: {{"faithfulness": N, "relevancy": N, "completeness": N, "reasoning": "..."}}"""
+
+    response = client.chat.completions.create(
+        model="meta/llama-3.1-70b-instruct",
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return response.choices[0].message.content
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="nvidia">
+    <div class="section-title"><span class="section-number">5</span>NVIDIA NeMo Evaluator</div>
+    <div class="section-content">
+      <p><strong>NeMo Evaluator</strong> (GA: April 2025) is a managed microservice providing enterprise-grade evaluation:</p>
+      <ul style="margin:12px 0;padding-left:20px;color:var(--text-secondary);line-height:2">
+        <li>100+ academic benchmarks (MMLU, HumanEval, BIG-Bench, GSM8K)</li>
+        <li>LLM-as-a-judge scoring with configurable judge models</li>
+        <li>RAG-specific metrics (faithfulness, context relevance) via API</li>
+        <li>Agent-specific metrics: task completion, multi-turn accuracy</li>
+        <li>CI/CD integration: automated evaluation on every model checkpoint</li>
+      </ul>
+      <a class="nvidia-badge" href="https://docs.nvidia.com/nemo/evaluator/" target="_blank" rel="noopener">NeMo Evaluator Docs →</a>
+    </div>
+  </div>
+
+  <div class="section" id="ab_testing">
+    <div class="section-title"><span class="section-number">6</span>A/B Testing Agent Strategies</div>
+    <div class="section-content">
+      <p>A/B testing agent strategies without impacting production means running two agent variants on shadow traffic or a small percentage of real traffic, comparing their metric distributions statistically before promoting the winner.</p>
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Evaluation &amp; Tuning (13%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li>RAGAS Faithfulness: is answer grounded in retrieved context? (detects hallucination)</li>
+          <li>RAGAS Context Precision: signal-to-noise in retrieved chunks</li>
+          <li>RAGAS Context Recall: was all necessary info retrieved?</li>
+          <li>LLM-as-a-judge: standard in 2025, scales eval without human annotation</li>
+          <li>Agent KPIs: task completion rate, reasoning accuracy, latency per step, cost per interaction</li>
+          <li>NeMo Evaluator: 100+ benchmarks + LLM-as-a-judge + CI/CD integration</li>
+          <li>A/B test on shadow traffic to compare agent variants without production impact</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="fine-tuning-lora.html">← Fine-Tuning LoRA</a>
+    <a class="topic-nav-btn" href="rag-pipeline.html">RAG Pipeline →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

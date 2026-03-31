@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Knowledge Graph — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <style>
+    .graph-container { width:100%; height:600px; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; position:relative; margin:20px 0; }
+    .legend { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-secondary); }
+    .legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+    .tooltip { position:absolute; background:var(--bg-secondary); border:1px solid var(--border-light); border-radius:6px; padding:8px 12px; font-size:12px; color:var(--text-primary); pointer-events:none; display:none; z-index:10; }
+    .graph-instructions { font-size:13px; color:var(--text-muted); margin-bottom:12px; }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a><a href="index.html" class="active">Graph</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+    <a class="sidebar-link active" href="index.html"><span class="link-icon">🕸️</span> Knowledge Graph</a>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="page-header">
+    <h1 class="page-title">Knowledge Graph</h1>
+    <p class="page-subtitle">Visual map of all NCP-AAI topics and how they connect. Click any node to open that topic. Drag to rearrange.</p>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <p class="graph-instructions">🖱️ Click a node → open topic page &nbsp;|&nbsp; 🖱️ Drag nodes to rearrange &nbsp;|&nbsp; 🖱️ Scroll to zoom</p>
+  <div class="graph-container" id="graph-container">
+    <div class="tooltip" id="tooltip"></div>
+    <svg id="graph-svg" width="100%" height="100%"></svg>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const domainColors = {
+  "LLM Fundamentals": "#76B900",
+  "Prompt Engineering": "#4a9eff",
+  "Agentic System Design": "#9b59b6",
+  "Tool Use": "#e67e22",
+  "Memory & RAG": "#1abc9c",
+  "Multi-Agent": "#e74c3c",
+  "Deployment": "#f39c12",
+  "Safety & Guardrails": "#95a5a6"
+};
+
+const nodes = [
+  {id:"transformer-architecture", label:"Transformer Architecture", domain:"LLM Fundamentals", url:"../topics/transformer-architecture.html"},
+  {id:"tokenization", label:"Tokenization", domain:"LLM Fundamentals", url:"../topics/tokenization.html"},
+  {id:"fine-tuning-lora", label:"Fine-Tuning / LoRA", domain:"LLM Fundamentals", url:"../topics/fine-tuning-lora.html"},
+  {id:"prompt-engineering", label:"Prompt Engineering", domain:"Prompt Engineering", url:"../topics/prompt-engineering.html"},
+  {id:"chain-of-thought", label:"Chain-of-Thought", domain:"Prompt Engineering", url:"../topics/chain-of-thought.html"},
+  {id:"react-agent", label:"ReAct Agent Loop", domain:"Agentic System Design", url:"../topics/react-agent.html"},
+  {id:"langgraph", label:"LangGraph", domain:"Agentic System Design", url:"../topics/langgraph.html"},
+  {id:"tool-use", label:"Tool Use", domain:"Tool Use", url:"../topics/tool-use.html"},
+  {id:"rag-pipeline", label:"RAG Pipeline", domain:"Memory & RAG", url:"../topics/rag-pipeline.html"},
+  {id:"vector-databases", label:"Vector Databases", domain:"Memory & RAG", url:"../topics/vector-databases.html"},
+  {id:"multi-agent", label:"Multi-Agent", domain:"Multi-Agent", url:"../topics/multi-agent.html"},
+  {id:"triton", label:"NVIDIA Triton", domain:"Deployment", url:"../topics/triton.html"},
+  {id:"tensorrt-llm", label:"TensorRT-LLM", domain:"Deployment", url:"../topics/tensorrt-llm.html"},
+  {id:"nvidia-nims", label:"NVIDIA NIMs", domain:"Deployment", url:"../topics/nvidia-nims.html"},
+  {id:"nemo-guardrails", label:"NeMo Guardrails", domain:"Safety & Guardrails", url:"../topics/nemo-guardrails.html"}
+];
+
+const links = [
+  {source:"transformer-architecture",target:"tokenization"},
+  {source:"transformer-architecture",target:"fine-tuning-lora"},
+  {source:"transformer-architecture",target:"prompt-engineering"},
+  {source:"prompt-engineering",target:"react-agent"},
+  {source:"prompt-engineering",target:"chain-of-thought"},
+  {source:"react-agent",target:"tool-use"},
+  {source:"react-agent",target:"langgraph"},
+  {source:"tool-use",target:"nvidia-nims"},
+  {source:"rag-pipeline",target:"vector-databases"},
+  {source:"rag-pipeline",target:"react-agent"},
+  {source:"langgraph",target:"multi-agent"},
+  {source:"fine-tuning-lora",target:"triton"},
+  {source:"triton",target:"tensorrt-llm"},
+  {source:"nvidia-nims",target:"triton"},
+  {source:"react-agent",target:"nemo-guardrails"},
+  {source:"multi-agent",target:"nemo-guardrails"}
+];
+
+// Build legend
+const legendEl = document.getElementById('legend');
+for (const [domain, color] of Object.entries(domainColors)) {
+  legendEl.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${color}"></div><span>${domain}</span></div>`;
+}
+
+const container = document.getElementById('graph-container');
+const svg = d3.select('#graph-svg');
+const tooltip = document.getElementById('tooltip');
+const W = container.clientWidth, H = container.clientHeight;
+
+const simulation = d3.forceSimulation(nodes)
+  .force("link", d3.forceLink(links).id(d => d.id).distance(100))
+  .force("charge", d3.forceManyBody().strength(-300))
+  .force("center", d3.forceCenter(W/2, H/2))
+  .force("collide", d3.forceCollide(50));
+
+const g = svg.append("g");
+
+// Zoom
+svg.call(d3.zoom().scaleExtent([0.3, 3]).on("zoom", e => g.attr("transform", e.transform)));
+
+// Links
+const link = g.append("g").selectAll("line").data(links).join("line")
+  .attr("stroke", "#333").attr("stroke-width", 1.5).attr("stroke-opacity", 0.6);
+
+// Nodes
+const node = g.append("g").selectAll("g").data(nodes).join("g")
+  .style("cursor", "pointer")
+  .call(d3.drag()
+    .on("start", (e,d) => { if(!e.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on("drag", (e,d) => { d.fx=e.x; d.fy=e.y; })
+    .on("end", (e,d) => { if(!e.active) simulation.alphaTarget(0); d.fx=null; d.fy=null; })
+  )
+  .on("click", (e,d) => window.location.href = d.url)
+  .on("mouseover", (e,d) => {
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.layerX+12)+'px';
+    tooltip.style.top = (e.layerY-10)+'px';
+    tooltip.textContent = d.label + ' → ' + d.domain;
+  })
+  .on("mouseout", () => tooltip.style.display = 'none');
+
+node.append("circle").attr("r", 24).attr("fill", d => domainColors[d.domain] || '#666').attr("fill-opacity", 0.85).attr("stroke", "#fff").attr("stroke-width", 1.5);
+node.append("text").text(d => d.label.length > 12 ? d.label.substring(0,12)+'…' : d.label)
+  .attr("text-anchor","middle").attr("dy","0.35em").attr("font-size","9px").attr("fill","#fff").attr("font-weight","700").style("pointer-events","none");
+
+simulation.on("tick", () => {
+  link.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+  node.attr("transform", d => `translate(${Math.max(30, Math.min(W-30,d.x))},${Math.max(30,Math.min(H-30,d.y))})`);
+});
+</script>
+<script src="../assets/js/script.js"></script>
+</body></html>

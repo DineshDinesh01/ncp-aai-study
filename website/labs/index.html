@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hands-On Labs — NCP-AAI Study Guide</title>
+  <meta name="description" content="8 hands-on Jupyter labs for NCP-AAI certification prep. Build a ReAct agent, RAG pipeline, HITL LangGraph workflow, multi-agent system, and NeMo Guardrails from scratch."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<!-- COMPONENTS -->
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="labs"></site-header>
+<div class="layout">
+<site-sidebar basepath=".." active="labs"></site-sidebar>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Hands-On Labs</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Practical Skills</span><span class="tag tag-nvidia">NVIDIA NIM API</span></div>
+    <h1 class="page-title">🔬 Hands-On Labs</h1>
+    <p class="page-subtitle">8 Jupyter labs that build real skills for the NCP-AAI exam and production work. Each lab uses the NVIDIA NIM API (free at <strong>build.nvidia.com</strong>) or runs algorithmically without any API key.</p>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-title">🚀 Getting Started</div>
+    <p><strong>1.</strong> Get a free NVIDIA NIM API key at <a href="https://build.nvidia.com" target="_blank" rel="noopener" style="color:var(--nvidia-green)">build.nvidia.com</a><br/>
+    <strong>2.</strong> Click "Open in Colab" on any lab — runs in your browser, no local GPU needed<br/>
+    <strong>3.</strong> Set <code>NVIDIA_API_KEY</code> as a Colab secret (🔑 icon → New secret)<br/>
+    <strong>4.</strong> Run all cells — each lab is fully self-contained</p>
+  </div>
+
+  <div class="section" id="lab-001">
+    <div class="section-title">Lab 001 — Transformer Attention Visualization</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">🔮</span>
+            <div>
+              <div class="card-title">Transformer Attention Visualization</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Agent Development</span>
+                <span class="tag tag-difficulty-intermediate">Intermediate</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Extract and visualize attention matrices from GPT-2. Compare causal masking (GPT-style) vs bidirectional attention (BERT-style). Call NVIDIA NIM for comparison. Understand why multi-head attention works.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~45 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 transformers, matplotlib</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 Optional: NIM API</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/transformer-architecture.html" class="btn btn-secondary">📖 Topic Notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="lab-002">
+    <div class="section-title">Lab 002 — BPE Tokenizer from Scratch</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">🔤</span>
+            <div>
+              <div class="card-title">BPE Tokenizer from Scratch</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Agent Development</span>
+                <span class="tag tag-difficulty-intermediate">Beginner</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Implement the BPE merge algorithm in ~60 lines of Python (no libraries). Tokenize English, code, and non-English text. Compare with HuggingFace GPT-2 tokenizer. Measure how vocabulary size affects token efficiency.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~30 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 transformers (comparison only)</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 No API key needed</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/tokenization.html" class="btn btn-secondary">📖 Topic Notes</a>
+            <a href="../playground/index.html" class="btn btn-secondary">⚡ Try in Playground</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="lab-003">
+    <div class="section-title">Lab 003 — Prompt Engineering Comparison</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">✍️</span>
+            <div>
+              <div class="card-title">Prompt Engineering Systematic Comparison</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Cognition &amp; Planning</span>
+                <span class="tag tag-difficulty-intermediate">Beginner</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Side-by-side comparison of zero-shot vs few-shot vs Chain-of-Thought on 5 evaluation tasks using the NVIDIA NIM API (meta/llama-3.1-70b-instruct). Measure accuracy, consistency, and token cost for each approach.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~40 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 openai, pandas</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 NVIDIA NIM API required</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/prompt-engineering.html" class="btn btn-secondary">📖 Topic Notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="lab-004">
+    <div class="section-title">Lab 004 — ReAct Agent from Scratch</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">🤖</span>
+            <div>
+              <div class="card-title">Build a ReAct Agent from Scratch (80 lines)</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Agent Architecture</span>
+                <span class="tag tag-difficulty-advanced">Intermediate</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Implement the full Thought → Action → Observation loop without using LangChain or AutoGen. Wire up 3 tools (Calculator, Wikipedia search, Weather API mock). Trace and visualize the reasoning steps. See exactly how tool calling works internally.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~60 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 openai only</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 NVIDIA NIM API required</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/react-agent.html" class="btn btn-secondary">📖 Topic Notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="lab-005">
+    <div class="section-title">Lab 005 — LangGraph HITL Workflow</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">🔀</span>
+            <div>
+              <div class="card-title">LangGraph Stateful Agent with Human Approval Gate</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Agent Architecture</span>
+                <span class="tag tag-difficulty-advanced">Advanced</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Build a 3-node LangGraph (draft → human_review → send). Use interrupt() to pause, present draft to human, and resume with Command(resume=...). Implement MemorySaver checkpointing. Demonstrate time-travel debugging by replaying from a past checkpoint.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~75 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 langgraph, langchain-nvidia-ai-endpoints</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 NVIDIA NIM API required</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/langgraph.html" class="btn btn-secondary">📖 LangGraph Notes</a>
+            <a href="../topics/hitl-oversight.html" class="btn btn-secondary">📖 HITL Notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="lab-006">
+    <div class="section-title">Lab 006 — RAG Pipeline End-to-End + RAGAS Evaluation</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">🗄️</span>
+            <div>
+              <div class="card-title">Full RAG Pipeline with RAGAS Evaluation</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Knowledge Integration</span>
+                <span class="tag tag-difficulty-advanced">Advanced</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Build a complete RAG system: PDF → PyPDF chunk → SentenceTransformer embed → ChromaDB store → retrieve → NIM generate. Evaluate with RAGAS (Context Precision, Recall, Faithfulness, Answer Relevancy) on 10 Q&A pairs. Tune chunk size and k and see metric impact.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~90 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 chromadb, ragas, sentence-transformers, pypdf</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 NVIDIA NIM API required</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/rag-pipeline.html" class="btn btn-secondary">📖 RAG Notes</a>
+            <a href="../topics/agent-evaluation.html" class="btn btn-secondary">📖 RAGAS Notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="lab-007">
+    <div class="section-title">Lab 007 — Multi-Agent System with AutoGen</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">👥</span>
+            <div>
+              <div class="card-title">3-Agent AutoGen System: Researcher + Coder + Critic</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Agent Architecture</span>
+                <span class="tag tag-difficulty-advanced">Advanced</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Build a 3-agent AutoGen GroupChat: UserProxy (orchestrator) + AssistantAgent (researcher) + CriticAgent (review). Agent writes and executes Python code, Critic validates output, loop runs until task is correct. Implement a semantic router in front to dispatch queries to the right agent.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~75 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 autogen, sentence-transformers</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 NVIDIA NIM API required</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/multi-agent.html" class="btn btn-secondary">📖 Multi-Agent Notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="lab-008">
+    <div class="section-title">Lab 008 — NeMo Guardrails: Colang Safety Rails</div>
+    <div class="section-content">
+      <div class="card-grid" style="grid-template-columns:1fr">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <span style="font-size:28px">🛡️</span>
+            <div>
+              <div class="card-title">NeMo Guardrails: Build Topical + Input + Output Rails</div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <span class="tag tag-domain">Safety &amp; Compliance</span>
+                <span class="tag tag-difficulty-advanced">Intermediate</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-desc" style="margin-bottom:16px">Install NeMo Guardrails, write Colang rail files for: topical rail (block off-topic queries), input rail (detect and reject harmful prompts), output rail (prevent PII leakage). Test with 10 adversarial inputs. Measure block rate and false-positive rate.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--text-muted)">⏱ ~60 min</span>
+            <span style="font-size:12px;color:var(--text-muted)">📦 nemoguardrails, openai</span>
+            <span style="font-size:12px;color:var(--text-muted)">🔑 NVIDIA NIM API required</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <a href="https://colab.research.google.com" target="_blank" class="btn btn-primary">📓 Open in Colab</a>
+            <a href="../topics/nemo-guardrails.html" class="btn btn-secondary">📖 Guardrails Notes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:40px;padding:24px;background:var(--bg-secondary);border-radius:12px;border:1px solid var(--border-color)">
+    <h2 style="font-size:18px;font-weight:700;margin-bottom:12px">⚡ In-Browser Alternative</h2>
+    <p style="color:var(--text-secondary);margin-bottom:16px">Don't want to open Colab? Use the in-browser playground for algorithmic snippets that run entirely in your browser via Pyodide (Python in WebAssembly). No install, no API key needed for basic exercises.</p>
+    <a href="../playground/index.html" class="btn btn-primary">⚡ Open Playground</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

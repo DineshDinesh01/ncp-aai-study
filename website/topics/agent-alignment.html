@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agent Alignment & DPO — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <div class="domain-group"><div class="domain-toggle open">📊 Evaluation & Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
+      <a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+      <a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation & Tuning</a>
+      <a class="sidebar-link active" href="agent-alignment.html">Agent Alignment & DPO</a>
+    </div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Evaluation & Tuning</span><span class="sep">›</span><span>Agent Alignment</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Evaluation</span><span class="tag tag-difficulty-advanced">Advanced</span></div>
+    <h1 class="page-title">Agent Alignment (RLHF & DPO)</h1>
+    <p class="page-subtitle">Fine-tuning teaches an LLM a new format. Alignment teaches an agent what humans actually prefer it to do.</p>
+  </div>
+  
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> SFT vs Alignment</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> RLHF Framework</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> Direct Preference Optimization (DPO)</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> NeMo Customizer alignment</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>SFT vs Alignment</h2>
+    <div class="section-content">
+      <p><strong>Supervised Fine-Tuning (SFT)</strong> teaches a model how to act (e.g. outputting valid JSON). But it does not teach a model whether its actions are safe, polite, or helpful. <strong>Alignment</strong> is the secondary training phase that aligns the LLM's vast knowledge with human safety values and behavioral preferences.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>RLHF Framework</h2>
+    <div class="section-content">
+      <p><strong>Reinforcement Learning from Human Feedback (RLHF)</strong> requires training a separate "Reward Model" based on human raters grading two LLM outputs. The Base LLM then generates responses, the Reward Model scores them, and PPO (Proximal Policy Optimization) updates the LLM to maximize the reward score.</p>
+      <p>RLHF is complex because it requires managing multiple models simultaneously in memory.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>Direct Preference Optimization (DPO)</h2>
+    <div class="section-content">
+      <p><strong>DPO</strong> mathematically bypasses the Reward Model entirely. By formatting data as (Prompt, Chosen_Response, Rejected_Response), DPO treats the language model itself as the reward model, directly updating its weights to prefer the 'Chosen' path.</p>
+      <p>DPO is vastly more memory-efficient and stable to implement than RLHF, making it the industry standard for modern Agent alignment pipelines.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>Exam Question Targets</h2>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <p><strong>Exam Trap</strong>: You need to align a newly tuned customer support Agent to prefer polite refusals over hallucinatory promises. You have a dataset of 10k "Good Answer vs Bad Answer" pairs. Which method uses less memory?</p>
+        <p><strong>Answer</strong>: DPO. DPO does not require training a distinct Reward network and runs PPO asynchronously, saving massive amounts of VRAM over standard RLHF.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

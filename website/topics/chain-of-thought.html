@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chain-of-Thought & Planning — NCP-AAI Study Guide</title>
+  <meta name="description" content="Chain-of-Thought, Tree-of-Thought, MCTS, and advanced planning patterns for agentic AI systems."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a><a class="sidebar-link" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">�� Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Cognition, Planning & Memory — 10%</span><span class="sep">›</span><span>Chain-of-Thought & Planning</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Cognition, Planning & Memory — 10%</span><span class="tag tag-nvidia">NVIDIA NCP-AAI</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">Chain-of-Thought & Planning</h1>
+  </div>
+
+  <p class="page-subtitle">Advanced reasoning patterns for agents — Chain-of-Thought (CoT), Self-Consistency, Tree-of-Thought (ToT), Monte Carlo Tree Search (MCTS), R-MCTS, and 2025 planning frameworks (ReAct-Plan, Plan-and-Act).</p>
+
+  <div class="section" id="cot">
+    <div class="section-title"><span class="section-number">1</span>Chain-of-Thought (CoT)</div>
+    <div class="section-content">
+      <p><strong>CoT prompting</strong> improves LLM reasoning by asking the model to show intermediate reasoning steps before giving a final answer. Simply adding "Let&#39;s think step by step" or providing step-by-step examples significantly improves accuracy on math, logic, and multi-hop reasoning tasks.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Variant</th><th>Mechanism</th><th>When to Use</th></tr></thead>
+        <tbody>
+          <tr><td>Zero-shot CoT</td><td>"Think step by step" in prompt</td><td>Quick improvement, no examples needed</td></tr>
+          <tr><td>Few-shot CoT</td><td>Provide 3–8 step-by-step examples</td><td>Consistent format, complex tasks</td></tr>
+          <tr><td>Self-Consistency</td><td>Sample CoT N times → majority vote answer</td><td>High-stakes decisions, reduces variance</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="tot">
+    <div class="section-title"><span class="section-number">2</span>Tree-of-Thought (ToT)</div>
+    <div class="section-content">
+      <p><strong>ToT</strong> treats reasoning as a search problem over a tree of "thoughts". At each step, the LLM generates multiple possible next reasoning steps (branches), evaluates which are most promising (pruning), and explores the best path. This enables deliberate exploration — looking ahead and backtracking — that linear CoT cannot do.</p>
+      <p>Best for: strategic planning, creative problem-solving, complex multi-step tasks where linear reasoning fails.</p>
+    </div>
+  </div>
+
+  <div class="section" id="mcts">
+    <div class="section-title"><span class="section-number">3</span>Monte Carlo Tree Search (MCTS) &amp; R-MCTS</div>
+    <div class="section-content">
+      <p><strong>MCTS</strong> is a heuristic search algorithm that balances exploration (trying new paths) and exploitation (deepening known-good paths) using random sampling (Monte Carlo rollouts). Integrated with LLMs, it enables agentic planning in large, uncertain decision spaces.</p>
+      <p><strong>R-MCTS (Reflective MCTS)</strong> (2025): extends classic MCTS by adding <em>reflection</em> — each node stores lessons from previous rollouts. Uses multi-agent debate for reliable state evaluation. Demonstrated strong results on WebArena (web navigation) benchmarks.</p>
+      <p><strong>MCTS 4 phases:</strong> Selection → Expansion → Simulation → Backpropagation</p>
+    </div>
+  </div>
+
+  <div class="section" id="2025_frameworks">
+    <div class="section-title"><span class="section-number">4</span>2025 Planning Frameworks</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Framework</th><th>Core Idea</th><th>Improves Over</th></tr></thead>
+        <tbody>
+          <tr><td><strong>ReAct-Plan</strong></td><td>Local CoT + explicit global plan to overcome myopic ReAct decisions</td><td>ReAct (short-sighted single steps)</td></tr>
+          <tr><td><strong>Plan-and-Act</strong></td><td>Pre-planning phase → structured action sequence → execution</td><td>Dynamic but planless ReAct</td></tr>
+          <tr><td><strong>MC-DML</strong></td><td>MCTS + dynamic memory from LLM&#39;s past experience</td><td>Standard MCTS without learning</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="memory">
+    <div class="section-title"><span class="section-number">5</span>Memory Types in Agents</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Memory Type</th><th>Description</th><th>Implementation</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Short-term (Working)</strong></td><td>Current conversation context in the LLM&#39;s attention window</td><td>messages[] array</td></tr>
+          <tr><td><strong>Long-term (Episodic)</strong></td><td>Persistent memories of past interactions</td><td>Vector database retrieval</td></tr>
+          <tr><td><strong>Semantic</strong></td><td>Factual knowledge (world knowledge)</td><td>RAG over knowledge base</td></tr>
+          <tr><td><strong>Procedural</strong></td><td>Learned skills and task strategies</td><td>Fine-tuned model weights (LoRA)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">6</span>Exam Angles</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Cognition &amp; Planning (10%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li>CoT → Self-Consistency → ToT → MCTS: increasing complexity of reasoning</li>
+          <li>ToT: generates multiple thoughts, evaluates, prunes — enables backtracking</li>
+          <li>MCTS: Selection → Expansion → Simulation → Backpropagation (4 phases)</li>
+          <li>R-MCTS adds reflection + multi-agent debate for state evaluation</li>
+          <li>Short-term memory = LLM context window; Long-term = vector DB retrieval</li>
+          <li>Episodic memory stores past interactions; Semantic memory stores world knowledge</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="prompt-engineering.html">← Prompt Engineering</a>
+    <a class="topic-nav-btn" href="rag-pipeline.html">RAG Pipeline →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

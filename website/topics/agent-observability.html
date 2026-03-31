@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agent Observability — NCP-AAI Study Guide</title>
+  <meta name="description" content="Agent observability: LangSmith tracing, OpenTelemetry, drift detection, CI/CD evaluation pipelines for production AI agents."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a><a class="sidebar-link" href="tokenization.html">Tokenization</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link active" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Run, Monitor &amp; Maintain</span><span class="sep">›</span><span>Agent Observability</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Run, Monitor &amp; Maintain — 7%</span>
+      <span class="tag tag-nvidia">LangSmith</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">Agent Observability</h1>
+    <p class="page-subtitle">Monitoring production agents in real-time — LangSmith distributed tracing, OpenTelemetry for AutoGen, Prometheus/Grafana for Triton metrics, performance drift detection, and NeMo Evaluator CI/CD integration.</p>
+  </div>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>Why Observability Matters</div>
+    <div class="section-content">
+      <p>An agent in production is not static. User query distribution changes, external tool APIs change, LLM behavior drifts after model updates, and context quality degrades. Without observability, you cannot detect these issues until users complain.</p>
+      <p><strong>Observability answers:</strong> What decisions did the agent make? Why did it fail? How is latency trending? Which tool calls are failing most often? What is the cost per query this week vs last week?</p>
+    </div>
+  </div>
+
+  <div class="section" id="langsmith">
+    <div class="section-title"><span class="section-number">2</span>LangSmith — Agent Tracing</div>
+    <div class="section-content">
+      <p><strong>LangSmith</strong> is LangChain's observability platform. Every LLM call, tool invocation, retrieval step, and intermediate state is recorded as a "run" with a <code>trace_id</code>, <code>run_id</code>, latency, token count, cost estimate, and input/output payloads.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Enable LangSmith Tracing</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+import os
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_API_KEY"] = "ls__xxxxx"
+os.environ["LANGCHAIN_PROJECT"] = "ncp-aai-agent-v2"
+
+# Now all LangChain/LangGraph calls are automatically traced
+# → View at smith.langchain.com/projects
+from langchain_nvidia_ai_endpoints import ChatNVIDIA
+from langgraph.graph import StateGraph
+
+# Every LLM call, tool call, and node execution is visible in LangSmith
+llm = ChatNVIDIA(model="meta/llama-3.1-70b-instruct")
+response = llm.invoke("What is paged KV cache?")
+
+# LangSmith records:
+# - trace_id, parent_run_id
+# - input tokens: 12, output tokens: 87
+# - latency: 1.23s
+# - estimated cost: $0.000087
+# - full input prompt + output response
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="metrics">
+    <div class="section-title"><span class="section-number">3</span>Key Metrics to Monitor</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Metric</th><th>What to Watch</th><th>Alert Threshold</th></tr></thead>
+        <tbody>
+          <tr><td><strong>P50/P95/P99 Latency</strong></td><td>End-to-end agent response time</td><td>P95 &gt; 5s → investigate</td></tr>
+          <tr><td><strong>Token usage per query</strong></td><td>Cost efficiency trend</td><td>+20% week-over-week → context bloat?</td></tr>
+          <tr><td><strong>Tool call success rate</strong></td><td>% tool calls returning valid result</td><td>&lt;95% → external API issues</td></tr>
+          <tr><td><strong>Hallucination rate</strong></td><td>RAGAS Faithfulness score distribution</td><td>&lt;0.85 avg → retrieval/prompt issue</td></tr>
+          <tr><td><strong>Task completion rate</strong></td><td>% tasks completed without human escalation</td><td>&lt;90% → agent capability gap</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="triton_metrics">
+    <div class="section-title"><span class="section-number">4</span>Triton + Prometheus Metrics</div>
+    <div class="section-content">
+      <p>Triton Inference Server exposes Prometheus metrics on <strong>port 8002</strong>. These integrate with Grafana for real-time infrastructure dashboards:</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Shell — Key Triton Prometheus Metrics</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+# Scrape with: curl http://triton-server:8002/metrics
+nv_inference_request_success   # total successful inference requests
+nv_inference_request_failure   # failed requests - alert on spike
+nv_inference_queue_duration_us # time requests wait in queue
+nv_inference_compute_infer_duration_us  # actual GPU compute time
+nv_gpu_utilization             # GPU utilization % (0-100)
+nv_gpu_memory_used_bytes       # GPU memory consumption
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="drift">
+    <div class="section-title"><span class="section-number">5</span>Performance Drift Detection</div>
+    <div class="section-content">
+      <p><strong>Performance drift</strong> occurs when an agent's quality metrics change over time without any intentional code change. Common causes: change in user query distribution, LLM provider model updates, external tool API changes, knowledge base becoming stale.</p>
+      <p><strong>Detection strategy:</strong> Run automated RAGAS evaluation on a fixed "golden dataset" (representative queries with known good answers) on a daily/weekly schedule via NeMo Evaluator CI/CD integration. Alert when any metric drops by more than 5% from baseline.</p>
+      <a class="nvidia-badge" href="https://docs.nvidia.com/nemo/evaluator/" target="_blank" rel="noopener">NeMo Evaluator CI/CD Docs →</a>
+    </div>
+  </div>
+
+  <div class="section" id="otel">
+    <div class="section-title"><span class="section-number">6</span>OpenTelemetry for Agent Tracing</div>
+    <div class="section-content">
+      <p><strong>OpenTelemetry (OTel)</strong> is the vendor-neutral CNCF standard for distributed tracing. For agents that use multiple frameworks (LangGraph + custom tools + external APIs), OTel provides a unified tracing layer:</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — OpenTelemetry Agent Instrumentation</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+# Set up OTel tracer (sends to Jaeger/Grafana Tempo/Honeycomb)
+provider = TracerProvider()
+exporter = OTLPSpanExporter(endpoint="http://jaeger:4317")
+provider.add_span_processor(BatchSpanProcessor(exporter))
+trace.set_tracer_provider(provider)
+
+tracer = trace.get_tracer("ncp-aai-agent")
+
+# Instrument every agent step with a span
+def reasoning_node(state):
+    with tracer.start_as_current_span("reasoning_node") as span:
+        span.set_attribute("agent.step", "reasoning")
+        span.set_attribute("agent.message_count", len(state["messages"]))
+
+        response = llm.invoke(state["messages"])
+
+        span.set_attribute("agent.output_tokens", response.usage.completion_tokens)
+        span.set_attribute("agent.model", "meta/llama-3.1-70b-instruct")
+        return {"messages": [response]}
+
+# Each span becomes visible in Jaeger/Grafana as a timeline
+# Full trace shows: total latency, bottleneck nodes, error rates
+</code></pre></div>
+      <div class="table-wrap" style="margin-top:16px;"><table>
+        <thead><tr><th>OTel Concept</th><th>Agent Equivalent</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Trace</strong></td><td>Complete agent run from user query to final answer</td></tr>
+          <tr><td><strong>Span</strong></td><td>One step: LLM call, tool call, retrieval, graph node</td></tr>
+          <tr><td><strong>Attribute</strong></td><td>Metadata: token count, model name, tool args, error message</td></tr>
+          <tr><td><strong>Parent span</strong></td><td>Orchestrator node that spawned subagent spans</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="alerting">
+    <div class="section-title"><span class="section-number">7</span>Alerting and Dashboards</div>
+    <div class="section-content">
+      <p>Production agent monitoring requires proactive alerting — not just dashboards you check when something breaks.</p>
+
+      <h3 style="margin:12px 0 8px; color:var(--text-primary);">Alert Thresholds by Metric</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Metric</th><th>Alert Threshold</th><th>Likely Cause</th></tr></thead>
+        <tbody>
+          <tr><td>P95 end-to-end latency</td><td>&gt; 5 seconds</td><td>LLM slowdown, tool API degradation</td></tr>
+          <tr><td>Tool call success rate</td><td>&lt; 95%</td><td>External API changes or downtime</td></tr>
+          <tr><td>RAGAS Faithfulness</td><td>&lt; 0.85 (7-day avg)</td><td>Knowledge base stale, model drift</td></tr>
+          <tr><td>Token usage per query</td><td>+20% week-over-week</td><td>Context bloat, prompt regression</td></tr>
+          <tr><td>Task completion rate</td><td>&lt; 90%</td><td>Agent capability gap, edge cases</td></tr>
+          <tr><td>Cost per interaction</td><td>+30% week-over-week</td><td>Context bloat, unnecessary tool calls</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">Debugging Failed Agent Runs</h3>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Structured Error Logging</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">import logging
+import json
+from datetime import datetime
+
+logger = logging.getLogger("agent.production")
+
+def log_agent_event(event_type: str, trace_id: str, **data):
+    """Structured log for agent observability."""
+    log_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "event_type": event_type,   # "tool_call", "llm_call", "error", "completion"
+        "trace_id": trace_id,
+        **data
+    }
+    logger.info(json.dumps(log_entry))
+
+# Usage:
+log_agent_event("tool_call", trace_id=trace_id,
+    tool_name="web_search", args={"query": "..."}, status="success",
+    duration_ms=230, result_size_chars=4521)
+
+log_agent_event("error", trace_id=trace_id,
+    error_type="ToolTimeoutError", tool_name="code_executor",
+    duration_ms=10000, retry_attempt=2)
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="tools_landscape">
+    <div class="section-title"><span class="section-number">8</span>Observability Tool Landscape (2025)</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Tool</th><th>Primary Use</th><th>Integration</th></tr></thead>
+        <tbody>
+          <tr><td><strong>LangSmith</strong></td><td>LangChain/LangGraph trace visibility</td><td>Environment variables, zero-code change</td></tr>
+          <tr><td><strong>Arize Phoenix</strong></td><td>Open-source LLM observability + evaluation</td><td>OpenInference instrumentation</td></tr>
+          <tr><td><strong>Maxim AI</strong></td><td>LLM testing + production monitoring</td><td>SDK + CI/CD plugins</td></tr>
+          <tr><td><strong>Braintrust</strong></td><td>Prompt experimentation + eval comparison</td><td>SDK, dataset management</td></tr>
+          <tr><td><strong>NeMo Evaluator</strong></td><td>NVIDIA-native agent evaluation + CI/CD</td><td>REST API, Kubernetes Helm chart</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Angles</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Run, Monitor &amp; Maintain (7%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li>LangSmith: set <code>LANGCHAIN_TRACING_V2=true</code> → auto-traces all LangChain/LangGraph runs</li>
+          <li>Triton metrics on <strong>port 8002</strong> (Prometheus scrape endpoint)</li>
+          <li>Key metrics: nv_inference_queue_duration_us, nv_gpu_utilization</li>
+          <li>Drift detection: run golden dataset eval daily via CI/CD; alert on 5% metric drop</li>
+          <li>NeMo Evaluator integrates into CI/CD for automated checkpoint evaluation</li>
+          <li>Root-cause identification is explicitly listed as an exam skill</li>
+          <li>OpenTelemetry: standard protocol for distributed agent tracing (AutoGen, custom agents)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="hitl-oversight.html">← HITL &amp; Oversight</a>
+    <a class="topic-nav-btn" href="../index.html">Back to Home →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

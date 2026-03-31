@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fine-Tuning with LoRA — NCP-AAI Study Guide</title>
+  <meta name="description" content="Master LoRA and QLoRA fine-tuning: rank decomposition math, PEFT library, SFT vs DPO, NeMo Customizer configuration."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Hands-On Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link active" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Evaluation &amp; Tuning</span><span class="sep">›</span><span>Fine-Tuning with LoRA</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Evaluation &amp; Tuning — 13%</span>
+      <span class="tag tag-nvidia">NeMo Customizer</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">Fine-Tuning with LoRA</h1>
+    <p class="page-subtitle">Low-Rank Adaptation (LoRA) and QLoRA — the parameter-efficient fine-tuning techniques behind NeMo Customizer. Understand the math, implement SFT, choose between LoRA/QLoRA/DPO, and configure NeMo Customizer for production agents.</p>
+  </div>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>What Is LoRA?</div>
+    <div class="section-content">
+      <p><strong>Low-Rank Adaptation (LoRA)</strong> is a parameter-efficient fine-tuning technique that freezes the original model weights and injects small trainable rank-decomposition matrices into each target layer. Instead of updating all W ∈ ℝ<sup>d×d</sup> (billions of parameters), LoRA trains only two small matrices A ∈ ℝ<sup>d×r</sup> and B ∈ ℝ<sup>r×d</sup> where r ≪ d.</p>
+      <p>During forward pass: <strong>W' = W + BA</strong> where W is frozen and only BA is trained. At inference, BA is merged back into W — zero added latency.</p>
+    </div>
+  </div>
+
+  <div class="section" id="why">
+    <div class="section-title"><span class="section-number">2</span>Why LoRA Exists</div>
+    <div class="section-content">
+      <p>Full fine-tuning a 70B model requires ~560 GB of GPU memory (FP32 weights + gradients + optimizer states). LoRA at rank r=16 trains only 0.1–1% of parameters, reducing memory from 560 GB to ~20 GB — enabling fine-tuning on a single H100.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Method</th><th>Trainable Params</th><th>GPU Memory (70B)</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td>Full SFT</td><td>100%</td><td>~560 GB</td><td>When unlimited compute</td></tr>
+          <tr><td>LoRA (r=16)</td><td>~0.5%</td><td>~20 GB</td><td>Most production cases</td></tr>
+          <tr><td>QLoRA (r=16)</td><td>~0.5%</td><td>~10 GB</td><td>Single GPU fine-tuning</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="internal">
+    <div class="section-title"><span class="section-number">3</span>Internal Working</div>
+    <div class="section-content">
+      <p><strong>Rank r</strong> is the key hyperparameter. Higher r = more capacity = more parameters to train. Common values: r=4 (minimal), r=8 (baseline), r=16 (standard), r=64 (high-capacity).</p>
+      <p><strong>Alpha (α)</strong> scales the LoRA output: effective update = (α/r) × BA. Setting α=2r (e.g., r=16, α=32) is a common initialization.</p>
+      <p><strong>Target modules</strong> — LoRA is applied to specific weight matrices. For attention layers: q_proj, k_proj, v_proj, o_proj. Adding gate/up/down (MLP layers) improves task performance.</p>
+      <p><strong>QLoRA</strong> adds 4-bit NF4 quantization of the frozen base model weights, further halving memory. Gradients are computed in BF16 for stability.</p>
+    </div>
+  </div>
+
+  <div class="section" id="placement">
+    <div class="section-title"><span class="section-number">4</span>SFT vs DPO — Choosing the Right Method</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Method</th><th>Training Signal</th><th>Data Format</th><th>Best For</th></tr></thead>
+        <tbody>
+          <tr><td><strong>SFT</strong> (Supervised Fine-Tuning)</td><td>Next-token prediction on demonstrations</td><td>{prompt, completion} pairs</td><td>Teaching new tasks, format following</td></tr>
+          <tr><td><strong>DPO</strong> (Direct Preference Optimization)</td><td>Contrastive: preferred vs rejected</td><td>{prompt, chosen, rejected} triples</td><td>Alignment, safety, response quality</td></tr>
+          <tr><td><strong>RLHF</strong> (PPO)</td><td>RL reward signal from reward model</td><td>Complex pipeline</td><td>Complex alignment (overkill for most)</td></tr>
+        </tbody>
+      </table></div>
+      <p>NeMo Customizer supports both SFT and DPO natively. For most agentic use cases, <strong>SFT with LoRA</strong> is the recommended starting point.</p>
+    </div>
+  </div>
+
+  <div class="section" id="implementation">
+    <div class="section-title"><span class="section-number">5</span>Implementation</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — LoRA with HuggingFace PEFT</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
+from peft import LoraConfig, get_peft_model, TaskType
+from trl import SFTTrainer
+import torch
+
+model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+model = AutoModelForCausalLM.from_pretrained(
+    model_id, torch_dtype=torch.bfloat16, device_map="auto"
+)
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+# LoRA configuration
+lora_config = LoraConfig(
+    r=16,                          # rank
+    lora_alpha=32,                 # scaling factor (alpha = 2*r)
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                    "gate_proj", "up_proj", "down_proj"],
+    lora_dropout=0.05,
+    bias="none",
+    task_type=TaskType.CAUSAL_LM
+)
+
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+# → trainable params: 41,943,040 || all params: 8,072,204,288 || 0.5197%
+
+# Training
+trainer = SFTTrainer(
+    model=model,
+    train_dataset=dataset,
+    args=TrainingArguments(
+        output_dir="./lora-agent",
+        num_train_epochs=3,
+        per_device_train_batch_size=2,
+        gradient_accumulation_steps=4,
+        learning_rate=2e-4,
+        bf16=True,
+        logging_steps=10,
+    )
+)
+trainer.train()
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="nvidia">
+    <div class="section-title"><span class="section-number">6</span>NVIDIA Ecosystem — NeMo Customizer</div>
+    <div class="section-content">
+      <p><strong>NeMo Customizer</strong> (GA: April 2025) is a managed microservice that runs LoRA SFT on NVIDIA infrastructure via REST API. No local GPU required.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">YAML — NeMo Customizer LoRA Config</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+# POST /v1/customization/jobs
+{
+  "model": "meta/llama-3.1-8b-instruct",
+  "method": "lora",
+  "hyperparameters": {
+    "training_type": "sft",
+    "finetuning_type": "lora",
+    "lora": {
+      "adapter_dim": 16,        # rank r
+      "adapter_dropout": 0.1,
+      "alpha": 32               # lora_alpha
+    },
+    "epochs": 3,
+    "batch_size": 8,
+    "learning_rate": 0.0002
+  },
+  "dataset": {
+    "name": "my-agent-dataset",  # uploaded via NeMo Dataset API
+    "format": "sharegpt"         # {conversations: [{role, value}]}
+  }
+}
+</code></pre></div>
+      <a class="nvidia-badge" href="https://docs.nvidia.com/nemo/customizer/" target="_blank" rel="noopener">NeMo Customizer Docs →</a>
+    </div>
+  </div>
+
+  <div class="section" id="lab">
+    <div class="section-title"><span class="section-number">7</span>Hands-On Lab</div>
+    <div class="section-content">
+      <div class="callout callout-tip">
+        <div class="callout-title">🔬 Lab Exercise: LoRA Math + PEFT Fine-Tuning</div>
+        <p>1. Implement LoRA rank decomposition from scratch (numpy matrices A and B)<br/>
+        2. Verify: W_original + B@A ≈ W_finetuned for a small weight matrix<br/>
+        3. Fine-tune a small model (GPT-2) on a custom QA dataset using PEFT<br/>
+        4. Compare perplexity before/after fine-tuning</p>
+      </div>
+      <a href="../labs/index.html" class="btn btn-primary">🔬 Open Lab</a>
+    </div>
+  </div>
+
+  <div class="section" id="mistakes">
+    <div class="section-title"><span class="section-number">8</span>Common Mistakes</div>
+    <div class="section-content">
+      <div class="callout callout-mistake"><div class="callout-title">❌ Choosing Too Low a Rank</div><p>r=1 or r=2 often underfits. Start with r=8 or r=16 for agent task adaptation.</p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Forgetting to Set alpha</div><p>Default alpha=1 in some libraries creates tiny updates. Set alpha=2r (e.g., r=16 → alpha=32).</p></div>
+      <div class="callout callout-mistake"><div class="callout-title">❌ Not Merging Adapters for Deployment</div><p>Un-merged LoRA adds compute overhead on every forward pass. Call <code>model.merge_and_unload()</code> before exporting to TensorRT-LLM/NIMs.</p></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Relevance</div>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <div class="callout-title">🎯 Exam Angle — Evaluation &amp; Tuning Domain (13%)</div>
+        <ul style="margin:12px 0;padding-left:20px;line-height:2">
+          <li>LoRA rank r controls number of trainable parameters — higher r = more capacity</li>
+          <li>QLoRA = LoRA + 4-bit NF4 quantization of frozen base model</li>
+          <li>SFT uses next-token prediction; DPO uses preferred vs rejected pairs</li>
+          <li>NeMo Customizer supports LoRA, full SFT, and DPO (GA April 2025)</li>
+          <li>LoRA adapters must be merged before TensorRT-LLM compilation</li>
+        </ul>
+      </div>
+      <p><strong>Key Terms:</strong> LoRA, QLoRA, rank r, alpha, PEFT, SFT, DPO, NeMo Customizer, adapter_dim, merge_and_unload, trainable parameters</p>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="tokenization.html">← Tokenization</a>
+    <a class="topic-nav-btn" href="agent-evaluation.html">Agent Evaluation →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

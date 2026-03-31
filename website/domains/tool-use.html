@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tool Use & Function Calling — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">LLM Fundamentals</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="llm-fundamentals.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/transformer-architecture.html">Transformer Architecture</a>
+          <a class="sidebar-link" href="../topics/tokenization.html">Tokenization</a>
+          <a class="sidebar-link" href="../topics/fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Prompt Engineering</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="prompt-engineering.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/prompt-engineering.html">Prompt Engineering</a>
+          <a class="sidebar-link" href="../topics/chain-of-thought.html">Chain-of-Thought</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Agentic System Design</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="agentic-system-design.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/react-agent.html">ReAct Agent Loop</a>
+          <a class="sidebar-link" href="../topics/langgraph.html">LangGraph</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Tool Use</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="tool-use.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/tool-use.html">Tool Use & Function Calling</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Memory & RAG</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="memory-rag.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/rag-pipeline.html">RAG Pipeline</a>
+          <a class="sidebar-link" href="../topics/vector-databases.html">Vector Databases</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Multi-Agent</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="multi-agent.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/multi-agent.html">Multi-Agent Orchestration</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Deployment</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="deployment.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/triton.html">NVIDIA Triton</a>
+          <a class="sidebar-link" href="../topics/tensorrt-llm.html">TensorRT-LLM</a>
+          <a class="sidebar-link" href="../topics/nvidia-nims.html">NVIDIA NIMs</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Safety & Guardrails</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="safety-guardrails.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/nemo-guardrails.html">NeMo Guardrails</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #10b981; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#10b981; color:#fff; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 4</span>
+          <span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~15% of exam</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">Tool Use & Function Calling</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">How LLMs call external functions, APIs, and services — what makes an agent actually useful.</p>
+      </div>
+
+      <section class="content-section">
+        <h2>Why This Domain Matters</h2>
+        <p>Without tool use, an LLM can only work with the information in its training data. <strong>Function calling</strong> lets the LLM reach out to the real world — search the web, query databases, run code, call APIs. This is what separates a chatbot from an agent. The exam heavily tests your understanding of <em>how tool schemas work</em> and <em>how NVIDIA NIMs support function calling</em>.</p>
+        <div class="callout callout-tip">
+          <strong>NVIDIA focus:</strong> Know how to define a tool for NVIDIA NIM specifically (OpenAI-compatible JSON schema). Run the NVIDIA GenerativeAI Examples Tool Calling notebook before the exam.
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>How Function Calling Works</h2>
+        <div class="pipeline-diagram">
+          <div class="pipeline-node">User Query<span class="pipeline-sub">"What's NVDA stock?"</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">LLM + Tool Schema<span class="pipeline-sub">Sees available tools</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Tool Call JSON<span class="pipeline-sub">{"name":"get_stock","args":{"ticker":"NVDA"}}</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Tool Executes<span class="pipeline-sub">Your code runs</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Result → LLM<span class="pipeline-sub">LLM generates final answer</span></div>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/tool-use.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🔧</span>
+              <h3 class="card-title">Tool Use & Function Calling</h3>
+            </div>
+            <p class="card-desc">JSON schema for tools, StructuredTool in LangChain, NVIDIA NIM tool calling, parallel tool execution, error handling.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(16,185,129,0.1); color:#34d399; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">NVIDIA NIMs</span>
+              <span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">Hands-On</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Tool JSON Schema (Know This Cold)</h2>
+        <div class="code-block">
+          <button class="copy-btn">Copy</button>
+          <pre><code class="language-json">{
+  "type": "function",
+  "function": {
+    "name": "get_weather",
+    "description": "Get current weather for a city",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "The city name, e.g. 'San Francisco'"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["celsius", "fahrenheit"],
+          "description": "Temperature unit"
+        }
+      },
+      "required": ["city"]
+    }
+  }
+}</code></pre>
+        </div>
+        <p style="color:var(--text-secondary); font-size:0.9rem; margin-top:0.5rem;">This exact format is what you pass to NVIDIA NIMs, OpenAI, and LangChain. Know it by heart.</p>
+      </section>
+
+      <section class="content-section">
+        <h2>Exam Tips</h2>
+        <div class="callout callout-warning">
+          <strong>Common exam trap:</strong> The LLM does NOT execute the tool — it only produces a JSON call. YOUR code executes the tool and passes the result back to the LLM. The LLM never runs code directly.
+        </div>
+        <ul style="line-height:2;">
+          <li>Know the JSON schema structure for function calling (name, description, parameters)</li>
+          <li>Know <code>required</code> fields vs optional fields in the schema</li>
+          <li>Know that <code>tool_choice="auto"</code> lets the LLM decide whether to call a tool</li>
+          <li>Know how to handle tool errors — pass the error back as the tool result</li>
+          <li>Know that NVIDIA NIMs use the same OpenAI-compatible format</li>
+          <li>Know what <strong>parallel tool calling</strong> is — multiple tools called in one LLM step</li>
+        </ul>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="agentic-system-design.html" style="color:var(--nvidia-green); text-decoration:none;">← Agentic System Design</a>
+        <a href="memory-rag.html" style="color:var(--nvidia-green); text-decoration:none;">Memory & RAG →</a>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

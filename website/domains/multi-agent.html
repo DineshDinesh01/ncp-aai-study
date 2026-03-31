@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Agent Orchestration — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">LLM Fundamentals</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="llm-fundamentals.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/transformer-architecture.html">Transformer Architecture</a>
+          <a class="sidebar-link" href="../topics/tokenization.html">Tokenization</a>
+          <a class="sidebar-link" href="../topics/fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Prompt Engineering</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="prompt-engineering.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/prompt-engineering.html">Prompt Engineering</a>
+          <a class="sidebar-link" href="../topics/chain-of-thought.html">Chain-of-Thought</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Agentic System Design</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="agentic-system-design.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/react-agent.html">ReAct Agent Loop</a>
+          <a class="sidebar-link" href="../topics/langgraph.html">LangGraph</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Tool Use</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="tool-use.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/tool-use.html">Tool Use & Function Calling</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Memory & RAG</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="memory-rag.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/rag-pipeline.html">RAG Pipeline</a>
+          <a class="sidebar-link" href="../topics/vector-databases.html">Vector Databases</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Multi-Agent</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="multi-agent.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/multi-agent.html">Multi-Agent Orchestration</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Deployment</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="deployment.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/triton.html">NVIDIA Triton</a>
+          <a class="sidebar-link" href="../topics/tensorrt-llm.html">TensorRT-LLM</a>
+          <a class="sidebar-link" href="../topics/nvidia-nims.html">NVIDIA NIMs</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Safety & Guardrails</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="safety-guardrails.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/nemo-guardrails.html">NeMo Guardrails</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #ef4444; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#ef4444; color:#fff; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 6</span>
+          <span class="badge" style="background:rgba(239,68,68,0.15); color:#f87171; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~10% of exam</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">Multi-Agent Orchestration</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">How to coordinate multiple AI agents working together to solve complex tasks that one agent can't handle alone.</p>
+      </div>
+
+      <section class="content-section">
+        <h2>Why Use Multiple Agents?</h2>
+        <p>A single agent has limits: one context window, one set of tools, one area of expertise. Multi-agent systems solve this by breaking complex tasks across <strong>specialist agents</strong> — a planner agent, a coder agent, a reviewer agent — each focused on what it does best. The exam tests whether you know <em>when</em> to use multi-agent design and <em>how</em> agents communicate.</p>
+      </section>
+
+      <section class="content-section">
+        <h2>Multi-Agent Patterns</h2>
+        <table class="resource-table">
+          <thead>
+            <tr><th>Pattern</th><th>How It Works</th><th>Framework</th><th>Use Case</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Supervisor / Orchestrator</strong></td>
+              <td>One agent delegates tasks to workers</td>
+              <td>LangGraph, AutoGen</td>
+              <td>Complex workflows with parallel tasks</td>
+            </tr>
+            <tr>
+              <td><strong>Peer-to-Peer</strong></td>
+              <td>Agents talk directly to each other</td>
+              <td>AutoGen GroupChat</td>
+              <td>Debate, critique, code review</td>
+            </tr>
+            <tr>
+              <td><strong>Sequential Pipeline</strong></td>
+              <td>Each agent passes output to next</td>
+              <td>LangGraph, crewAI</td>
+              <td>Document processing pipeline</td>
+            </tr>
+            <tr>
+              <td><strong>Hierarchical</strong></td>
+              <td>Multi-level delegation tree</td>
+              <td>AutoGen nested chats</td>
+              <td>Enterprise-scale workflows</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/multi-agent.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🤖</span>
+              <h3 class="card-title">Multi-Agent Orchestration</h3>
+            </div>
+            <p class="card-desc">Supervisor patterns, agent communication, AutoGen GroupChat, LangGraph subgraphs, semantic routing between agents.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(239,68,68,0.1); color:#f87171; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">AutoGen</span>
+              <span class="badge" style="background:rgba(239,68,68,0.1); color:#f87171; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">LangGraph</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Key Frameworks Comparison</h2>
+        <table class="resource-table">
+          <thead>
+            <tr><th>Framework</th><th>Strengths</th><th>Best For</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AutoGen</strong></td>
+              <td>Easy multi-agent conversations, human-in-the-loop</td>
+              <td>Conversational multi-agent, code generation + review</td>
+            </tr>
+            <tr>
+              <td><strong>LangGraph</strong></td>
+              <td>Explicit state, production-ready, checkpointing</td>
+              <td>Complex workflows, stateful agents, production</td>
+            </tr>
+            <tr>
+              <td><strong>crewAI</strong></td>
+              <td>Simple API, role-based agents</td>
+              <td>Quick multi-agent setups, research tasks</td>
+            </tr>
+            <tr>
+              <td><strong>smolagents</strong></td>
+              <td>Lightweight, HuggingFace-native</td>
+              <td>Simple agents, learning, open-source models</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="content-section">
+        <h2>Exam Tips</h2>
+        <div class="callout callout-warning">
+          <strong>Common exam trap:</strong> More agents ≠ better results. Multi-agent adds coordination overhead, latency, and complexity. Only use it when a single agent genuinely can't handle the task.
+        </div>
+        <ul style="line-height:2;">
+          <li>Know the <strong>supervisor pattern</strong> — one orchestrator, many workers</li>
+          <li>Know what an <strong>AssistantAgent</strong> vs <strong>UserProxyAgent</strong> is in AutoGen</li>
+          <li>Know how to <strong>route queries</strong> to the right agent (semantic routing)</li>
+          <li>Know how agents <strong>share state</strong> — message passing vs shared memory</li>
+          <li>Know how to <strong>prevent infinite loops</strong> in multi-agent conversations</li>
+        </ul>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="memory-rag.html" style="color:var(--nvidia-green); text-decoration:none;">← Memory & RAG</a>
+        <a href="deployment.html" style="color:var(--nvidia-green); text-decoration:none;">Deployment →</a>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM Fundamentals — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">LLM Fundamentals</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="llm-fundamentals.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/transformer-architecture.html">Transformer Architecture</a>
+          <a class="sidebar-link" href="../topics/tokenization.html">Tokenization</a>
+          <a class="sidebar-link" href="../topics/fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Prompt Engineering</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="prompt-engineering.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/prompt-engineering.html">Prompt Engineering</a>
+          <a class="sidebar-link" href="../topics/chain-of-thought.html">Chain-of-Thought</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Agentic System Design</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="agentic-system-design.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/react-agent.html">ReAct Agent Loop</a>
+          <a class="sidebar-link" href="../topics/langgraph.html">LangGraph</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Tool Use</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="tool-use.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/tool-use.html">Tool Use & Function Calling</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Memory & RAG</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="memory-rag.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/rag-pipeline.html">RAG Pipeline</a>
+          <a class="sidebar-link" href="../topics/vector-databases.html">Vector Databases</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Multi-Agent</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="multi-agent.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/multi-agent.html">Multi-Agent Orchestration</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Deployment</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="deployment.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/triton.html">NVIDIA Triton</a>
+          <a class="sidebar-link" href="../topics/tensorrt-llm.html">TensorRT-LLM</a>
+          <a class="sidebar-link" href="../topics/nvidia-nims.html">NVIDIA NIMs</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Safety & Guardrails</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="safety-guardrails.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/nemo-guardrails.html">NeMo Guardrails</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #76B900; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#76B900; color:#000; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 1</span>
+          <span class="badge" style="background:rgba(118,185,0,0.15); color:#76B900; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~15% of exam</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">LLM Fundamentals</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">How large language models work under the hood — the essential foundation for everything else in this certification.</p>
+      </div>
+
+      <!-- Why This Domain Matters -->
+      <section class="content-section">
+        <h2>Why This Domain Matters</h2>
+        <p>Every agentic system is built on top of an LLM. If you don't understand how the model works, you can't debug it, optimize it, or use it correctly. This domain covers the <strong>internal machinery</strong> — transformers, tokenization, embeddings, and fine-tuning — that every other domain depends on.</p>
+        <div class="callout callout-tip">
+          <strong>Exam tip:</strong> This domain is ~15% of the exam but it is a prerequisite for understanding everything else. If you skip it, the later domains won't make sense. Study this first.
+        </div>
+      </section>
+
+      <!-- Topics in This Domain -->
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/transformer-architecture.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🏗</span>
+              <h3 class="card-title">Transformer Architecture</h3>
+            </div>
+            <p class="card-desc">The self-attention mechanism, multi-head attention, positional encoding, encoder/decoder stacks. The heart of every modern LLM.</p>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(118,185,0,0.1); color:#76B900; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">NeMo Toolkit</span>
+              <span class="badge" style="background:rgba(59,130,246,0.1); color:#60a5fa; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">Conceptual</span>
+            </div>
+          </a>
+          <a class="card" href="../topics/tokenization.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">✂</span>
+              <h3 class="card-title">Tokenization</h3>
+            </div>
+            <p class="card-desc">How text becomes numbers. BPE, WordPiece, SentencePiece tokenizers. Token count affects cost, context limits, and model behavior.</p>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(118,185,0,0.1); color:#76B900; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">HuggingFace</span>
+              <span class="badge" style="background:rgba(59,130,246,0.1); color:#60a5fa; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">Conceptual</span>
+            </div>
+          </a>
+          <a class="card" href="../topics/fine-tuning-lora.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">⚙</span>
+              <h3 class="card-title">Fine-Tuning with LoRA</h3>
+            </div>
+            <p class="card-desc">How to adapt a pre-trained model to a specific task without retraining all parameters. LoRA, QLoRA, and NeMo fine-tuning workflows.</p>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(118,185,0,0.1); color:#76B900; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">NeMo Toolkit</span>
+              <span class="badge" style="background:rgba(168,85,247,0.1); color:#c084fc; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">Hands-On</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Recommended Study Order -->
+      <section class="content-section">
+        <h2>Recommended Study Order</h2>
+        <div class="pipeline-diagram">
+          <div class="pipeline-node">1. Transformer Architecture<span class="pipeline-sub">How attention works</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">2. Tokenization<span class="pipeline-sub">Text → tokens → numbers</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">3. Fine-Tuning with LoRA<span class="pipeline-sub">Adapting pretrained models</span></div>
+        </div>
+        <p style="margin-top:1rem; color:var(--text-secondary);">Study in this order — transformers explain <em>how</em> the model processes text, tokenization explains <em>what</em> input the model sees, and fine-tuning explains <em>how</em> to customize the model.</p>
+      </section>
+
+      <!-- Free Resources -->
+      <section class="content-section">
+        <h2>Free Study Resources</h2>
+        <table class="resource-table">
+          <thead>
+            <tr><th>Resource</th><th>Platform</th><th>What You'll Learn</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Let's Build GPT from Scratch</strong></td>
+              <td>YouTube (Andrej Karpathy)</td>
+              <td>Build a transformer from scratch — best intuition builder</td>
+            </tr>
+            <tr>
+              <td><strong>HuggingFace NLP Course — Chapter 1-3</strong></td>
+              <td>HuggingFace</td>
+              <td>Tokenizers, models, fine-tuning — hands-on with code</td>
+            </tr>
+            <tr>
+              <td><strong>NeMo Toolkit Documentation</strong></td>
+              <td>NVIDIA Docs</td>
+              <td>NVIDIA's framework for training and fine-tuning LLMs</td>
+            </tr>
+            <tr>
+              <td><strong>Attention Is All You Need (paper)</strong></td>
+              <td>arXiv</td>
+              <td>The original transformer paper — read the abstract + figures</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Domain Exam Tips -->
+      <section class="content-section">
+        <h2>Exam Tips for This Domain</h2>
+        <div class="callout callout-warning">
+          <strong>Common exam trap:</strong> Know the difference between encoder-only (BERT — classification), decoder-only (GPT — generation), and encoder-decoder (T5 — translation/summarization) architectures. The exam will ask which to use for a given task.
+        </div>
+        <ul style="line-height:2;">
+          <li>Know what <strong>self-attention</strong> is and why it replaces RNNs</li>
+          <li>Know what <strong>positional encoding</strong> does (model has no inherent sequence order)</li>
+          <li>Know what <strong>BPE tokenization</strong> is and why different models tokenize differently</li>
+          <li>Know that <strong>LoRA</strong> injects trainable low-rank matrices — doesn't retrain all weights</li>
+          <li>Know <strong>NeMo Toolkit</strong> is NVIDIA's primary tool for fine-tuning</li>
+          <li>Understand what a <strong>context window</strong> is and why token count matters</li>
+        </ul>
+      </section>
+
+      <!-- Navigation -->
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="../index.html" style="color:var(--nvidia-green); text-decoration:none;">← Back to Home</a>
+        <a href="prompt-engineering.html" style="color:var(--nvidia-green); text-decoration:none;">Prompt Engineering →</a>
+      </div>
+    </main>
+  </div>
+
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

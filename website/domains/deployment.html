@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deployment & Optimization — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">LLM Fundamentals</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="llm-fundamentals.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/transformer-architecture.html">Transformer Architecture</a>
+          <a class="sidebar-link" href="../topics/tokenization.html">Tokenization</a>
+          <a class="sidebar-link" href="../topics/fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Prompt Engineering</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="prompt-engineering.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/prompt-engineering.html">Prompt Engineering</a>
+          <a class="sidebar-link" href="../topics/chain-of-thought.html">Chain-of-Thought</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Agentic System Design</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="agentic-system-design.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/react-agent.html">ReAct Agent Loop</a>
+          <a class="sidebar-link" href="../topics/langgraph.html">LangGraph</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Tool Use</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="tool-use.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/tool-use.html">Tool Use & Function Calling</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Memory & RAG</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="memory-rag.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/rag-pipeline.html">RAG Pipeline</a>
+          <a class="sidebar-link" href="../topics/vector-databases.html">Vector Databases</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Multi-Agent</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="multi-agent.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/multi-agent.html">Multi-Agent Orchestration</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Deployment</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="deployment.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/triton.html">NVIDIA Triton</a>
+          <a class="sidebar-link" href="../topics/tensorrt-llm.html">TensorRT-LLM</a>
+          <a class="sidebar-link" href="../topics/nvidia-nims.html">NVIDIA NIMs</a>
+          <a class="sidebar-link" href="../topics/nemo-toolkit.html">NeMo Toolkit</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Safety & Guardrails</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="safety-guardrails.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/nemo-guardrails.html">NeMo Guardrails</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #06b6d4; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#06b6d4; color:#000; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 7</span>
+          <span class="badge" style="background:rgba(6,182,212,0.15); color:#22d3ee; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~10% of exam — Most NVIDIA-specific</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">Model Optimization & Deployment</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">How to take a trained model and serve it fast, reliably, and at scale using the NVIDIA production stack.</p>
+      </div>
+
+      <section class="content-section">
+        <h2>The NVIDIA Deployment Stack</h2>
+        <p>NVIDIA has a specific set of tools for every step from model to production. Know this stack — the exam will test which tool to use at which stage.</p>
+        <div class="pipeline-diagram">
+          <div class="pipeline-node">Trained Model<span class="pipeline-sub">PyTorch / NeMo</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">TensorRT-LLM<span class="pipeline-sub">Optimize + quantize</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">NVIDIA NIM<span class="pipeline-sub">Package as microservice</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Triton Inference Server<span class="pipeline-sub">Serve at scale</span></div>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/triton.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🚀</span>
+              <h3 class="card-title">NVIDIA Triton Inference Server</h3>
+            </div>
+            <p class="card-desc">Production model serving. Model repository format, HTTP/gRPC endpoints, dynamic batching, multi-GPU, and monitoring.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(6,182,212,0.1); color:#22d3ee; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">NVIDIA Triton</span>
+            </div>
+          </a>
+          <a class="card" href="../topics/tensorrt-llm.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">⚡</span>
+              <h3 class="card-title">TensorRT-LLM</h3>
+            </div>
+            <p class="card-desc">Optimize LLMs for fast NVIDIA GPU inference. INT8/INT4 quantization, tensor parallelism, paged KV cache, in-flight batching.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(6,182,212,0.1); color:#22d3ee; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">TensorRT-LLM</span>
+            </div>
+          </a>
+          <a class="card" href="../topics/nvidia-nims.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">📦</span>
+              <h3 class="card-title">NVIDIA NIMs</h3>
+            </div>
+            <p class="card-desc">NVIDIA Inference Microservices — pre-built, optimized AI microservices. OpenAI-compatible API. Free credits at build.nvidia.com.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(6,182,212,0.1); color:#22d3ee; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">NVIDIA NIMs</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>LLM Optimization Techniques</h2>
+        <table class="resource-table">
+          <thead>
+            <tr><th>Technique</th><th>What It Does</th><th>Tradeoff</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>INT8 Quantization</strong></td>
+              <td>Reduces weights from FP32 to INT8</td>
+              <td>~2x memory reduction, slight accuracy loss</td>
+            </tr>
+            <tr>
+              <td><strong>INT4 Quantization</strong></td>
+              <td>Reduces weights to 4-bit</td>
+              <td>~4x memory reduction, more accuracy loss</td>
+            </tr>
+            <tr>
+              <td><strong>Tensor Parallelism</strong></td>
+              <td>Splits model layers across multiple GPUs</td>
+              <td>Requires multiple GPUs, communication overhead</td>
+            </tr>
+            <tr>
+              <td><strong>Dynamic Batching</strong></td>
+              <td>Groups multiple requests into one batch</td>
+              <td>Higher throughput, slight latency increase</td>
+            </tr>
+            <tr>
+              <td><strong>Paged KV Cache</strong></td>
+              <td>Efficient attention cache memory management</td>
+              <td>Higher throughput, more concurrent requests</td>
+            </tr>
+            <tr>
+              <td><strong>In-flight Batching</strong></td>
+              <td>Adds new requests to ongoing batch</td>
+              <td>GPU utilization maximized, complex scheduling</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="content-section">
+        <h2>Exam Tips</h2>
+        <div class="callout callout-warning">
+          <strong>Common exam trap:</strong> Know which tool does what. TensorRT-LLM <em>optimizes</em> the model. Triton <em>serves</em> the model. NIMs are pre-built packages that include both. These are 3 different things.
+        </div>
+        <ul style="line-height:2;">
+          <li>Know Triton's <strong>3 ports</strong>: 8000 (HTTP), 8001 (gRPC), 8002 (metrics)</li>
+          <li>Know the <strong>model repository format</strong> for Triton</li>
+          <li>Know what <strong>dynamic batching</strong> does in Triton</li>
+          <li>Know that TensorRT-LLM uses <strong>paged KV cache</strong> for memory efficiency</li>
+          <li>Know that NIMs expose an <strong>OpenAI-compatible API</strong></li>
+          <li>Know the <strong>latency vs throughput tradeoff</strong> in batching</li>
+        </ul>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="multi-agent.html" style="color:var(--nvidia-green); text-decoration:none;">← Multi-Agent</a>
+        <a href="safety-guardrails.html" style="color:var(--nvidia-green); text-decoration:none;">Safety & Guardrails →</a>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeMo Microservices Ecosystem — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <div class="domain-group"><div class="domain-toggle open">⬡ NVIDIA Platform Implementation <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
+      <a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a>
+      <a class="sidebar-link active" href="nemo-microservices.html">NeMo Microservices</a>
+      <!-- NIMs is in deployment domain usually, but heavily related -->
+    </div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>NVIDIA Platform</span><span class="sep">›</span><span>NeMo Microservices</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">NVIDIA Platform</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">The NeMo Microservices Ecosystem</h1>
+    <p class="page-subtitle">The NCP-AAI exam heavily emphasizes knowing WHAT to use WHEN. Learn the distinct functions of Curator, Customizer, Evaluator, and Retriever.</p>
+  </div>
+  
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> NeMo Curator (Data Prep)</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> NeMo Customizer (Fine-Tuning)</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> NeMo Evaluator (Benchmarking)</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> NeMo Retriever (RAG Pipeline)</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Exam Relevance (The "Which Service" Question)</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>NeMo Curator (Data Pre-Processing)</h2>
+    <div class="section-content">
+      <p>Before you can fine-tune a model, you need massive amounts of clean data. <strong>NeMo Curator</strong> runs on GPUs to rapidly deduplicate, clean, translate, and blend petabytes of raw text data. If a scenario involves "cleaning Wikipedia scrapes before training", the answer is Curator.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>NeMo Customizer (PEFT Fine-Tuning)</h2>
+    <div class="section-content">
+      <p><strong>NeMo Customizer</strong> handles the actual math of fine-tuning (LoRA, P-Tuning, Full SFT, DPO). It manages spreading the LLM weights across multiple GPUs using Tensor Parallelism or Pipeline Parallelism.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>NeMo Evaluator (Benchmarking)</h2>
+    <div class="section-content">
+      <p>How do you know if Customizer actually worked? <strong>NeMo Evaluator</strong> automatically runs standard benchmarks (MMLU, HumanEval) or custom RAGAS (RAG Assessment) metrics on the tuned model to generate scorecard reports.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>NeMo Retriever (RAG Pipeline)</h2>
+    <div class="section-content">
+      <p>If you don't want to fine-tune, you use <strong>NeMo Retriever</strong>. Retriever connects the LLM to enterprise documents. It provides optimized embedding microservices and high-throughput cross-encoder re-ranking algorithms.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Exam Relevance</h2>
+    <div class="section-content">
+      <div class="callout callout-warning">
+        <p><strong>Exam Trap</strong>: "You need to measure how often your new Customer Service Agent hallucinates responses that aren't in the employee handbook. Which microservice automates this?"</p>
+        <p><strong>Answer</strong>: NeMo Evaluator. Customizer builds the model, Guardrails blocks the hallucinations at runtime, but Evaluator <em>measures the frequency</em> via benchmarks.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

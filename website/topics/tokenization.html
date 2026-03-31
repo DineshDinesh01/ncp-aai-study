@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tokenization — NCP-AAI Study Guide</title>
+  <meta name="description" content="Deep-dive into tokenization: BPE, WordPiece, SentencePiece, vocabulary size tradeoffs, and NVIDIA NeMo tokenizer configuration."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Hands-On Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics open"><a class="sidebar-link" href="tool-use.html">Tool Use</a><a class="sidebar-link active" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety &amp; Compliance <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI Interaction <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agent Development</span><span class="sep">›</span><span>Tokenization</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Agent Development</span>
+      <span class="tag tag-nvidia">NeMo Customizer</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">Tokenization</h1>
+    <p class="page-subtitle">How LLMs convert raw text into numbers — BPE, WordPiece, SentencePiece, vocab size tradeoffs, and NVIDIA NeMo tokenizer configuration for production agent pipelines.</p>
+  </div>
+
+  <!-- §1 DEFINITION -->
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>What Is Tokenization?</div>
+    <div class="section-content">
+      <p>Tokenization is the process of converting raw text into a sequence of integer token IDs that a language model can process. Every LLM — whether GPT-4, Llama-3, or a NeMo-fine-tuned model — only sees token IDs, never raw text.</p>
+      <p>A <strong>tokenizer</strong> consists of two components: a <em>vocabulary</em> (a fixed mapping of text pieces → integer IDs) and an <em>encoding algorithm</em> (the rules for splitting text into those pieces).</p>
+      <div class="pipeline">
+        <div class="pipeline-node">"Hello world"</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node active">Tokenizer</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">[9906, 1917]</div>
+        <span class="pipeline-arrow">→</span>
+        <div class="pipeline-node">LLM</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- §2 WHY -->
+  <div class="section" id="why">
+    <div class="section-title"><span class="section-number">2</span>Why Does Tokenization Exist?</div>
+    <div class="section-content">
+      <p>Neural networks operate on fixed-size numerical vectors, not strings. Tokenization bridges the gap between human-readable text and model-readable numbers. The efficiency of tokenization directly determines:</p>
+      <ul style="margin:12px 0;padding-left:20px;color:var(--text-secondary);line-height:2">
+        <li><strong>Context window usage</strong> — more tokens per word = less text fits in context</li>
+        <li><strong>Inference cost</strong> — billing is per token in NIM/API calls</li>
+        <li><strong>Multilingual performance</strong> — poor tokenization of non-English text wastes tokens</li>
+        <li><strong>Code/math accuracy</strong> — tokenization of special characters affects reasoning</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- §3 HOW IT WORKS -->
+  <div class="section" id="internal">
+    <div class="section-title"><span class="section-number">3</span>Three Main Algorithms</div>
+    <div class="section-content">
+      <p><strong>Byte-Pair Encoding (BPE)</strong> — Used by GPT-2, GPT-4, Llama, most NVIDIA NIMs. Starts with character-level vocabulary, then iteratively merges the most frequent adjacent pair into a single token, until vocab size is reached.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">BPE Algorithm</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+# Simplified BPE merge step
+vocab = {("h","e","l","l","o"): 5, ("w","o","r","l","d"): 3}
+# Most frequent pair: ("l","l") → merge → "ll"
+# Repeat until vocab_size reached
+</code></pre></div>
+
+      <p><strong>WordPiece</strong> — Used by BERT, DistilBERT. Similar to BPE but merges based on likelihood ratio (maximize training data log-likelihood) rather than raw frequency. Uses ## prefix for subword continuations.</p>
+
+      <p><strong>SentencePiece (Unigram LM)</strong> — Used by Llama, T5, ALBERT. Treats tokenization as a probabilistic model. Trains directly on raw bytes (no pre-tokenization) — handles any language including Japanese, Chinese, Arabic without whitespace assumptions.</p>
+
+      <div class="table-wrap"><table>
+        <thead><tr><th>Algorithm</th><th>Used By</th><th>Subword Marker</th><th>Key Advantage</th></tr></thead>
+        <tbody>
+          <tr><td>BPE</td><td>GPT-4, Llama, NIMs</td><td>Ġ (space prefix)</td><td>Simple, well-understood</td></tr>
+          <tr><td>WordPiece</td><td>BERT, DistilBERT</td><td>## suffix</td><td>Better rare-word handling</td></tr>
+          <tr><td>SentencePiece</td><td>Llama-3, T5</td><td>▁ (underscore)</td><td>Language-agnostic, byte-level</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- §4 PIPELINE PLACEMENT -->
+  <div class="section" id="placement">
+    <div class="section-title"><span class="section-number">4</span>Where Tokenization Fits in an Agent System</div>
+    <div class="section-content">
+      <p>In an agentic pipeline, tokenization happens at <strong>two critical points</strong>:</p>
+      <ol style="margin:12px 0;padding-left:20px;color:var(--text-secondary);line-height:2">
+        <li><strong>Input encoding</strong> — User message + system prompt + tool outputs are tokenized before LLM call</li>
+        <li><strong>Output decoding</strong> — LLM generates token IDs; tokenizer decodes them back to text</li>
+      </ol>
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ Common Agent Bug</div>
+        <p>Agents fail when tool outputs push the total token count beyond the model's context window. Always count tokens before adding to messages. Use <code>tiktoken</code> (OpenAI) or NeMo's tokenizer to count precisely.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- §5 IMPLEMENTATION -->
+  <div class="section" id="implementation">
+    <div class="section-title"><span class="section-number">5</span>Implementation Examples</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Token Counting for Agents</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+import tiktoken
+
+enc = tiktoken.encoding_for_model("gpt-4o")
+
+def count_tokens(messages: list[dict]) -> int:
+    """Count tokens in a ChatML message list."""
+    total = 0
+    for msg in messages:
+        total += 4  # per-message overhead
+        for key, value in msg.items():
+            total += len(enc.encode(str(value)))
+    total += 2  # reply priming
+    return total
+
+messages = [
+    {"role": "system", "content": "You are a helpful AI agent."},
+    {"role": "user", "content": "Summarize the following document: " + "word " * 3000}
+]
+print(f"Token count: {count_tokens(messages)}")
+# → Token count: 3024 (approaching gpt-4o 128k limit? no, fine here)
+</code></pre></div>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — HuggingFace Tokenizer</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+from transformers import AutoTokenizer
+
+# Load tokenizer for Llama-3 (uses SentencePiece)
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B")
+
+text = "The NVIDIA NIM API is OpenAI-compatible."
+tokens = tokenizer.encode(text)
+decoded = tokenizer.decode(tokens)
+
+print(f"Token IDs: {tokens}")
+print(f"Token strings: {[tokenizer.decode([t]) for t in tokens]}")
+print(f"Token count: {len(tokens)}")
+# Token count: 11 (Llama-3 is efficient with technical terms)
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- §6 NVIDIA -->
+  <div class="section" id="nvidia">
+    <div class="section-title"><span class="section-number">6</span>NVIDIA Ecosystem Mapping</div>
+    <div class="section-content">
+      <p>Tokenization is configured in <strong>NeMo Customizer</strong> when fine-tuning models. The tokenizer must exactly match the base model's tokenizer — mismatches cause silent errors during SFT.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">YAML — NeMo Customizer SFT Config</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+# nemo_customizer_sft.yaml
+model:
+  name: meta/llama-3.1-8b-instruct
+  tokenizer:
+    type: sentencepiece       # must match base model
+    vocab_file: null          # auto-loaded from model checkpoint
+  
+data:
+  train_ds:
+    file_path: /data/train.jsonl
+    max_seq_length: 4096      # token limit — controls GPU memory
+    add_bos: true             # add beginning-of-sequence token
+    add_eos: true             # add end-of-sequence token
+</code></pre></div>
+      <p>When calling NVIDIA NIMs, the API handles tokenization server-side. However, for <strong>context window management</strong> in your agent, use the same tokenizer locally to count tokens before sending.</p>
+      <a class="nvidia-badge" href="https://docs.nvidia.com/nemo/customizer/" target="_blank" rel="noopener">NeMo Customizer Tokenizer Docs →</a>
+    </div>
+  </div>
+
+  <!-- §7 LAB -->
+  <div class="section" id="lab">
+    <div class="section-title"><span class="section-number">7</span>Hands-On Lab</div>
+    <div class="section-content">
+      <div class="callout callout-tip">
+        <div class="callout-title">🔬 Lab 002: BPE Tokenizer from Scratch</div>
+        <p>Build a working BPE tokenizer in ~60 lines of Python. Tokenize English text, code snippets, and non-English text. Measure vocab efficiency. Compare with HuggingFace GPT-2 tokenizer output.</p>
+        <p style="margin-top:12px"><strong>Skills practiced:</strong> BPE merge algorithm, vocabulary construction, encode/decode, token count analysis</p>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+        <a href="../labs/index.html" class="btn btn-primary">🔬 Open Lab 002</a>
+        <a href="../playground/index.html" class="btn btn-secondary">⚡ Try in Playground</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- §8 MISTAKES -->
+  <div class="section" id="mistakes">
+    <div class="section-title"><span class="section-number">8</span>Common Mistakes</div>
+    <div class="section-content">
+      <div class="callout callout-mistake">
+        <div class="callout-title">❌ Mistake 1 — Not Counting Tokens Before API Calls</div>
+        <p>Sending tool outputs to an LLM without checking token count causes truncation or API errors. Always count before adding to messages.</p>
+      </div>
+      <div class="callout callout-mistake">
+        <div class="callout-title">❌ Mistake 2 — Assuming 1 Word = 1 Token</div>
+        <p>English averages ~1.3 tokens/word. Code, numbers, and special characters can be 3–5 tokens/word. Never estimate — always count programmatically.</p>
+      </div>
+      <div class="callout callout-mistake">
+        <div class="callout-title">❌ Mistake 3 — Using Wrong Tokenizer for Token Counting</div>
+        <p>If you use tiktoken (GPT-4) to count tokens for a Llama-3 NIM call, the count will be wrong. Match tokenizer to model.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- §9 EXAM -->
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Relevance</div>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <div class="callout-title">🎯 Exam Angle — Agent Development Domain (15%)</div>
+        <p>Tokenization questions on the NCP-AAI exam typically focus on:</p>
+        <ul style="margin:12px 0;padding-left:20px;line-height:2">
+          <li>Which tokenizer algorithm is used by Llama models → <strong>SentencePiece</strong></li>
+          <li>Why non-English text tokenizes inefficiently in BPE models → <strong>vocabulary was trained on English-dominant corpus</strong></li>
+          <li>How to manage context window limits in agents → <strong>count tokens before each LLM call</strong></li>
+          <li>NeMo Customizer tokenizer config requirement → <strong>must match base model exactly</strong></li>
+          <li>What happens when <code>max_seq_length</code> is exceeded in SFT → <strong>sequence is truncated from the right</strong></li>
+        </ul>
+      </div>
+      <p><strong>Key Terms:</strong> BPE (Byte-Pair Encoding), WordPiece, SentencePiece, vocabulary size, context window, token ID, tiktoken, subword tokenization, ChatML format, add_bos/add_eos</p>
+    </div>
+  </div>
+
+  <!-- RELATED -->
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;color:var(--text-primary)">Related Topics</h2>
+  <div class="card-grid">
+    <a class="card" href="transformer-architecture.html"><div class="card-icon">🔮</div><div class="card-title">Transformer Architecture</div><div class="card-desc">How tokens become embeddings and flow through attention layers</div></a>
+    <a class="card" href="fine-tuning-lora.html"><div class="card-icon">🎛️</div><div class="card-title">Fine-Tuning with LoRA</div><div class="card-desc">NeMo Customizer uses tokenizer config during SFT — must match base model</div></a>
+    <a class="card" href="nvidia-nims.html"><div class="card-icon">⬡</div><div class="card-title">NVIDIA NIMs</div><div class="card-desc">NIM API charges per token — efficient tokenization reduces costs</div></a>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="transformer-architecture.html">← Transformer Architecture</a>
+    <a class="topic-nav-btn" href="fine-tuning-lora.html">Fine-Tuning with LoRA →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

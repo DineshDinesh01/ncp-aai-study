@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Planning & Reflection Architectures — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <!-- Abbreviated Sidebar for brevity -->
+    <div class="domain-group"><div class="domain-toggle open">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
+      <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
+      <a class="sidebar-link active" href="planning-architectures.html">Planning & Reflection</a>
+      <a class="sidebar-link" href="frameworks-deep-dive.html">Multi-Agent Frameworks</a>
+    </div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition & Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics">
+      <a class="sidebar-link" href="tree-of-thought.html">Tree of Thought</a>
+      <a class="sidebar-link" href="agent-memory.html">Agentic Memory</a>
+    </div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agentic System Design</span><span class="sep">›</span><span>Planning & Reflection</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Agentic Architecture</span><span class="tag tag-difficulty-advanced">Advanced</span></div>
+    <h1 class="page-title">Planning & Reflection Architectures</h1>
+    <p class="page-subtitle">Moving beyond reactive loops. Discover how agents Plan-and-Execute complex tasks upfront and use Self-Reflection (CRITIC) to iteratively improve their outputs.</p>
+  </div>
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> Plan-and-Execute Architecture</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> Self-Reflection (Reflexion)</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> CRITIC Framework</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> Exam Relevance</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>Plan-and-Execute Architecture</h2>
+    <div class="section-content">
+      <p>While ReAct is excellent for simple, step-by-step tasks, it suffers from "short-sightedness". A ReAct agent doesn't establish a long-term plan; it just decides what to do <em>next</em>.</p>
+      <p><strong>Plan-and-Execute</strong> separates planning from execution:</p>
+      <ol>
+        <li><strong>Planner Agent</strong>: Receives the user prompt and breaks it down into a multi-step execution plan.</li>
+        <li><strong>Executor Agent(s)</strong>: Receives step 1, executes it using tools, returns the result. Then receives step 2, etc.</li>
+        <li><strong>Re-Planner (Optional)</strong>: Reviews the trajectory. If a step failed, it dynamically alters the remaining steps.</li>
+      </ol>
+      <br/>
+      <p>This is highly tested in scale-out scenarios where execution steps can be run in parallel by different specific workers.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>Self-Reflection (Reflexion)</h2>
+    <div class="section-content">
+      <p>Agents naturally hallucinate or fail tool invocations. <strong>Self-reflection</strong> introduces a "thinking about thinking" loop. Before returning a final answer to the user, the agent passes its draft to a <strong>Reflector Node</strong>.</p>
+      <p>The Reflector acts as a critic: <em>"Did I fully answer the user's prompt? Did the output format correctly? Are there hallucinations?"</em> If it spots an error, it returns feedback to the generator to try again, rather than failing externally.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>CRITIC Framework</h2>
+    <div class="section-content">
+      <p><strong>CRITIC</strong> (Validating LLMs using External Tools) is an advanced reflection pattern. Instead of using internal prompt-based reflection (which suffers from the same hallucination bias), CRITIC forces the agent to use tools (like Python execution or searching Wikipedia) to explicitly verify its own claims before outputting them.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>Exam Relevance</h2>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <p><strong>Exam Trap</strong>: You will be given a scenario where an agent needs to perform 5 independent API calls to gather data before summarizing it. </p>
+        <p><strong>Question</strong>: Which architecture is best?</p>
+        <p><strong>Answer</strong>: Plan-and-Execute. ReAct would do them sequentially and likely lose context. Plan-and-Execute generates the 5 tasks upfront, which can then be parallelized by executors.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory & RAG — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">LLM Fundamentals</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="llm-fundamentals.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/transformer-architecture.html">Transformer Architecture</a>
+          <a class="sidebar-link" href="../topics/tokenization.html">Tokenization</a>
+          <a class="sidebar-link" href="../topics/fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Prompt Engineering</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="prompt-engineering.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/prompt-engineering.html">Prompt Engineering</a>
+          <a class="sidebar-link" href="../topics/chain-of-thought.html">Chain-of-Thought</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Agentic System Design</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="agentic-system-design.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/react-agent.html">ReAct Agent Loop</a>
+          <a class="sidebar-link" href="../topics/langgraph.html">LangGraph</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Tool Use</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="tool-use.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/tool-use.html">Tool Use & Function Calling</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Memory & RAG</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="memory-rag.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/rag-pipeline.html">RAG Pipeline</a>
+          <a class="sidebar-link" href="../topics/vector-databases.html">Vector Databases</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Multi-Agent</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="multi-agent.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/multi-agent.html">Multi-Agent Orchestration</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Deployment</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="deployment.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/triton.html">NVIDIA Triton</a>
+          <a class="sidebar-link" href="../topics/tensorrt-llm.html">TensorRT-LLM</a>
+          <a class="sidebar-link" href="../topics/nvidia-nims.html">NVIDIA NIMs</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="domain-toggle">Safety & Guardrails</div>
+        <div class="domain-topics">
+          <a class="sidebar-link" href="safety-guardrails.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/nemo-guardrails.html">NeMo Guardrails</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #8b5cf6; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#8b5cf6; color:#fff; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 5</span>
+          <span class="badge" style="background:rgba(139,92,246,0.15); color:#a78bfa; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~15% of exam</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">Memory & RAG</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">How agents remember things — from short-term context to long-term document knowledge via Retrieval-Augmented Generation.</p>
+      </div>
+
+      <section class="content-section">
+        <h2>Why This Domain Matters</h2>
+        <p>LLMs have two fundamental memory problems: (1) they forget everything when the context window ends, and (2) they don't know about your private data. <strong>RAG</strong> solves the second problem — it lets an agent retrieve relevant information from your documents at query time. <strong>Memory systems</strong> solve the first — they persist state across conversations.</p>
+        <div class="callout callout-tip">
+          <strong>Exam focus:</strong> Know the full RAG pipeline cold. The exam will ask about chunk size, embedding models, cosine similarity, and how to improve retrieval quality. Know NVIDIA's NeMo Retriever.
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>The 4 Types of Agent Memory</h2>
+        <table class="resource-table">
+          <thead>
+            <tr><th>Type</th><th>What It Is</th><th>Implementation</th><th>Limit</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>In-context memory</strong></td>
+              <td>Everything in the current prompt</td>
+              <td>Pass full conversation history</td>
+              <td>Context window size</td>
+            </tr>
+            <tr>
+              <td><strong>Summary memory</strong></td>
+              <td>LLM summarizes old turns</td>
+              <td>LangChain ConversationSummaryMemory</td>
+              <td>Summary quality</td>
+            </tr>
+            <tr>
+              <td><strong>Vector memory</strong></td>
+              <td>Relevant past turns retrieved by similarity</td>
+              <td>ChromaDB / pgvector</td>
+              <td>Retrieval accuracy</td>
+            </tr>
+            <tr>
+              <td><strong>RAG (document memory)</strong></td>
+              <td>Retrieve from a knowledge base</td>
+              <td>LlamaIndex + vector store</td>
+              <td>Chunk quality</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="content-section">
+        <h2>RAG Pipeline Overview</h2>
+        <div class="pipeline-diagram">
+          <div class="pipeline-node">Documents<span class="pipeline-sub">PDF, HTML, text</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Chunking<span class="pipeline-sub">Split into pieces</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Embedding<span class="pipeline-sub">Vectors</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Vector DB<span class="pipeline-sub">ChromaDB / pgvector</span></div>
+        </div>
+        <div style="text-align:center; padding:0.5rem; color:var(--text-secondary); font-size:0.9rem;">↓ At query time</div>
+        <div class="pipeline-diagram">
+          <div class="pipeline-node">User Query<span class="pipeline-sub">Embedded</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Similarity Search<span class="pipeline-sub">Top-k chunks</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">Augmented Prompt<span class="pipeline-sub">Query + chunks</span></div>
+          <div class="pipeline-arrow">→</div>
+          <div class="pipeline-node">LLM Answer<span class="pipeline-sub">Grounded in docs</span></div>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/rag-pipeline.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🔍</span>
+              <h3 class="card-title">RAG Pipeline</h3>
+            </div>
+            <p class="card-desc">Full pipeline: document loading, chunking strategies, embedding models, vector store indexing, retrieval, augmentation, and generation.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(139,92,246,0.1); color:#a78bfa; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">LlamaIndex</span>
+              <span class="badge" style="background:rgba(139,92,246,0.1); color:#a78bfa; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">NeMo Retriever</span>
+            </div>
+          </a>
+          <a class="card" href="../topics/vector-databases.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">🗄</span>
+              <h3 class="card-title">Vector Databases</h3>
+            </div>
+            <p class="card-desc">How embeddings are stored and retrieved. ChromaDB, pgvector, Milvus. Cosine similarity, ANN search, HNSW index.</p>
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <span class="badge" style="background:rgba(139,92,246,0.1); color:#a78bfa; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px;">ChromaDB</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="content-section">
+        <h2>Exam Tips</h2>
+        <div class="callout callout-warning">
+          <strong>Common exam trap:</strong> "Hallucination" in RAG usually means the retrieval step failed, not the generation step. Always diagnose retrieval quality first — check chunk size, embedding model quality, and top-k value.
+        </div>
+        <ul style="line-height:2;">
+          <li>Know the difference between <strong>sparse retrieval</strong> (BM25/keyword) and <strong>dense retrieval</strong> (embeddings)</li>
+          <li>Know what <strong>chunk size</strong> does — smaller = precise but may lose context; larger = more context but noisier</li>
+          <li>Know what <strong>cosine similarity</strong> measures (angle between vectors, 0-1)</li>
+          <li>Know <strong>HNSW index</strong> — hierarchical navigable small world, used for fast ANN search</li>
+          <li>Know <strong>NeMo Retriever</strong> is NVIDIA's production RAG service</li>
+          <li>Know what <strong>hybrid search</strong> is — combines BM25 + dense retrieval</li>
+        </ul>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="tool-use.html" style="color:var(--nvidia-green); text-decoration:none;">← Tool Use</a>
+        <a href="multi-agent.html" style="color:var(--nvidia-green); text-decoration:none;">Multi-Agent →</a>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

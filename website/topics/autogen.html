@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AutoGen — Conversational Multi-Agent Framework | NCP-AAI Study Guide</title>
+  <meta name="description" content="AutoGen deep dive: UserProxyAgent, AssistantAgent, GroupChatManager, conversation patterns, termination conditions, and NVIDIA NIM integration."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group open"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▼</span></div>
+      <div class="domain-topics" style="display:block;">
+        <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
+        <a class="sidebar-link" href="langgraph.html">LangGraph</a>
+        <a class="sidebar-link" href="crewai.html">CrewAI</a>
+        <a class="sidebar-link active" href="autogen.html">AutoGen</a>
+        <a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a>
+      </div>
+    </div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tool-use.html">Tool Use</a><a class="sidebar-link" href="agent-error-handling.html">Error Handling</a><a class="sidebar-link" href="tokenization.html">Tokenization</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agentiq.html">AgentIQ</a><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agent Architecture &amp; Design — 15%</span><span class="sep">›</span><span>AutoGen</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Agent Architecture &amp; Design — 15%</span>
+      <span class="tag tag-nvidia">NVIDIA NIMs</span>
+      <span class="tag tag-difficulty-intermediate">Intermediate</span>
+    </div>
+    <h1 class="page-title">AutoGen</h1>
+    <p class="page-subtitle">Conversational multi-agent framework — UserProxyAgent, AssistantAgent, GroupChatManager, termination conditions, and human-in-the-loop patterns with NVIDIA NIMs.</p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#what">1. What Is AutoGen?</a>
+    <a href="#why">2. Why AutoGen Exists</a>
+    <a href="#agents">3. Core Agent Types</a>
+    <a href="#groupchat">4. GroupChat and GroupChatManager</a>
+    <a href="#code">5. Full Python Example</a>
+    <a href="#nvidia">6. NVIDIA NIM Integration</a>
+    <a href="#lab">7. Lab Exercise</a>
+    <a href="#mistakes">8. Common Mistakes</a>
+    <a href="#exam">9. Exam Prep</a>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="what">
+    <div class="section-title"><span class="section-number">1</span>What Is AutoGen?</div>
+    <div class="section-content">
+      <p><strong>AutoGen</strong> is a Microsoft Research framework for building <em>conversational</em> multi-agent systems. Unlike CrewAI (task-centric) or LangGraph (graph-centric), AutoGen models agent collaboration as a <strong>structured conversation</strong> — agents take turns sending messages to each other, with tool execution and code running embedded in the conversation flow.</p>
+      <div class="callout callout-tip"><div class="callout-title">💡 2025 Status Update</div>
+        <p>AutoGen was consolidated into the <strong>Microsoft Agent Framework (AG2)</strong> in late 2025. The original AutoGen package enters maintenance mode. The concepts and APIs from AutoGen 0.2/0.3 remain heavily tested on the NCP-AAI exam, so study them thoroughly.</p>
+      </div>
+      <p style="margin-top:12px;">AutoGen's core insight: most multi-agent collaboration can be modeled as agents <em>chatting</em> — one writes code, another executes it, a third reviews the result, and so on. This maps naturally to how human teams communicate.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="why">
+    <div class="section-title"><span class="section-number">2</span>Why AutoGen Exists</div>
+    <div class="section-content">
+      <p>AutoGen was designed to solve problems that single-agent loops handle poorly:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Problem</th><th>AutoGen Solution</th></tr></thead>
+        <tbody>
+          <tr><td>Code needs to be executed and results fed back</td><td>UserProxyAgent runs code and returns stdout/stderr to the conversation</td></tr>
+          <tr><td>Multiple expertise areas needed simultaneously</td><td>GroupChat with specialist AssistantAgents</td></tr>
+          <tr><td>Human approval needed mid-execution</td><td>human_input_mode="ALWAYS" pauses for user input</td></tr>
+          <tr><td>Different LLMs for different subtasks</td><td>Each agent can have its own llm_config</td></tr>
+          <tr><td>Self-correction on errors</td><td>Agents see full conversation history and can revise based on error messages</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="agents">
+    <div class="section-title"><span class="section-number">3</span>Core Agent Types</div>
+    <div class="section-content">
+      <h3 style="margin:0 0 8px; color:var(--text-primary);">ConversableAgent — The Base Class</h3>
+      <p>All AutoGen agents inherit from <code>ConversableAgent</code>. It handles message passing, termination detection, and conversation history management.</p>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">UserProxyAgent</h3>
+      <p>Represents the human or automated executor side. Its primary role is to <strong>execute code</strong> produced by assistant agents and return results.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — UserProxyAgent Modes</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">import autogen
+
+# human_input_mode controls when humans are asked to intervene
+user_proxy = autogen.UserProxyAgent(
+    name="User",
+    human_input_mode="NEVER",       # Fully automated — never asks human
+    # human_input_mode="ALWAYS",    # Ask human on every turn
+    # human_input_mode="TERMINATE", # Only ask when agent wants to stop
+
+    # Code execution configuration
+    code_execution_config={
+        "work_dir": "coding",        # Directory where code runs
+        "use_docker": False,         # Set True for sandboxed execution
+        "timeout": 60,               # Max seconds per code execution
+        "last_n_messages": 3,        # Only look at last N messages for code blocks
+    },
+
+    # Termination conditions
+    is_termination_msg=lambda msg: (
+        msg.get("content", "").rstrip().endswith("TERMINATE")
+    ),
+    max_consecutive_auto_reply=10,   # Stop after N auto-replies without human
+)
+</code></pre></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">AssistantAgent</h3>
+      <p>The LLM-backed agent that reasons, plans, writes code, and generates responses. Each AssistantAgent has its own <code>llm_config</code> and <code>system_message</code>.</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — AssistantAgent Definition</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">assistant = autogen.AssistantAgent(
+    name="DataScientist",
+    system_message="""You are an expert data scientist specializing in LLM evaluation.
+    When writing code, always include error handling.
+    End your final response with TERMINATE to signal completion.""",
+    llm_config={
+        "config_list": [{
+            "model": "meta/llama-3.1-70b-instruct",
+            "base_url": "https://integrate.api.nvidia.com/v1",
+            "api_key": "nvapi-xxx",
+        }],
+        "temperature": 0.1,
+        "timeout": 120,
+        "cache_seed": 42,            # Deterministic caching for reproducibility
+    },
+    max_consecutive_auto_reply=5,
+)
+</code></pre></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">Agent Type Comparison</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Agent Type</th><th>Has LLM?</th><th>Executes Code?</th><th>Primary Use</th></tr></thead>
+        <tbody>
+          <tr><td><code>UserProxyAgent</code></td><td>Optional</td><td>Yes</td><td>Code execution, human relay, task initiation</td></tr>
+          <tr><td><code>AssistantAgent</code></td><td>Yes</td><td>No</td><td>Reasoning, planning, code writing</td></tr>
+          <tr><td><code>ConversableAgent</code></td><td>Optional</td><td>Optional</td><td>Custom agents with mixed capabilities</td></tr>
+          <tr><td><code>GroupChatManager</code></td><td>Yes</td><td>No</td><td>Turn selection in group conversations</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="groupchat">
+    <div class="section-title"><span class="section-number">4</span>GroupChat and GroupChatManager</div>
+    <div class="section-content">
+      <p>For more than 2 agents, AutoGen uses <strong>GroupChat</strong> to manage a shared conversation space, and <strong>GroupChatManager</strong> to decide which agent speaks next.</p>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — GroupChat Configuration</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">groupchat = autogen.GroupChat(
+    agents=[user_proxy, researcher, coder, reviewer],
+    messages=[],
+    max_round=12,                    # Maximum conversation turns
+
+    # Speaker selection strategies:
+    speaker_selection_method="auto", # LLM picks next speaker (default)
+    # speaker_selection_method="round_robin"  # Agents take turns in order
+    # speaker_selection_method="random"       # Random selection
+
+    # Advanced: hint next speaker
+    # Use when you want structured turn-taking but with some flexibility
+    allow_repeat_speaker=False,      # Prevent same agent twice in a row
+)
+
+manager = autogen.GroupChatManager(
+    groupchat=groupchat,
+    llm_config={"config_list": [nvidia_config]},
+    # Manager uses its LLM to select the next most-appropriate speaker
+)
+</code></pre></div>
+
+      <h3 style="margin:20px 0 8px; color:var(--text-primary);">Conversation Termination Patterns</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Method</th><th>How It Works</th><th>Use When</th></tr></thead>
+        <tbody>
+          <tr><td>TERMINATE keyword</td><td>Agent ends message with "TERMINATE"; UserProxyAgent detects it</td><td>Task-completion signal from agent</td></tr>
+          <tr><td>max_consecutive_auto_reply</td><td>Stop after N auto-replies without human input</td><td>Prevent infinite loops</td></tr>
+          <tr><td>max_round in GroupChat</td><td>Hard limit on total conversation turns</td><td>All group conversations</td></tr>
+          <tr><td>Custom is_termination_msg</td><td>Lambda function on last message content</td><td>Custom completion criteria</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="code">
+    <div class="section-title"><span class="section-number">5</span>Full Python Example — Code Review Pipeline</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — AutoGen Code Review Multi-Agent System</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">import autogen
+
+# NVIDIA NIM configuration
+nvidia_config = {
+    "model": "meta/llama-3.1-70b-instruct",
+    "base_url": "https://integrate.api.nvidia.com/v1",
+    "api_key": "nvapi-xxx",
+    "temperature": 0.1,
+}
+
+# Agent 1: User Proxy (executes code, represents human)
+user_proxy = autogen.UserProxyAgent(
+    name="UserProxy",
+    human_input_mode="NEVER",
+    code_execution_config={"work_dir": "workspace", "use_docker": False},
+    is_termination_msg=lambda x: x.get("content", "").endswith("TERMINATE"),
+    max_consecutive_auto_reply=8,
+)
+
+# Agent 2: Software Engineer (writes code)
+engineer = autogen.AssistantAgent(
+    name="Engineer",
+    system_message="""You are a senior Python engineer. Write clean, efficient code.
+    Always include docstrings and type hints. Test your logic before finalizing.
+    End with TERMINATE only when the final, reviewed code is complete.""",
+    llm_config={"config_list": [nvidia_config]},
+)
+
+# Agent 3: Code Reviewer (checks for bugs and style)
+reviewer = autogen.AssistantAgent(
+    name="Reviewer",
+    system_message="""You are a meticulous code reviewer. Check for:
+    1. Logic errors and edge cases
+    2. Security vulnerabilities
+    3. Performance issues
+    4. Missing error handling
+    Provide specific, actionable feedback. Do not approve code with critical issues.""",
+    llm_config={"config_list": [nvidia_config]},
+)
+
+# Agent 4: QA Engineer (writes tests)
+qa_engineer = autogen.AssistantAgent(
+    name="QA_Engineer",
+    system_message="""You write comprehensive pytest test cases. Cover:
+    - Happy path scenarios
+    - Edge cases (empty input, large input, invalid types)
+    - Error conditions
+    Always verify tests pass before signaling completion.""",
+    llm_config={"config_list": [nvidia_config]},
+)
+
+# GroupChat: all agents collaborate
+groupchat = autogen.GroupChat(
+    agents=[user_proxy, engineer, reviewer, qa_engineer],
+    messages=[],
+    max_round=15,
+    speaker_selection_method="auto",  # Manager LLM picks next speaker
+)
+
+manager = autogen.GroupChatManager(
+    groupchat=groupchat,
+    llm_config={"config_list": [nvidia_config]},
+)
+
+# Start the pipeline
+user_proxy.initiate_chat(
+    manager,
+    message="""Write a Python function that:
+    1. Takes a list of LLM API calls with token counts
+    2. Calculates total cost using a per-token pricing model
+    3. Returns a summary dict with total_tokens, total_cost, avg_cost_per_call
+
+    After Engineer writes it, Reviewer checks it, then QA_Engineer writes tests.
+    End with TERMINATE when all three are complete."""
+)
+
+# Access full conversation history
+for msg in groupchat.messages:
+    print(f"[{msg['name']}]: {msg['content'][:100]}...")
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="nvidia">
+    <div class="section-title"><span class="section-number">6</span>NVIDIA NIM Integration</div>
+    <div class="section-content">
+      <p>AutoGen uses <code>llm_config</code> with a <code>config_list</code> format. NVIDIA NIMs are OpenAI-compatible, so they slot in directly:</p>
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Multiple NVIDIA Models per Agent</span><button class="copy-btn">Copy</button></div><pre><code class="language-python"># Use different NVIDIA models for different agent roles
+# AutoGen tries configs in order — first that succeeds is used
+
+engineer_config = {
+    "config_list": [
+        {   # Primary: powerful model for code writing
+            "model": "meta/llama-3.1-70b-instruct",
+            "base_url": "https://integrate.api.nvidia.com/v1",
+            "api_key": "nvapi-xxx",
+        },
+        {   # Fallback: smaller, faster model
+            "model": "meta/llama-3.1-8b-instruct",
+            "base_url": "https://integrate.api.nvidia.com/v1",
+            "api_key": "nvapi-xxx",
+        },
+    ],
+    "temperature": 0.0,   # Deterministic for code generation
+    "cache_seed": 42,     # Cache LLM responses for cost savings in dev
+}
+
+reviewer_config = {
+    "config_list": [{
+        # NVIDIA-tuned for critique/RLHF — excellent for review tasks
+        "model": "nvidia/llama-3.1-nemotron-70b-instruct",
+        "base_url": "https://integrate.api.nvidia.com/v1",
+        "api_key": "nvapi-xxx",
+    }],
+    "temperature": 0.1,
+}
+
+# Disable caching in production
+# (cache_seed=None ensures fresh LLM calls)
+production_config = {"config_list": [...], "cache_seed": None}
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="lab">
+    <div class="section-title"><span class="section-number">7</span>Lab Exercise</div>
+    <div class="section-content">
+      <div class="callout callout-lab"><div class="callout-title">🔬 Lab: AutoGen Code Generation + Review + Test Pipeline</div>
+        <p><strong>Objective:</strong> Build a 3-agent AutoGen system that writes, reviews, and tests Python code.</p>
+        <ol style="margin:12px 0 0 20px; line-height:2.2;">
+          <li>Install: <code>pip install pyautogen</code></li>
+          <li>Set up <code>llm_config</code> pointing to NVIDIA NIMs</li>
+          <li>Create Engineer + Reviewer + UserProxy (with code execution enabled)</li>
+          <li>Run a 2-agent chat: UserProxy asks Engineer to write a RAGAS evaluation script</li>
+          <li>Observe how Engineer's code is executed by UserProxy and errors fed back</li>
+          <li><strong>Extension:</strong> Add a 4th QA agent; use GroupChat with <code>speaker_selection_method="auto"</code></li>
+          <li>Check <code>groupchat.messages</code> — trace the full conversation to understand turn-taking</li>
+        </ol>
+        <p style="margin-top:12px;"><strong>Key observation:</strong> Watch how UserProxy sends code execution errors back into the conversation, allowing Engineer to self-correct — this is AutoGen's core value proposition.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="mistakes">
+    <div class="section-title"><span class="section-number">8</span>Common Mistakes</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Mistake</th><th>Impact</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>No termination condition</td><td>Conversation runs until max_round, wasting tokens</td><td>Always set is_termination_msg + TERMINATE in system_message</td></tr>
+          <tr><td>human_input_mode="ALWAYS" in production</td><td>Pipeline blocks waiting for human input that never comes</td><td>Use NEVER for automated; TERMINATE for supervised</td></tr>
+          <tr><td>use_docker=False in untrusted environments</td><td>Agents can execute arbitrary code on host</td><td>Use Docker sandbox for any external/untrusted code execution</td></tr>
+          <tr><td>All agents same LLM</td><td>Expensive; no specialization benefit</td><td>Use larger models for complex reasoning, smaller for summaries</td></tr>
+          <tr><td>Forgetting cache_seed=None in production</td><td>Production calls hit stale cache</td><td>Set cache_seed=None for live deployments</td></tr>
+          <tr><td>max_round too low</td><td>Complex tasks cut off before completion</td><td>Set max_round based on expected task complexity (10-20 typical)</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Prep</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — AutoGen (Agent Architecture 15%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2.2;">
+          <li><strong>UserProxyAgent:</strong> represents human/executor side; can execute code via code_execution_config</li>
+          <li><strong>AssistantAgent:</strong> LLM-backed; generates text, code, plans; does NOT execute code itself</li>
+          <li><strong>GroupChatManager:</strong> uses its own LLM to select next speaker; manages GroupChat turn-taking</li>
+          <li><strong>human_input_mode:</strong> NEVER (fully automated), ALWAYS (every turn), TERMINATE (only on stop signal)</li>
+          <li><strong>Termination:</strong> TERMINATE keyword in message content; captured by is_termination_msg lambda</li>
+          <li><strong>max_round:</strong> hard limit in GroupChat; max_consecutive_auto_reply: per-agent limit</li>
+          <li><strong>Self-correction loop:</strong> Agent writes code → UserProxy executes → error returned as message → Agent revises</li>
+          <li><strong>cache_seed:</strong> set integer for dev (deterministic, cached); None for production</li>
+          <li><strong>2025 status:</strong> AutoGen consolidated into Microsoft Agent Framework (AG2) — enters maintenance mode</li>
+          <li><strong>vs CrewAI:</strong> AutoGen = conversational, code-execution-centric; CrewAI = task-assignment, role-centric</li>
+        </ul>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px;"><table>
+        <thead><tr><th>Question Pattern</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>Which agent type executes code in AutoGen?</td><td>UserProxyAgent (via code_execution_config)</td></tr>
+          <tr><td>Which component selects the next speaker in GroupChat?</td><td>GroupChatManager</td></tr>
+          <tr><td>How does AutoGen self-correct code errors?</td><td>UserProxy executes code, returns error as message, AssistantAgent revises</td></tr>
+          <tr><td>human_input_mode for fully automated pipeline?</td><td>NEVER</td></tr>
+          <tr><td>Standard termination signal agents send?</td><td>TERMINATE at end of message</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="crewai.html">← CrewAI</a>
+    <a class="topic-nav-btn" href="multi-agent.html">Multi-Agent Orchestration →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

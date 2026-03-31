@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Write-ups — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+  <script src="../assets/js/components.js" defer></script>
+  <!-- Marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Highlight.js for Code Formatting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- DOMPurify to prevent XSS from marked -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  
+  <style>
+    /* Specific styles for Notes App */
+    .notes-container {
+      display: flex;
+      height: calc(100vh - 60px - 2rem); /* minus topbar and padding */
+      gap: 1rem;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .notes-sidebar {
+      width: 250px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .notes-sidebar-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .notes-sidebar-header h3 { margin: 0; font-size: 1rem; color: #fff; }
+    .btn-new-note {
+      background: var(--nvidia-green);
+      color: #000;
+      border: none;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .btn-new-note:hover { background: var(--nvidia-green-dark); }
+
+    .notes-sidebar-tools {
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+    }
+    #notes-search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.4rem 0.6rem;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+      margin-bottom: 0.5rem;
+    }
+    #notes-search-input:focus { border-color: var(--nvidia-green); }
+    .notes-sidebar-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .notes-sidebar-actions button {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 4px;
+      padding: 0.25rem 0;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .notes-sidebar-actions button:hover { background: var(--bg-card); color: #fff; border-color: var(--text-muted); }
+
+    .notes-list {
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .note-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .note-item:hover, .note-item.active {
+      background: #1c232a;
+    }
+    .note-item-title {
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .note-item-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .notes-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+    }
+    .notes-toolbar {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .note-title-input {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .note-title-input:focus { border-color: var(--nvidia-green); }
+    .note-title-input::placeholder { color: var(--text-muted); }
+
+    .note-topic-select {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 4px;
+      padding: 0.4rem 0.6rem;
+      outline: none;
+      font-size: 0.85rem;
+      cursor: pointer;
+      max-width: 200px;
+    }
+    .note-topic-select:focus { border-color: var(--nvidia-green); }
+    
+    .btn-action {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-action:hover { background: var(--bg-primary); }
+    .btn-delete { color: #ff5c5c; border-color: #ff5c5c; }
+    .btn-delete:hover { background: rgba(255,92,92,0.1); }
+
+    .notes-editor-split {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .notes-editor-pane, .notes-preview-pane {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .notes-editor-pane {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .notes-format-bar {
+      display: flex;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .format-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .format-btn:hover { background: var(--border); color: var(--nvidia-green); border-color: var(--nvidia-green); }
+
+    .note-content-input {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem;
+      color: #fff;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.9rem;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+    .note-content-input:focus { border-color: var(--nvidia-green); }
+
+    /* Markdown preview styling */
+    .notes-preview-pane h1 { font-size: 1.5rem; margin-top: 0; color: #fff; margin-bottom: 0.5rem; }
+    .notes-preview-pane h2 { font-size: 1.25rem; margin-top: 1rem; color: #fff; margin-bottom: 0.5rem; }
+    .notes-preview-pane h3 { font-size: 1.1rem; margin-top: 1rem; color: #fff; margin-bottom: 0.5rem; }
+    .notes-preview-pane p { margin-bottom: 1rem; }
+    .notes-preview-pane code {
+      background: #111;
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 0.9em;
+      color: var(--nvidia-green);
+    }
+    .notes-preview-pane pre {
+      background: #111;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+    .notes-preview-pane pre code { background: transparent; padding: 0; color: inherit;}
+    .notes-preview-pane blockquote {
+      border-left: 4px solid var(--nvidia-green);
+      margin: 0 0 1rem 0;
+      padding-left: 1rem;
+      color: var(--text-muted);
+    }
+    .notes-preview-pane ul, .notes-preview-pane ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+    
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <site-header basepath=".." active="notes"></site-header>
+
+  <div class="layout">
+    <site-sidebar basepath=".." active="notes"></site-sidebar>
+    
+    <main class="content">
+      <div class="notes-container">
+        
+        <!-- Sidebar for notes list -->
+        <div class="notes-sidebar">
+          <div class="notes-sidebar-header">
+            <h3>My Write-ups</h3>
+            <button id="btn-new-note" class="btn-new-note">+ New</button>
+          </div>
+          <div class="notes-sidebar-tools">
+            <input type="text" id="notes-search-input" placeholder="Search notes..." autocomplete="off">
+            <div class="notes-sidebar-actions">
+              <button id="btn-export-notes" title="Export All Notes to JSON">⬇️ Export</button>
+              <button id="btn-import-trigger" title="Import Notes from JSON">⬆️ Import</button>
+              <input type="file" id="notes-file-input" accept=".json" style="display: none;">
+            </div>
+          </div>
+          <ul id="notes-list" class="notes-list">
+            <!-- Notes injected dynamically by JS -->
+          </ul>
+        </div>
+
+        <!-- Main Editor Area -->
+        <div id="notes-main-area" class="notes-main" style="display: none;">
+          <div class="notes-toolbar">
+            <input type="text" id="note-title" class="note-title-input" placeholder="Note Title..." autocomplete="off">
+            <select id="note-topic-select" class="note-topic-select">
+              <option value="">No Domain / Topic</option>
+            </select>
+            <span id="save-status" style="color: var(--text-muted); font-size: 0.8rem; margin-left: auto; margin-right: 1rem;"></span>
+            <button id="btn-download-note" class="btn-action" title="Download note as .md">⬇️ .md</button>
+            <button id="btn-delete-note" class="btn-action btn-delete">Delete</button>
+            <button id="btn-save-note" class="btn-new-note">Save</button>
+          </div>
+          <div class="notes-editor-split">
+            <div class="notes-editor-pane">
+              <div class="notes-format-bar">
+                <button type="button" class="format-btn" data-tag="**" title="Bold">B</button>
+                <button type="button" class="format-btn" data-tag="*" title="Italic">I</button>
+                <button type="button" class="format-btn" data-prefix="# " title="Heading">H</button>
+                <button type="button" class="format-btn" data-prefix="- " title="List">List</button>
+                <button type="button" class="format-btn" data-wrap="[","](url)" title="Link">Link</button>
+                <button type="button" class="format-btn" data-wrap="```\n","\n```" title="Code Block">&lt;/&gt;</button>
+              </div>
+              <textarea id="note-content" class="note-content-input" placeholder="Start typing in Markdown..."></textarea>
+            </div>
+            <div class="notes-preview-pane" id="note-preview">
+              <!-- Rendered markdown goes here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div id="notes-empty-state" class="empty-state">
+          <h2>No Note Selected</h2>
+          <p>Select a note from the sidebar or click "+ New" to create one.</p>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <site-footer basepath=".."></site-footer>
+  
+  <script src="../assets/js/notes.js"></script>
+</body>
+</html>

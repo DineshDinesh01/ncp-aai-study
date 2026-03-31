@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prompt Engineering — NCP-AAI Study Guide</title>
+  <meta name="description" content="Prompt engineering techniques: zero-shot, few-shot, CoT, system prompts, structured output, and NIM API usage patterns."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="tokenization.html">Tokenization</a><a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a><a class="sidebar-link" href="tool-use.html">Tool Use</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation &amp; Tuning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">�� Deployment &amp; Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">NVIDIA Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition &amp; Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge Integration <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Cognition, Planning & Memory — 10%</span><span class="sep">›</span><span>Prompt Engineering</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Cognition, Planning & Memory — 10%</span><span class="tag tag-nvidia">NVIDIA NCP-AAI</span><span class="tag tag-difficulty-intermediate">Intermediate</span></div>
+    <h1 class="page-title">Prompt Engineering</h1>
+  </div>
+
+  <p class="page-subtitle">The art and science of crafting effective prompts — zero-shot, few-shot, Chain-of-Thought, system prompts, structured output, role prompting, and prompt templates for NVIDIA NIM API.</p>
+
+  <div class="section" id="definition">
+    <div class="section-title"><span class="section-number">1</span>Prompt Engineering Techniques</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Technique</th><th>When to Use</th><th>Format</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Zero-shot</strong></td><td>Simple tasks, capable model</td><td>Task description only</td></tr>
+          <tr><td><strong>Few-shot</strong></td><td>Novel format, consistency required</td><td>2–8 input/output examples</td></tr>
+          <tr><td><strong>Chain-of-Thought</strong></td><td>Multi-step reasoning, math, logic</td><td>"Think step by step" or explicit steps</td></tr>
+          <tr><td><strong>System prompt</strong></td><td>Always — sets agent persona and rules</td><td>Role + constraints + format instructions</td></tr>
+          <tr><td><strong>Structured output</strong></td><td>When you need parseable JSON/XML</td><td>JSON schema in prompt + response_format param</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="section" id="implementation">
+    <div class="section-title"><span class="section-number">2</span>System Prompt Best Practices</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Production Agent System Prompt</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+SYSTEM_PROMPT = """You are a specialized NVIDIA technology assistant.
+
+## Role
+Help engineers deploy and optimize AI models using NVIDIA tools.
+
+## Constraints
+- Only answer questions about NVIDIA technology stack
+- If you are unsure, say "I don't know" rather than guessing
+- Always cite the specific NVIDIA tool or documentation when relevant
+- Maximum response length: 300 words
+
+## Output Format
+When explaining a technical process:
+1. Start with a one-sentence definition
+2. Explain why it matters
+3. Give a concrete code example
+4. Note any gotchas or common mistakes
+
+## Tone
+Technical, precise, direct. No unnecessary hedging."""
+
+from openai import OpenAI
+client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key="nvapi-xxx")
+
+response = client.chat.completions.create(
+    model="meta/llama-3.1-70b-instruct",
+    messages=[
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": "What is the gRPC port for Triton?"}
+    ]
+)
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="structured">
+    <div class="section-title"><span class="section-number">3</span>Structured Output for Agents</div>
+    <div class="section-content">
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — JSON Structured Output</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">
+from pydantic import BaseModel
+from openai import OpenAI
+
+class TritonConfig(BaseModel):
+    model_name: str
+    grpc_port: int
+    http_port: int
+    metrics_port: int
+    backend: str
+
+client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key="nvapi-xxx")
+
+response = client.beta.chat.completions.parse(
+    model="meta/llama-3.1-70b-instruct",
+    messages=[
+        {"role": "user", "content": "Give me default Triton server config as JSON."}
+    ],
+    response_format=TritonConfig
+)
+config = response.choices[0].message.parsed
+print(config.grpc_port)  # 8001
+</code></pre></div>
+    </div>
+  </div>
+
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">4</span>Exam Angles</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Cognition &amp; Planning (10%)</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2">
+          <li>Zero-shot: task description only. Few-shot: examples included. CoT: explicit reasoning steps</li>
+          <li>System prompt defines agent persona, constraints, and response format</li>
+          <li>Structured output: use <code>response_format</code> or JSON schema in prompt for parseable output</li>
+          <li>Few-shot prompting improves consistency for novel formats vs zero-shot</li>
+          <li>Temperature: 0.0 for deterministic tool calls, 0.7 for creative responses</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="chain-of-thought.html">← Chain-of-Thought</a>
+    <a class="topic-nav-btn" href="react-agent.html">ReAct Agent →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

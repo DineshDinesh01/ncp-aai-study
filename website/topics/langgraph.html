@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LangGraph — Stateful Agent Orchestration | NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search-input" placeholder="Search topics…"/>
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <nav class="topbar-nav">
+    <a href="../index.html">Home</a>
+    <a href="../resources/index.html">Resources</a>
+    <a href="../mock-tests/index.html">Mock Tests</a>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Domains</div>
+    <div class="domain-group">
+      <div class="domain-toggle">🧠 LLM Fundamentals <span class="toggle-arrow">▶</span></div>
+      <div class="domain-topics">
+        <a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a>
+        <a class="sidebar-link" href="tokenization.html">Tokenization</a>
+        <a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning with LoRA</a>
+      </div>
+    </div>
+    <div class="domain-group">
+      <div class="domain-toggle">✍️ Prompt Engineering <span class="toggle-arrow">▶</span></div>
+      <div class="domain-topics">
+        <a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a>
+        <a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a>
+      </div>
+    </div>
+    <div class="domain-group open">
+      <div class="domain-toggle">🤖 Agentic System Design <span class="toggle-arrow">▼</span></div>
+      <div class="domain-topics" style="display:block;">
+        <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
+        <a class="sidebar-link active" href="langgraph.html">LangGraph</a>
+      </div>
+    </div>
+    <div class="domain-group">
+      <div class="domain-toggle">🔧 Tool Use <span class="toggle-arrow">▶</span></div>
+      <div class="domain-topics">
+        <a class="sidebar-link" href="tool-use.html">Tool Use</a>
+      </div>
+    </div>
+    <div class="domain-group">
+      <div class="domain-toggle">🗄️ Memory & RAG <span class="toggle-arrow">▶</span></div>
+      <div class="domain-topics">
+        <a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a>
+        <a class="sidebar-link" href="vector-databases.html">Vector Databases</a>
+      </div>
+    </div>
+    <div class="domain-group">
+      <div class="domain-toggle">👥 Multi-Agent <span class="toggle-arrow">▶</span></div>
+      <div class="domain-topics">
+        <a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a>
+      </div>
+    </div>
+    <div class="domain-group">
+      <div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div>
+      <div class="domain-topics">
+        <a class="sidebar-link" href="triton.html">NVIDIA Triton</a>
+        <a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a>
+        <a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a>
+      </div>
+    </div>
+    <div class="domain-group">
+      <div class="domain-toggle">🛡️ Safety & Guardrails <span class="toggle-arrow">▶</span></div>
+      <div class="domain-topics">
+        <a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="content">
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="../index.html">Home</a> <span>›</span>
+    <a href="#">Agentic System Design</a> <span>›</span>
+    <span>LangGraph</span>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-title">LangGraph</div>
+    <div class="page-subtitle">Stateful Agent Orchestration — Build cyclic, persistent agent workflows as directed graphs</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
+      <span class="tag tag-domain">Agentic System Design</span>
+      <span class="tag tag-pipeline">Orchestration</span>
+      <span class="tag tag-nvidia">NVIDIA NIMs</span>
+      <span class="tag">LangChain</span>
+      <span class="tag">StateGraph</span>
+      <span class="tag">Checkpointing</span>
+    </div>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#what">1. What is LangGraph?</a>
+    <a href="#why">2. Why LangGraph Exists</a>
+    <a href="#how">3. How It Works</a>
+    <a href="#pipeline">4. Pipeline Placement</a>
+    <a href="#code">5. Full Python Example</a>
+    <a href="#nvidia">6. NVIDIA NIM Integration</a>
+    <a href="#lab">7. Lab Exercise</a>
+    <a href="#mistakes">8. Common Mistakes</a>
+    <a href="#exam">9. Exam Prep</a>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="what">
+    <div class="section-title">
+      <span class="section-number">1</span>
+      What is LangGraph?
+    </div>
+    <p>
+      <strong>LangGraph</strong> is an open-source library built on top of LangChain that lets you construct
+      <em>stateful, cyclic, multi-actor</em> agent workflows as a <strong>directed graph</strong>. Released in
+      early 2024, it addresses the fundamental limitation of linear LangChain chains: you cannot loop back,
+      branch conditionally, or persist state across turns without custom glue code.
+    </p>
+    <p style="margin-top:12px;">
+      The three primitives of LangGraph are:
+    </p>
+    <ul style="margin:12px 0 0 24px; line-height:2;">
+      <li><strong>StateGraph</strong> — the graph object that holds your typed shared state</li>
+      <li><strong>Nodes</strong> — Python functions (or runnables) that read from and write to state</li>
+      <li><strong>Edges</strong> — deterministic or conditional connections between nodes</li>
+    </ul>
+    <div class="callout-tip" style="margin-top:18px;">
+      <strong>Key insight:</strong> Every node receives the full current state as input and returns a
+      <em>partial update</em> (a dict). LangGraph merges that update back into the state automatically
+      using reducer functions — the most common being <code>operator.add</code> for lists (append semantics).
+    </div>
+    <p style="margin-top:14px;">
+      LangGraph is used by teams building production agents at companies including Elastic, Replit, and
+      LinkedIn. It is the recommended orchestration layer when you need <strong>human-in-the-loop</strong>
+      interrupts, <strong>multi-turn memory</strong>, and <strong>complex branching logic</strong> that
+      would be difficult to express as a linear chain.
+    </p>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="why">
+    <div class="section-title">
+      <span class="section-number">2</span>
+      Why LangGraph Exists
+    </div>
+    <p>
+      Standard LLM API calls are <strong>stateless</strong> — each call is independent. Building a real
+      agent requires:
+    </p>
+    <ul style="margin:12px 0 0 24px; line-height:2.2;">
+      <li>Remembering what happened in previous steps</li>
+      <li>Looping back to retry or refine outputs</li>
+      <li>Routing to different nodes depending on the LLM's decision</li>
+      <li>Pausing for human approval mid-execution</li>
+      <li>Persisting the agent's progress across sessions (fault tolerance)</li>
+    </ul>
+    <p style="margin-top:14px;">
+      Before LangGraph, developers hacked together these patterns with Python classes, Redis, and
+      custom state machines. LangGraph provides a principled, <strong>graph-native abstraction</strong>
+      that encodes all of these patterns directly.
+    </p>
+    <div class="callout-exam" style="margin-top:18px;">
+      <strong>Exam angle:</strong> LangGraph enables <strong>cycles</strong> (loops) in agent graphs.
+      Standard DAG-based frameworks like Prefect or Airflow do not support cycles. This is the
+      differentiator — an agent that loops until a condition is met requires a cyclic graph.
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="how">
+    <div class="section-title">
+      <span class="section-number">3</span>
+      How It Works
+    </div>
+    <p>LangGraph execution follows a clear lifecycle:</p>
+
+    <div class="pipeline" style="margin:20px 0; flex-wrap:wrap; gap:8px;">
+      <div class="pipeline-node active">Define State<br/><small>TypedDict</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Add Nodes<br/><small>functions</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Add Edges<br/><small>routing</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Set Entry/End<br/><small>START/END</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Compile<br/><small>.compile()</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Invoke<br/><small>.invoke()</small></div>
+    </div>
+
+    <h3 style="margin:20px 0 10px; color:var(--nvidia-green); font-size:15px;">3.1 Defining State</h3>
+    <p>State is a <code>TypedDict</code> with type annotations. Fields with <code>Annotated[list, operator.add]</code>
+    use append semantics — each node adds to the list rather than replacing it.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-badge">python</span>
+        <span>state_definition.py</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre><code class="language-python">from typing import TypedDict, Annotated, List
+import operator
+
+class AgentState(TypedDict):
+    messages: Annotated[List[str], operator.add]   # append on each update
+    current_step: str                               # replace on each update
+    iteration_count: int                            # replace on each update
+    final_answer: str                               # replace on each update</code></pre>
+    </div>
+
+    <h3 style="margin:20px 0 10px; color:var(--nvidia-green); font-size:15px;">3.2 Nodes</h3>
+    <p>A node is any callable that accepts the current state dict and returns a partial update dict.
+    Only the keys you include in the return dict are updated — other fields remain unchanged.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-badge">python</span>
+        <span>nodes.py</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre><code class="language-python">def agent_node(state: AgentState) -> dict:
+    # Reads from state, returns only what changes
+    response = llm.invoke(state["messages"])
+    return {
+        "messages": [response.content],   # appended (Annotated list)
+        "current_step": "agent_done"       # replaced
+    }
+
+def tool_node(state: AgentState) -> dict:
+    last_message = state["messages"][-1]
+    result = execute_tool(last_message)
+    return {
+        "messages": [f"Tool result: {result}"],
+        "current_step": "tool_done"
+    }</code></pre>
+    </div>
+
+    <h3 style="margin:20px 0 10px; color:var(--nvidia-green); font-size:15px;">3.3 Edges and Conditional Routing</h3>
+    <p>Regular edges always go from node A to node B.
+    <strong>Conditional edges</strong> call a routing function that returns the name of the next node.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-badge">python</span>
+        <span>routing.py</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre><code class="language-python">from langgraph.graph import StateGraph, START, END
+
+def should_use_tool(state: AgentState) -> str:
+    """Router: returns the name of the next node."""
+    last_msg = state["messages"][-1]
+    if "TOOL_CALL:" in last_msg:
+        return "tool_node"
+    return END  # string "end" also accepted
+
+# Build graph
+workflow = StateGraph(AgentState)
+workflow.add_node("agent", agent_node)
+workflow.add_node("tool_node", tool_node)
+
+workflow.add_edge(START, "agent")          # deterministic edge
+workflow.add_conditional_edges(            # conditional routing
+    "agent",
+    should_use_tool,
+    {"tool_node": "tool_node", END: END}   # mapping: return_value -> node_name
+)
+workflow.add_edge("tool_node", "agent")    # loop back to agent</code></pre>
+    </div>
+
+    <h3 style="margin:20px 0 10px; color:var(--nvidia-green); font-size:15px;">3.4 Checkpointing</h3>
+    <p>Checkpointing saves the full state after every node execution. It enables:</p>
+    <ul style="margin:8px 0 0 24px; line-height:2;">
+      <li><strong>Human-in-the-loop</strong> — pause at a node, wait for user input, then resume</li>
+      <li><strong>Fault tolerance</strong> — restart from the last checkpoint if a node crashes</li>
+      <li><strong>Multi-turn memory</strong> — same thread_id resumes the prior conversation</li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-badge">python</span>
+        <span>checkpointing.py</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre><code class="language-python">from langgraph.checkpoint.memory import MemorySaver
+
+checkpointer = MemorySaver()
+app = workflow.compile(checkpointer=checkpointer)
+
+# thread_id groups messages into a single conversation session
+config = {"configurable": {"thread_id": "user-session-42"}}
+
+result1 = app.invoke({"messages": ["Hello!"]}, config=config)
+result2 = app.invoke({"messages": ["What did I just say?"]}, config=config)
+# result2 has full history — state was persisted between calls</code></pre>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="pipeline">
+    <div class="section-title">
+      <span class="section-number">4</span>
+      Pipeline Placement
+    </div>
+    <p>LangGraph sits at the <strong>Orchestration layer</strong> of the agentic stack — it wraps all
+    other components (LLMs, tools, memory, RAG retrievers) and defines how they interact.</p>
+
+    <div class="pipeline" style="margin:20px 0; flex-wrap:wrap; gap:8px;">
+      <div class="pipeline-node">User Input</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node active">LangGraph<br/><small>Orchestrator</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">LLM Node<br/><small>NIM / GPT</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Tool Node<br/><small>Search, Code</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Memory<br/><small>RAG / Vector DB</small></div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-node">Output</div>
+    </div>
+
+    <div class="callout-tip">
+      <strong>Mental model:</strong> Think of LangGraph as the <em>conductor</em> of an orchestra.
+      The LLM, tools, and memory are all musicians — LangGraph decides who plays when,
+      how many times to repeat a passage, and when to stop.
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="code">
+    <div class="section-title">
+      <span class="section-number">5</span>
+      Full Python Example — ReAct Agent with LangGraph
+    </div>
+    <p>
+      This example builds a complete ReAct-style agent using LangGraph. It includes a tool node,
+      an agent node, conditional routing, and MemorySaver checkpointing.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-badge">python</span>
+        <span>langgraph_react_agent.py</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre><code class="language-python">"""
+Full LangGraph ReAct Agent Example
+- StateGraph with typed state
+- Tool node + Agent node
+- Conditional routing
+- MemorySaver checkpointing
+"""
+
+import operator
+from typing import TypedDict, Annotated, List, Optional
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from langchain_core.tools import tool
+import json
+
+
+# ── 1. DEFINE TOOLS ──────────────────────────────────────────────────────────
+
+@tool
+def search_web(query: str) -> str:
+    """Search the web for information."""
+    # In production, call a real search API here
+    return f"[Search result for '{query}']: NVIDIA H100 GPU has 80GB HBM3 memory."
+
+@tool
+def calculate(expression: str) -> str:
+    """Evaluate a mathematical expression."""
+    try:
+        result = eval(expression, {"__builtins__": {}})
+        return str(result)
+    except Exception as e:
+        return f"Error: {e}"
+
+TOOLS = [search_web, calculate]
+TOOLS_BY_NAME = {t.name: t for t in TOOLS}
+
+
+# ── 2. DEFINE STATE ───────────────────────────────────────────────────────────
+
+class AgentState(TypedDict):
+    messages: Annotated[list, operator.add]   # full message history (append)
+    iteration: int                             # loop counter (replace)
+    final_answer: Optional[str]               # set when done (replace)
+
+
+# ── 3. DEFINE NODES ───────────────────────────────────────────────────────────
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+llm_with_tools = llm.bind_tools(TOOLS)
+
+def agent_node(state: AgentState) -> dict:
+    """Agent node: calls the LLM with the full message history."""
+    response = llm_with_tools.invoke(state["messages"])
+    return {
+        "messages": [response],
+        "iteration": state.get("iteration", 0) + 1,
+    }
+
+def tool_node(state: AgentState) -> dict:
+    """Tool node: executes all tool calls in the last AI message."""
+    last_message = state["messages"][-1]
+    tool_results = []
+
+    for tool_call in last_message.tool_calls:
+        tool_fn = TOOLS_BY_NAME[tool_call["name"]]
+        result = tool_fn.invoke(tool_call["args"])
+        tool_results.append(
+            ToolMessage(
+                content=result,
+                tool_call_id=tool_call["id"]
+            )
+        )
+    return {"messages": tool_results}
+
+
+# ── 4. ROUTING FUNCTION ───────────────────────────────────────────────────────
+
+def should_continue(state: AgentState) -> str:
+    """
+    Route after the agent node:
+    - If the last message has tool calls → go to tool_node
+    - If iteration limit hit → END
+    - Otherwise → END (agent gave a final answer)
+    """
+    last_message = state["messages"][-1]
+    MAX_ITERATIONS = 5
+
+    if state.get("iteration", 0) >= MAX_ITERATIONS:
+        return END
+
+    if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+        return "tool_node"
+
+    return END
+
+
+# ── 5. BUILD GRAPH ────────────────────────────────────────────────────────────
+
+workflow = StateGraph(AgentState)
+
+# Add nodes
+workflow.add_node("agent", agent_node)
+workflow.add_node("tool_node", tool_node)
+
+# Entry point
+workflow.add_edge(START, "agent")
+
+# Conditional routing from agent
+workflow.add_conditional_edges(
+    "agent",
+    should_continue,
+    {
+        "tool_node": "tool_node",
+        END: END,
+    }
+)
+
+# After tool execution, always go back to agent
+workflow.add_edge("tool_node", "agent")
+
+# Compile with checkpointing
+checkpointer = MemorySaver()
+app = workflow.compile(checkpointer=checkpointer)
+
+
+# ── 6. INVOKE ─────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    config = {"configurable": {"thread_id": "demo-session-1"}}
+
+    # Turn 1
+    result = app.invoke(
+        {"messages": [HumanMessage(content="What GPU does NVIDIA's H100 use?")],
+         "iteration": 0},
+        config=config
+    )
+    print("Final messages:")
+    for msg in result["messages"]:
+        role = type(msg).__name__
+        content = getattr(msg, "content", "")
+        print(f"  [{role}]: {content[:120]}")
+
+    # Turn 2 — state is resumed from checkpoint
+    result2 = app.invoke(
+        {"messages": [HumanMessage(content="What is 1024 * 80?")]},
+        config=config
+    )
+    print("\nTurn 2 final message:")
+    print(" ", result2["messages"][-1].content)</code></pre>
+    </div>
+
+    <div class="callout-tip" style="margin-top:16px;">
+      <strong>Run it:</strong> <code>pip install langgraph langchain-openai</code> then
+      <code>OPENAI_API_KEY=sk-... python langgraph_react_agent.py</code>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="nvidia">
+    <div class="section-title">
+      <span class="section-number">6</span>
+      NVIDIA NIM as the LLM Backend
+    </div>
+    <div class="nvidia-badge">NVIDIA NIMs</div>
+    <p style="margin-top:14px;">
+      NVIDIA NIMs are containerized, optimized LLM inference microservices. They expose an
+      <strong>OpenAI-compatible REST API</strong>, so swapping from OpenAI to a NIM requires
+      changing only the <code>base_url</code> and <code>model</code>.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-badge">python</span>
+        <span>langgraph_with_nim.py</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre><code class="language-python">from langchain_openai import ChatOpenAI
+
+# Drop-in replacement: point to your local NIM endpoint
+llm = ChatOpenAI(
+    base_url="http://localhost:8000/v1",   # NIM container port
+    api_key="not-required",                # NIMs don't need a key locally
+    model="meta/llama-3.1-70b-instruct",   # NIM model name
+    temperature=0,
+    max_tokens=1024,
+)
+
+# Bind tools exactly as before
+llm_with_tools = llm.bind_tools(TOOLS)
+
+# Everything else in the LangGraph code is IDENTICAL
+# The graph structure, state, nodes, edges — all unchanged</code></pre>
+    </div>
+
+    <p style="margin-top:14px;">
+      For production deployments on NVIDIA DGX or cloud (AWS, GCP, Azure), NVIDIA NIMs can be
+      launched with a single <code>docker run</code>. LangGraph scales naturally because it
+      separates orchestration logic from the inference backend.
+    </p>
+
+    <div class="callout-exam">
+      <strong>Exam point:</strong> NVIDIA NIMs expose the same API schema as OpenAI's Chat Completions API
+      (including <code>tool_calls</code> in responses), so tool binding with <code>llm.bind_tools()</code>
+      works identically. No code changes needed in your LangGraph nodes.
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="lab">
+    <div class="section-title">
+      <span class="section-number">7</span>
+      Lab — Code Review Agent with Conditional Loop
+    </div>
+    <p>
+      Build a "code review" agent with 3 nodes and a conditional loop that allows up to
+      3 review iterations before forcing an exit.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="lang-badge">python</span>
+        <span>code_review_agent.py</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre><code class="language-python">"""
+Lab: Code Review Agent
+  Node 1: write_code   — LLM writes initial code
+  Node 2: review_code  — LLM reviews and scores the code (1-10)
+  Node 3: fix_code     — LLM fixes issues found in review
+
+Conditional loop: if score < 7 and iterations < 3, loop back to fix_code.
+"""
+
+import operator
+from typing import TypedDict, Annotated, List, Optional
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
+
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+
+# ── STATE ─────────────────────────────────────────────────────────────────────
+
+class CodeReviewState(TypedDict):
+    task_description: str
+    code: str
+    review_feedback: Annotated[List[str], operator.add]  # accumulate all feedback
+    review_score: int
+    iteration: int
+    final_code: Optional[str]
+
+# ── NODE 1: WRITE CODE ────────────────────────────────────────────────────────
+
+def write_code(state: CodeReviewState) -> dict:
+    prompt = f"""Write clean Python code for the following task:
+{state['task_description']}
+
+Return ONLY the Python code, no explanations."""
+    response = llm.invoke([HumanMessage(content=prompt)])
+    print(f"[write_code] Generated {len(response.content)} chars of code")
+    return {"code": response.content, "iteration": 0}
+
+# ── NODE 2: REVIEW CODE ───────────────────────────────────────────────────────
+
+def review_code(state: CodeReviewState) -> dict:
+    prompt = f"""Review the following Python code for correctness, style, and edge cases.
+
+CODE:
+{state['code']}
+
+Respond with:
+SCORE: <integer 1-10>
+FEEDBACK: <specific issues and suggestions>"""
+    response = llm.invoke([HumanMessage(content=prompt)])
+    content = response.content
+
+    # Parse score from response
+    score = 5  # default
+    for line in content.split("\n"):
+        if line.startswith("SCORE:"):
+            try:
+                score = int(line.split(":")[1].strip())
+            except ValueError:
+                pass
+
+    print(f"[review_code] Iteration {state['iteration']}, Score: {score}/10")
+    return {
+        "review_feedback": [content],
+        "review_score": score,
+        "iteration": state["iteration"] + 1,
+    }
+
+# ── NODE 3: FIX CODE ──────────────────────────────────────────────────────────
+
+def fix_code(state: CodeReviewState) -> dict:
+    last_feedback = state["review_feedback"][-1]
+    prompt = f"""Improve the following Python code based on the reviewer's feedback.
+
+ORIGINAL CODE:
+{state['code']}
+
+REVIEWER FEEDBACK:
+{last_feedback}
+
+Return ONLY the improved Python code, no explanations."""
+    response = llm.invoke([HumanMessage(content=prompt)])
+    print(f"[fix_code] Fixed code on iteration {state['iteration']}")
+    return {"code": response.content}
+
+# ── ROUTING ───────────────────────────────────────────────────────────────────
+
+def route_after_review(state: CodeReviewState) -> str:
+    MAX_ITERATIONS = 3
+    score = state.get("review_score", 0)
+    iteration = state.get("iteration", 0)
+
+    if score >= 7 or iteration >= MAX_ITERATIONS:
+        print(f"[router] Accepting code (score={score}, iteration={iteration})")
+        return "accept"
+    print(f"[router] Requesting fix (score={score}, iteration={iteration})")
+    return "fix"
+
+def finalize(state: CodeReviewState) -> dict:
+    return {"final_code": state["code"]}
+
+# ── GRAPH ─────────────────────────────────────────────────────────────────────
+
+workflow = StateGraph(CodeReviewState)
+
+workflow.add_node("write_code", write_code)
+workflow.add_node("review_code", review_code)
+workflow.add_node("fix_code", fix_code)
+workflow.add_node("finalize", finalize)
+
+workflow.add_edge(START, "write_code")
+workflow.add_edge("write_code", "review_code")
+workflow.add_conditional_edges(
+    "review_code",
+    route_after_review,
+    {"fix": "fix_code", "accept": "finalize"}
+)
+workflow.add_edge("fix_code", "review_code")   # loop: fix → review again
+workflow.add_edge("finalize", END)
+
+app = workflow.compile(checkpointer=MemorySaver())
+
+# ── RUN ───────────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    config = {"configurable": {"thread_id": "code-review-1"}}
+    result = app.invoke(
+        {
+            "task_description": "Write a function that returns the nth Fibonacci number using memoization",
+            "code": "",
+            "review_feedback": [],
+            "review_score": 0,
+            "iteration": 0,
+            "final_code": None,
+        },
+        config=config
+    )
+    print("\n=== FINAL CODE ===")
+    print(result["final_code"])
+    print(f"\nTotal review iterations: {result['iteration']}")
+    print(f"Final score: {result['review_score']}/10")</code></pre>
+    </div>
+
+    <div class="callout-tip">
+      <strong>Extension challenge:</strong> Add a fourth node <code>run_tests</code> that actually
+      executes the code in a subprocess sandbox and appends stdout/stderr to the feedback.
+      Route back to <code>fix_code</code> if the tests fail.
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="mistakes">
+    <div class="section-title">
+      <span class="section-number">8</span>
+      Common Mistakes
+    </div>
+
+    <div class="callout-mistake">
+      <strong>Mistake 1: Not initializing all state fields when invoking</strong><br/>
+      If your <code>TypedDict</code> has a field like <code>iteration: int</code>, you must pass
+      <code>{"iteration": 0}</code> in the initial invoke call. Missing fields cause
+      <code>KeyError</code> inside nodes that access them.
+      <br/><br/>
+      <strong>Fix:</strong> Always provide a complete initial state dict, or use
+      <code>Optional[int] = None</code> with None-checks in your nodes.
+    </div>
+
+    <div class="callout-mistake">
+      <strong>Mistake 2: Conditional edge routing function returns wrong values</strong><br/>
+      Your routing function must return exactly the string keys you define in the
+      <code>add_conditional_edges</code> mapping. Returning <code>"end"</code> when the key is
+      <code>END</code> (which equals <code>"__end__"</code>) silently fails or raises a routing error.
+      <br/><br/>
+      <strong>Fix:</strong> Always import and use <code>END</code> from <code>langgraph.graph</code>
+      as the return value and as the mapping key.
+    </div>
+
+    <div class="callout-mistake">
+      <strong>Mistake 3: Forgetting to call <code>.compile()</code></strong><br/>
+      You cannot invoke a <code>StateGraph</code> directly — you must call
+      <code>app = workflow.compile()</code> first. Calling <code>workflow.invoke()</code> raises
+      an <code>AttributeError</code>.
+    </div>
+
+    <div class="callout-mistake">
+      <strong>Mistake 4: Using replace semantics on a list field without Annotated</strong><br/>
+      If you define <code>messages: List[str]</code> without <code>Annotated[..., operator.add]</code>,
+      every node that returns <code>{"messages": [new_msg]}</code> <em>replaces</em> the entire list
+      instead of appending. You lose all history.
+    </div>
+
+    <div class="callout-warning">
+      <strong>Warning — Infinite loops:</strong> If your conditional routing function never returns
+      <code>END</code> (e.g., the score never reaches 7), the graph runs forever. Always include a
+      <code>max_iterations</code> guard in routing functions.
+    </div>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="exam">
+    <div class="section-title">
+      <span class="section-number">9</span>
+      Exam Prep — Key Concepts
+    </div>
+
+    <div class="callout-exam">
+      <strong>Q: What is the core data structure in LangGraph?</strong><br/>
+      A: <code>StateGraph</code> — a directed graph where nodes are functions and edges define control flow.
+      State is a typed dictionary shared across all nodes.
+    </div>
+
+    <div class="callout-exam" style="margin-top:12px;">
+      <strong>Q: How does LangGraph support human-in-the-loop?</strong><br/>
+      A: Via <strong>checkpointing + interrupts</strong>. Compile with
+      <code>interrupt_before=["node_name"]</code> to pause before a node. The graph saves state to
+      the checkpointer, and execution resumes when you call <code>app.invoke(None, config)</code>
+      with the same <code>thread_id</code>.
+    </div>
+
+    <div class="callout-exam" style="margin-top:12px;">
+      <strong>Q: What does <code>thread_id</code> do?</strong><br/>
+      A: It groups a series of invocations into a single <em>session</em>. Each thread has its own
+      checkpointed state. Two users with different <code>thread_id</code>s have completely
+      independent state histories.
+    </div>
+
+    <div class="callout-exam" style="margin-top:12px;">
+      <strong>Q: What is the difference between <code>add_edge</code> and <code>add_conditional_edges</code>?</strong><br/>
+      A: <code>add_edge(A, B)</code> always routes from A to B.
+      <code>add_conditional_edges(A, router_fn, mapping)</code> calls <code>router_fn(state)</code>
+      and uses the returned string to look up the next node in the mapping dict.
+    </div>
+
+    <div class="callout-exam" style="margin-top:12px;">
+      <strong>Q: What checkpointer is used in production vs. testing?</strong><br/>
+      A: <code>MemorySaver</code> (in-memory, lost on restart) for testing/development.
+      <code>PostgresSaver</code> or <code>SqliteSaver</code> for production persistence.
+    </div>
+
+    <div style="margin-top:20px; padding:16px; background:var(--bg-card); border-radius:8px; border:1px solid var(--border);">
+      <strong style="color:var(--nvidia-green);">Key Terms to Know</strong>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
+        <span class="tag">StateGraph</span>
+        <span class="tag">TypedDict</span>
+        <span class="tag">operator.add</span>
+        <span class="tag">add_conditional_edges</span>
+        <span class="tag">MemorySaver</span>
+        <span class="tag">PostgresSaver</span>
+        <span class="tag">thread_id</span>
+        <span class="tag">interrupt_before</span>
+        <span class="tag">human-in-the-loop</span>
+        <span class="tag">START / END</span>
+        <span class="tag">.compile()</span>
+        <span class="tag">cyclic graph</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOPIC NAV -->
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="react-agent.html">← ReAct Agent Loop</a>
+    <a class="topic-nav-btn" href="tool-use.html">Tool Use →</a>
+  </div>
+
+</main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body>
+</html>

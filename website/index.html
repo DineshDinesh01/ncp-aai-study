@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NCP-AAI Study Guide — NVIDIA Agentic AI Certification</title>
+  <meta name="description" content="Free, open-source study system for the NVIDIA NCP-AAI certification. 19 deep topic pages, 52-question mock tests, 8 hands-on labs, in-browser playground."/>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+
+<!-- COMPONENTS -->
+<script src="./assets/js/components.js"></script>
+<site-header basepath="." active="home"></site-header>
+
+<div class="layout">
+<site-sidebar basepath="." active=""></site-sidebar>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">🎓 Open-Source NCP-AAI Certification Prep</div>
+    <h1>Master <span class="highlight">NVIDIA Agentic AI</span><br/>from Zero to Certified</h1>
+    <p class="hero-subtitle">
+      A complete, free, open-source study system for the NCP-AAI certification.
+      33 deep topic pages · 89 mock questions · 4 hands-on labs · in-browser Python playground.
+    </p>
+    <div class="hero-actions">
+      <a href="topics/react-agent.html" class="btn btn-primary">🚀 Start Learning</a>
+      <a href="labs/index.html" class="btn btn-secondary">🔬 Hands-On Labs</a>
+      <a href="mock-tests/index.html" class="btn btn-secondary">📝 Mock Tests</a>
+      <a href="playground/index.html" class="btn btn-secondary">⚡ Playground</a>
+    </div>
+  </section>
+
+  <div class="content">
+
+    <!-- EXAM OVERVIEW -->
+    <div class="callout callout-exam" style="margin-bottom:32px">
+      <div class="callout-title">🎯 NCP-AAI Exam Facts</div>
+      <p><strong>60–70 questions · 120 minutes · ~70% to pass · $200 USD · 2-year validity · Remote proctored</strong><br/>
+      Source: <a href="https://nvidia.com/en-us/training/certification/" target="_blank" rel="noopener" style="color:var(--nvidia-green)">nvidia.com/training/certification</a></p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="progress-title">📊 Your Learning Progress</div>
+        <span id="reset-progress" style="font-size:11px;color:var(--text-muted);cursor:pointer" title="Reset all progress">Reset</span>
+      </div>
+
+      <div class="progress-item" data-domain="llm">
+        <div class="progress-label"><span>LLM Fundamentals / Agent Development</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="agentic">
+        <div class="progress-label"><span>Agent Architecture &amp; Design</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="evaluation">
+        <div class="progress-label"><span>Evaluation &amp; Tuning</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="deploy">
+        <div class="progress-label"><span>Deployment &amp; Scaling</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="prompt">
+        <div class="progress-label"><span>Cognition, Planning &amp; Memory</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="rag">
+        <div class="progress-label"><span>Knowledge Integration &amp; RAG</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="safety">
+        <div class="progress-label"><span>Safety, Ethics &amp; Compliance</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="hitl">
+        <div class="progress-label"><span>Human-AI Interaction &amp; Oversight</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div class="progress-item" data-domain="monitor">
+        <div class="progress-label"><span>Run, Monitor &amp; Maintain</span><span class="progress-pct">0%</span></div>
+        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- EXAM DOMAINS GRID -->
+    <h2 style="font-size:22px;font-weight:800;margin:40px 0 8px;color:var(--text-primary)">🗺️ Exam Domains (Official NCP-AAI Blueprint)</h2>
+    <p style="color:var(--text-secondary);margin-bottom:24px;font-size:14px">10 domains per nvidia.com certification page. Percentages are official exam weights.</p>
+
+    <div class="card-grid">
+      <a class="card domain-agentic" href="domains/agentic-system-design.html" data-domain-card="agentic">
+        <div class="card-icon">🤖</div>
+        <div class="card-title">Agent Architecture &amp; Design</div>
+        <div class="card-desc">ReAct, Plan-Execute, Reflection, multi-agent patterns, orchestration, hierarchical coordination</div>
+        <div class="card-meta">
+          <span style="color:var(--nvidia-green);font-weight:700">15%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card domain-tools" href="domains/tool-use.html" data-domain-card="tools">
+        <div class="card-icon">🔧</div>
+        <div class="card-title">Agent Development</div>
+        <div class="card-desc">Tool calling, function schemas, LangGraph nodes, NIM function calling, pipeline building</div>
+        <div class="card-meta">
+          <span style="color:var(--accent-orange);font-weight:700">15%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card domain-llm" href="domains/llm-fundamentals.html" data-domain-card="evaluation">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Evaluation &amp; Tuning</div>
+        <div class="card-desc">RAGAS, benchmarks, agent metrics, A/B testing, NeMo Evaluator, LoRA fine-tuning</div>
+        <div class="card-meta">
+          <span style="color:var(--accent-blue);font-weight:700">13%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card domain-deploy" href="domains/deployment.html" data-domain-card="deploy">
+        <div class="card-icon">🚀</div>
+        <div class="card-title">Deployment &amp; Scaling</div>
+        <div class="card-desc">Triton Inference Server, TensorRT-LLM, NVIDIA NIMs, quantization (FP8/INT8), serving</div>
+        <div class="card-meta">
+          <span style="color:var(--accent-orange);font-weight:700">13%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card domain-prompt" href="domains/prompt-engineering.html" data-domain-card="prompt">
+        <div class="card-icon">🧠</div>
+        <div class="card-title">Cognition, Planning &amp; Memory</div>
+        <div class="card-desc">Chain-of-Thought, Tree-of-Thought, MCTS, memory types (episodic, semantic, short/long-term)</div>
+        <div class="card-meta">
+          <span style="color:var(--accent-blue);font-weight:700">10%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card domain-rag" href="domains/memory-rag.html" data-domain-card="rag">
+        <div class="card-icon">🗄️</div>
+        <div class="card-title">Knowledge Integration &amp; Data</div>
+        <div class="card-desc">RAG pipelines, vector databases, HNSW, NeMo Retriever, hybrid search, chunking strategies</div>
+        <div class="card-meta">
+          <span style="color:var(--accent-blue);font-weight:700">10%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card domain-multiagent" href="domains/multi-agent.html" data-domain-card="multiagent">
+        <div class="card-icon">⬡</div>
+        <div class="card-title">NVIDIA Platform Implementation</div>
+        <div class="card-desc">NeMo Toolkit, AgentIQ, NeMo microservices (Customizer, Evaluator, Guardrails, Retriever, Curator)</div>
+        <div class="card-meta">
+          <span style="color:var(--accent-purple);font-weight:700">7%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card domain-safety" href="domains/safety-guardrails.html" data-domain-card="safety">
+        <div class="card-icon">🛡️</div>
+        <div class="card-title">Safety, Ethics &amp; Compliance</div>
+        <div class="card-desc">NeMo Guardrails, Colang, input/output/topical rails, jailbreak prevention, responsible AI</div>
+        <div class="card-meta">
+          <span style="color:var(--accent-red);font-weight:700">5%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card" href="domains/hitl-oversight.html" data-domain-card="hitl">
+        <div class="card-icon">👤</div>
+        <div class="card-title">Human-AI Interaction &amp; Oversight</div>
+        <div class="card-desc">HITL patterns, LangGraph interrupt(), approval gates, audit trails, escalation paths</div>
+        <div class="card-meta">
+          <span style="color:var(--text-muted);font-weight:700">5%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+      <a class="card" href="domains/observability.html" data-domain-card="monitor">
+        <div class="card-icon">📡</div>
+        <div class="card-title">Run, Monitor &amp; Maintain</div>
+        <div class="card-desc">LangSmith tracing, agent observability, OpenTelemetry, drift detection, CI/CD evaluation</div>
+        <div class="card-meta">
+          <span style="color:var(--text-muted);font-weight:700">7%</span>
+          <div class="card-progress"><div class="card-progress-bar" style="width:0%"></div></div>
+        </div>
+      </a>
+    </div>
+
+    <!-- ROADMAP -->
+    <h2 style="font-size:22px;font-weight:800;margin:40px 0 8px;color:var(--text-primary)">📍 18-Week Learning Roadmap</h2>
+    <p style="color:var(--text-secondary);margin-bottom:24px;font-size:14px">Follow this order. Each week builds on the previous.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Week</th><th>Focus</th><th>Deliverable</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>1</strong></td><td>Setup: exam blueprint, GitHub repo, build.nvidia.com API key</td><td>Repo live, NIM credits active</td></tr>
+          <tr><td><strong>2</strong></td><td>Transformer Architecture + Tokenization (Agent Dev domain)</td><td>5 topic notes + 10 practice Qs</td></tr>
+          <tr><td><strong>3</strong></td><td>Lab 001: Transformer Attention + Lab 002: BPE Tokenization</td><td>Both notebooks passing</td></tr>
+          <tr><td><strong>4</strong></td><td>Prompt Engineering → Chain-of-Thought + Tree-of-Thought (ToT)</td><td>Cognition &amp; Planning domain start</td></tr>
+          <tr><td><strong>5</strong></td><td>Tool Use + Function Calling + Lab 003: ReAct Agent from Scratch</td><td>3-tool ReAct agent running</td></tr>
+          <tr><td><strong>6</strong></td><td>Advanced Architecture: Plan &amp; Execute + Self-Reflection (CRITIC)</td><td>Architecture conceptuals mastered</td></tr>
+          <tr><td><strong>7</strong></td><td>Multi-Agent Frameworks: LangGraph vs. CrewAI vs. AutoGen</td><td>State vs. Role-playing understood</td></tr>
+          <tr><td><strong>8</strong></td><td>Agentic Memory: Semantic vs. Episodic + Checkpointing Lab</td><td>Memory module implemented</td></tr>
+          <tr><td><strong>9</strong></td><td>Knowledge Integration: Vector DBs + Chunking + Hybrid Search</td><td>Retrieval mastery</td></tr>
+          <tr><td><strong>10</strong></td><td>Mock Test 1 (75 Qs) → Remediate weak domains</td><td>First baseline score</td></tr>
+          <tr><td><strong>11</strong></td><td>Fine-Tuning LoRA + Agent Alignment (RLHF/DPO) + Eval</td><td>Evaluation Domain complete</td></tr>
+          <tr><td><strong>12</strong></td><td>Triton Inference Server + TensorRT-LLM (Continuous Batching, KV Cache)</td><td>Deployment optimization</td></tr>
+          <tr><td><strong>13</strong></td><td>NVIDIA Ecosystem: NIMs + NeMo Microservices (Retriever/Curator)</td><td>NVIDIA Platform completion</td></tr>
+          <tr><td><strong>14</strong></td><td>Serverless Deployment (KServe, Ray) &amp; Scaling</td><td>Containerized architectures</td></tr>
+          <tr><td><strong>15</strong></td><td>Agent Security (Prompt Injection) + NeMo Guardrails + Lab 008</td><td>Safety Domain complete</td></tr>
+          <tr><td><strong>16</strong></td><td>HITL Oversight + Observability (LangSmith/OpenTelemetry)</td><td>Monitoring systems running</td></tr>
+          <tr><td><strong>17</strong></td><td>Build Capstone: Full agentic pipeline with NIMs + Guardrails</td><td>End-to-end system</td></tr>
+          <tr><td><strong>18</strong></td><td>Mock Test 2 &amp; 3 + Remediate + Schedule exam</td><td>&gt;80% on all mocks → Book exam</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- QUICK START -->
+    <h2 style="font-size:22px;font-weight:800;margin:40px 0 16px;color:var(--text-primary)">⚡ Quick Start Checklist</h2>
+    <ul class="checklist">
+      <li><span class="check" data-id="qs1"></span> Download exam blueprint from <strong>nvidia.com/training/certification</strong></li>
+      <li><span class="check" data-id="qs2"></span> Sign up at <strong>build.nvidia.com</strong> for free NIM API credits</li>
+      <li><span class="check" data-id="qs3"></span> Create GitHub repo <code>ncp-aai-study</code> and make it public</li>
+      <li><span class="check" data-id="qs4"></span> Enroll in HuggingFace AI Agents Course (free certificate)</li>
+      <li><span class="check" data-id="qs5"></span> Read first topic: <a href="topics/transformer-architecture.html">Transformer Architecture →</a></li>
+      <li><span class="check" data-id="qs6"></span> Run first lab: <a href="labs/index.html">Lab 001: Transformer Attention →</a></li>
+      <li><span class="check" data-id="qs7"></span> Take first mock test to baseline your score: <a href="mock-tests/index.html">Mock Test →</a></li>
+    </ul>
+
+    <!-- AGENTIC PIPELINE -->
+    <h2 style="font-size:22px;font-weight:800;margin:40px 0 16px;color:var(--text-primary)">🔗 The Agentic AI Pipeline</h2>
+    <p style="color:var(--text-secondary);margin-bottom:16px;font-size:14px">Every topic maps to a stage in this pipeline. Understanding the flow is key to the exam.</p>
+    <div class="pipeline">
+      <div class="pipeline-node">User Input</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">Cognition &amp; Planning</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node active">LLM Core (NIMs)</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">Tool Use</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">Memory / RAG</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">Orchestration</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">Guardrails</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">HITL Oversight</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">Deploy &amp; Monitor</div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-node">Output</div>
+    </div>
+
+  </div><!-- /content -->
+
+  <site-footer basepath="."></site-footer>
+</main>
+</div><!-- /layout -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="assets/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Production Agent Error Handling | NCP-AAI Study Guide</title>
+  <meta name="description" content="Production patterns for agent error handling: retry logic, timeout handling, context overflow strategies, graceful degradation, and circuit breakers in multi-agent systems."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
+    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="crewai.html">CrewAI</a><a class="sidebar-link" href="autogen.html">AutoGen</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a></div></div>
+    <div class="domain-group open"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▼</span></div>
+      <div class="domain-topics" style="display:block;">
+        <a class="sidebar-link" href="tool-use.html">Tool Use</a>
+        <a class="sidebar-link active" href="agent-error-handling.html">Error Handling</a>
+        <a class="sidebar-link" href="tokenization.html">Tokenization</a>
+        <a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a>
+      </div>
+    </div>
+    <div class="domain-group"><div class="domain-toggle">📊 Evaluation <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agentiq.html">AgentIQ</a><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
+    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agent Development</span><span class="sep">›</span><span>Production Error Handling</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Agent Development</span>
+      <span class="tag tag-difficulty-advanced">Advanced</span>
+      <span class="tag">Production Patterns</span>
+    </div>
+    <h1 class="page-title">Production Agent Error Handling</h1>
+    <p class="page-subtitle">Retry logic, timeout handling, context overflow strategies, graceful degradation, and circuit breakers — the patterns that separate demo agents from production agents.</p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#why">1. Why Error Handling Is Critical</a>
+    <a href="#categories">2. Error Categories in Agents</a>
+    <a href="#retry">3. Retry Logic with Exponential Backoff</a>
+    <a href="#timeout">4. Timeout Handling</a>
+    <a href="#context">5. Context Overflow Strategies</a>
+    <a href="#degradation">6. Graceful Degradation</a>
+    <a href="#circuit">7. Circuit Breakers in Multi-Agent Systems</a>
+    <a href="#lab">8. Lab Exercise</a>
+    <a href="#exam">9. Exam Prep</a>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="why">
+    <div class="section-title"><span class="section-number">1</span>Why Error Handling Is Critical</div>
+    <div class="section-content">
+      <p>A production agent calls external tools (APIs, databases, code execution environments) and LLM endpoints, all of which can fail. Without explicit error handling:</p>
+      <ul style="margin:12px 0 0 24px; line-height:2.2;">
+        <li>One failed tool call crashes the entire agent run</li>
+        <li>Context windows silently overflow, causing truncated reasoning</li>
+        <li>LLM rate limits cause hard failures instead of polite retries</li>
+        <li>In multi-agent systems, one subagent failure propagates to the orchestrator</li>
+        <li>Users see cryptic errors instead of helpful fallback responses</li>
+      </ul>
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Angle</div>
+        <p>The exam tests <em>production reasoning</em>: given a scenario where a tool fails or context overflows, which pattern should the agent use? Know the difference between retry, fallback, degradation, and escalation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="categories">
+    <div class="section-title"><span class="section-number">2</span>Error Categories in Agents</div>
+    <div class="section-content">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Error Category</th><th>Examples</th><th>Recommended Response</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Transient / Retriable</strong></td><td>HTTP 429 rate limit, 503 service unavailable, network timeout</td><td>Exponential backoff retry</td></tr>
+          <tr><td><strong>Input Errors</strong></td><td>Invalid tool arguments, malformed JSON from LLM, missing required fields</td><td>Correct input and retry once; escalate if persistent</td></tr>
+          <tr><td><strong>Context Overflow</strong></td><td>context_length_exceeded, token count &gt; model limit</td><td>Summarize/truncate history; use compression</td></tr>
+          <tr><td><strong>Tool Failures</strong></td><td>API down, database unreachable, code execution error</td><td>Fallback to alternative tool or cached result</td></tr>
+          <tr><td><strong>Agent Loop Failures</strong></td><td>Max iterations exceeded, circular tool calling</td><td>Return partial result + escalate to human</td></tr>
+          <tr><td><strong>Cascading Failures</strong></td><td>Subagent failure propagates to orchestrator</td><td>Circuit breaker; isolate failed subagent</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="retry">
+    <div class="section-title"><span class="section-number">3</span>Retry Logic with Exponential Backoff</div>
+    <div class="section-content">
+      <p>For transient errors (rate limits, timeouts), the standard pattern is <strong>exponential backoff with jitter</strong>: wait 2^n seconds between retries, plus random jitter to avoid thundering-herd problems when many agents retry simultaneously.</p>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Retry Decorator for Tool Calls</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">import asyncio
+import random
+import logging
+from functools import wraps
+from openai import RateLimitError, APITimeoutError
+
+logger = logging.getLogger(__name__)
+
+def with_retry(max_retries=3, base_delay=1.0, max_delay=60.0):
+    """Exponential backoff with jitter for transient errors."""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries + 1):
+                try:
+                    return await func(*args, **kwargs)
+
+                except (RateLimitError, APITimeoutError) as e:
+                    last_exception = e
+                    if attempt == max_retries:
+                        logger.error(f"All {max_retries} retries exhausted: {e}")
+                        raise
+
+                    # Exponential backoff + jitter
+                    delay = min(base_delay * (2 ** attempt), max_delay)
+                    jitter = random.uniform(0, delay * 0.1)
+                    wait_time = delay + jitter
+
+                    logger.warning(
+                        f"Attempt {attempt+1}/{max_retries} failed ({type(e).__name__}). "
+                        f"Retrying in {wait_time:.1f}s..."
+                    )
+                    await asyncio.sleep(wait_time)
+
+                except Exception as e:
+                    # Non-retriable errors: fail immediately
+                    logger.error(f"Non-retriable error: {e}")
+                    raise
+        return wrapper
+    return decorator
+
+# Usage: wrap any tool call or LLM call
+@with_retry(max_retries=3, base_delay=2.0)
+async def call_web_search(query: str) -> str:
+    response = await search_client.search(query)
+    return response.results
+
+@with_retry(max_retries=5, base_delay=1.0)  # More retries for LLM calls
+async def call_llm(messages: list) -> str:
+    response = await llm_client.chat.completions.create(
+        model="meta/llama-3.1-70b-instruct",
+        messages=messages,
+    )
+    return response.choices[0].message.content
+</code></pre></div>
+
+      <div class="callout callout-tip"><div class="callout-title">💡 Use tenacity Library</div>
+        <p>In production, use the <code>tenacity</code> library instead of hand-rolling retry logic: <code>pip install tenacity</code>. It provides <code>@retry</code> decorator with <code>wait_exponential</code>, <code>stop_after_attempt</code>, and fine-grained retry conditions.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="timeout">
+    <div class="section-title"><span class="section-number">4</span>Timeout Handling</div>
+    <div class="section-content">
+      <p>Agents must enforce timeouts at two levels: <strong>per-tool-call</strong> and <strong>per-agent-run</strong>.</p>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Per-Tool and Per-Run Timeouts</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">import asyncio
+
+# Per-tool-call timeout
+async def safe_tool_call(tool_fn, *args, timeout_seconds=10, **kwargs):
+    """Wraps any tool call with a timeout. Returns error string on timeout."""
+    try:
+        result = await asyncio.wait_for(
+            tool_fn(*args, **kwargs),
+            timeout=timeout_seconds
+        )
+        return result
+    except asyncio.TimeoutError:
+        return f"ERROR: Tool call timed out after {timeout_seconds}s. Use cached result or skip."
+    except Exception as e:
+        return f"ERROR: Tool call failed — {type(e).__name__}: {str(e)[:200]}"
+
+# LangGraph node with timeout
+async def research_node(state: AgentState) -> AgentState:
+    query = state["messages"][-1].content
+
+    # Tool calls with individual timeouts
+    search_result = await safe_tool_call(
+        web_search, query, timeout_seconds=15
+    )
+    code_result = await safe_tool_call(
+        code_executor, state.get("code"), timeout_seconds=30
+    )
+
+    return {"search_result": search_result, "code_result": code_result}
+
+# Per-agent-run timeout (LangGraph level)
+async def run_agent_with_timeout(graph, inputs, timeout_seconds=120):
+    """Run the full agent graph with a global timeout."""
+    try:
+        result = await asyncio.wait_for(
+            graph.ainvoke(inputs),
+            timeout=timeout_seconds
+        )
+        return result
+    except asyncio.TimeoutError:
+        # Return partial state + human escalation flag
+        return {
+            "status": "timeout",
+            "message": "Agent exceeded time limit. Escalating to human.",
+            "partial_result": "..."
+        }
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="section" id="context">
+    <div class="section-title"><span class="section-number">5</span>Context Overflow Strategies</div>
+    <div class="section-content">
+      <p>Context overflow is the most common silent failure mode in production agents. When tool outputs are large or conversations grow long, the token count approaches the model's limit.</p>
+
+      <div class="table-wrap"><table>
+        <thead><tr><th>Strategy</th><th>How It Works</th><th>When to Use</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sliding window</strong></td><td>Keep only the last N messages; drop oldest</td><td>Simple chat agents; when history order matters less</td></tr>
+          <tr><td><strong>Summarization</strong></td><td>LLM compresses old turns into a summary; replace with summary</td><td>Long-running agents where historical context matters</td></tr>
+          <tr><td><strong>Tool output truncation</strong></td><td>Cap tool outputs at N tokens; add "...truncated" marker</td><td>Web search results, large API responses</td></tr>
+          <tr><td><strong>RAG over history</strong></td><td>Embed past messages; retrieve relevant history per turn</td><td>Very long sessions (100+ turns)</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Token-Aware Message Management</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">import tiktoken
+
+def count_tokens(messages: list, model="gpt-4") -> int:
+    enc = tiktoken.encoding_for_model(model)
+    total = 0
+    for msg in messages:
+        total += len(enc.encode(msg.get("content", ""))) + 4  # per-message overhead
+    return total
+
+def manage_context(messages: list, max_tokens: int = 3000) -> list:
+    """Trim messages to fit within token budget using sliding window + summarization."""
+    if count_tokens(messages) <= max_tokens:
+        return messages
+
+    # Always keep system message + last 2 messages
+    system_msgs = [m for m in messages if m["role"] == "system"]
+    recent_msgs = messages[-2:]
+
+    # Summarize the middle
+    middle_msgs = messages[len(system_msgs):-2]
+    if middle_msgs:
+        summary_text = summarize_messages(middle_msgs)  # Call LLM to summarize
+        summary_msg = {"role": "assistant", "content": f"[Summary of earlier context]: {summary_text}"}
+        return system_msgs + [summary_msg] + recent_msgs
+
+    return system_msgs + recent_msgs
+
+def truncate_tool_output(output: str, max_chars: int = 2000) -> str:
+    """Prevent large tool outputs from blowing context."""
+    if len(output) <= max_chars:
+        return output
+    return output[:max_chars] + f"\n... [truncated {len(output)-max_chars} chars] ..."
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="section" id="degradation">
+    <div class="section-title"><span class="section-number">6</span>Graceful Degradation</div>
+    <div class="section-content">
+      <p><strong>Graceful degradation</strong> means returning a partial but useful response instead of a hard failure when something goes wrong. The agent acknowledges the limitation and provides what it can.</p>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Fallback Tool + Degraded Response</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">async def search_with_fallback(query: str) -> dict:
+    """Try primary tool, fall back to cached/simplified alternative."""
+    # Attempt 1: Real-time web search
+    try:
+        result = await web_search(query, timeout=10)
+        return {"source": "live_search", "result": result, "degraded": False}
+    except Exception as e:
+        logger.warning(f"Live search failed: {e}")
+
+    # Fallback 1: Cached results from vector store
+    try:
+        cached = await vector_store.similarity_search(query, k=3)
+        if cached:
+            return {
+                "source": "cache",
+                "result": "\n".join([d.page_content for d in cached]),
+                "degraded": True,
+                "degradation_reason": "Live search unavailable; using cached knowledge"
+            }
+    except Exception as e:
+        logger.warning(f"Cache lookup failed: {e}")
+
+    # Fallback 2: LLM knowledge only (no retrieval)
+    return {
+        "source": "llm_only",
+        "result": None,
+        "degraded": True,
+        "degradation_reason": "All retrieval unavailable; responding from training knowledge only"
+    }
+
+# In the agent node: surface degradation to user
+async def agent_node(state):
+    search = await search_with_fallback(state["query"])
+
+    if search["degraded"]:
+        # Inject degradation notice into prompt
+        system_addon = f"\nNOTE: {search['degradation_reason']}. Be transparent about this."
+        state["system_note"] = system_addon
+
+    return state
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="section" id="circuit">
+    <div class="section-title"><span class="section-number">7</span>Circuit Breakers in Multi-Agent Systems</div>
+    <div class="section-content">
+      <p>In multi-agent systems, a failing subagent should not cascade into the orchestrator. A <strong>circuit breaker</strong> tracks failure rates and temporarily stops calling a failing service, preventing cascading failures across the system.</p>
+
+      <div class="code-block"><div class="code-header"><span class="lang-badge">Python — Simple Circuit Breaker</span><button class="copy-btn">Copy</button></div><pre><code class="language-python">import time
+from enum import Enum
+
+class CircuitState(Enum):
+    CLOSED = "closed"       # Normal operation — calls go through
+    OPEN = "open"           # Too many failures — block all calls
+    HALF_OPEN = "half_open" # Testing if service recovered
+
+class CircuitBreaker:
+    def __init__(self, failure_threshold=5, recovery_timeout=60):
+        self.failure_threshold = failure_threshold  # Failures before opening
+        self.recovery_timeout = recovery_timeout    # Seconds before trying again
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = CircuitState.CLOSED
+
+    def call(self, func, *args, **kwargs):
+        if self.state == CircuitState.OPEN:
+            # Check if recovery timeout has passed
+            if time.time() - self.last_failure_time > self.recovery_timeout:
+                self.state = CircuitState.HALF_OPEN
+            else:
+                raise Exception(f"Circuit OPEN: subagent unavailable. Try again in {self.recovery_timeout}s")
+
+        try:
+            result = func(*args, **kwargs)
+            self._on_success()
+            return result
+        except Exception as e:
+            self._on_failure()
+            raise
+
+    def _on_success(self):
+        self.failure_count = 0
+        self.state = CircuitState.CLOSED
+
+    def _on_failure(self):
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        if self.failure_count >= self.failure_threshold:
+            self.state = CircuitState.OPEN
+
+# Usage in multi-agent orchestrator
+research_breaker = CircuitBreaker(failure_threshold=3, recovery_timeout=30)
+code_breaker = CircuitBreaker(failure_threshold=5, recovery_timeout=60)
+
+def orchestrator_node(state):
+    try:
+        research = research_breaker.call(research_agent, state["query"])
+    except Exception:
+        research = "Research subagent unavailable — using cached knowledge."
+
+    try:
+        code = code_breaker.call(code_agent, state["task"])
+    except Exception:
+        code = "Code execution unavailable — providing pseudocode only."
+
+    return {"research": research, "code": code}
+</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 8 -->
+  <div class="section" id="lab">
+    <div class="section-title"><span class="section-number">8</span>Lab Exercise</div>
+    <div class="section-content">
+      <div class="callout callout-lab"><div class="callout-title">🔬 Lab: Build a Fault-Tolerant LangGraph Agent</div>
+        <p><strong>Objective:</strong> Add retry, timeout, and context management to a LangGraph agent.</p>
+        <ol style="margin:12px 0 0 20px; line-height:2.2;">
+          <li>Start with a basic ReAct agent (web search + code execution tools)</li>
+          <li>Wrap each tool call with <code>safe_tool_call()</code> — timeout after 10 seconds</li>
+          <li>Add <code>@with_retry(max_retries=3)</code> to the LLM call node</li>
+          <li>Add <code>manage_context()</code> before each LLM call — cap at 3000 tokens</li>
+          <li>Simulate a tool failure by making <code>web_search</code> raise <code>TimeoutError</code> 50% of the time</li>
+          <li>Verify agent still completes with fallback result, doesn't crash</li>
+          <li><strong>Extension:</strong> Add a CircuitBreaker to the web search tool — open after 2 failures, recover after 30 seconds</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 9 -->
+  <div class="section" id="exam">
+    <div class="section-title"><span class="section-number">9</span>Exam Prep</div>
+    <div class="section-content">
+      <div class="callout callout-exam"><div class="callout-title">🎯 Exam Key Points — Production Error Handling</div>
+        <ul style="margin:8px 0;padding-left:20px;line-height:2.2;">
+          <li><strong>Transient errors</strong> (429, 503, timeout) → exponential backoff with jitter; NOT immediate fail</li>
+          <li><strong>Context overflow</strong> → summarize old turns OR sliding window; never just truncate blindly</li>
+          <li><strong>Tool failure</strong> → fallback to cached result or alternative tool; surface degradation to user</li>
+          <li><strong>Circuit breaker</strong> → CLOSED (normal) → OPEN (blocking) → HALF_OPEN (testing) states</li>
+          <li><strong>Exponential backoff formula:</strong> delay = min(base * 2^attempt, max_delay) + random jitter</li>
+          <li><strong>Jitter purpose:</strong> prevent thundering herd — many agents retrying at exact same second</li>
+          <li><strong>Graceful degradation:</strong> return partial result + acknowledgment rather than error exception</li>
+          <li><strong>Max iterations:</strong> agents need hard iteration limits (max_iter) to prevent infinite tool loops</li>
+          <li><strong>Timeout hierarchy:</strong> per-tool-call timeout &lt; per-agent-run timeout &lt; system-level timeout</li>
+        </ul>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px;"><table>
+        <thead><tr><th>Scenario</th><th>Correct Pattern</th></tr></thead>
+        <tbody>
+          <tr><td>Web search API returns 429 Too Many Requests</td><td>Exponential backoff retry (not immediate fail)</td></tr>
+          <tr><td>Token count exceeds model context window</td><td>Summarize old messages + sliding window</td></tr>
+          <tr><td>A subagent fails 5 times in a row</td><td>Open circuit breaker; return cached/degraded result</td></tr>
+          <tr><td>Tool call hangs indefinitely</td><td>asyncio.wait_for() with explicit timeout</td></tr>
+          <tr><td>Agent loops calling same tool repeatedly</td><td>max_consecutive_auto_reply or max_iter limit</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="topic-nav">
+    <a class="topic-nav-btn" href="tool-use.html">← Tool Use</a>
+    <a class="topic-nav-btn" href="agent-observability.html">Agent Observability →</a>
+  </div>
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

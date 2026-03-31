@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run, Monitor & Maintain — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <button class="menu-toggle" id="menu-toggle">☰</button>
+    <a class="topbar-brand" href="../index.html">NCP-AAI Study Guide</a>
+    <div class="search-wrapper">
+      <input type="text" id="search-input" class="search-input" placeholder="Search topics…" />
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <!-- Sidebar template -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="domain-toggle">Run & Maintain</div>
+        <div class="domain-topics open">
+          <a class="sidebar-link active" href="observability.html">Domain Overview</a>
+          <a class="sidebar-link" href="../topics/agent-observability.html">Agent Observability</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="domain-header" style="border-left: 4px solid #10b981; padding-left: 1.5rem; margin-bottom: 2rem;">
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+          <span class="badge" style="background:#10b981; color:#fff; font-weight:700; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">DOMAIN 10</span>
+          <span class="badge" style="background:rgba(16,185,129,0.15); color:#34d399; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.75rem;">~7% of exam</span>
+        </div>
+        <h1 style="font-size:2.2rem; margin:0 0 0.5rem 0;">Run, Monitor & Maintain (Observability)</h1>
+        <p style="color:var(--text-secondary); margin:0; font-size:1.05rem;">Tracing execution graphs, monitoring for model drift, and ensuring safe autonomous operations in production.</p>
+      </div>
+
+      <section class="content-section">
+        <h2>Why This Domain Matters</h2>
+        <p>Because agents operate autonomously by definition, tracking <em>why</em> they took certain actions (e.g. which tool they invoked and with what data) is critical for debugging and lifecycle management. The exam expects you to understand <strong>traces, spans, and observability frameworks</strong> like LangSmith and OpenTelemetry.</p>
+      </section>
+
+      <section class="content-section">
+        <h2>Topics in This Domain</h2>
+        <div class="card-grid">
+          <a class="card" href="../topics/agent-observability.html" style="text-decoration:none;">
+            <div class="card-header">
+              <span class="card-icon">📡</span>
+              <h3 class="card-title">LangSmith & OpenTelemetry</h3>
+            </div>
+            <p class="card-desc">Logging agent runs, viewing internal thoughts and tool usage, benchmarking performance, and integrating tracing into architectures.</p>
+          </a>
+        </div>
+      </section>
+
+      <div style="display:flex; justify-content:space-between; padding-top:2rem; border-top:1px solid var(--border-color); margin-top:2rem;">
+        <a href="hitl-oversight.html" style="color:var(--nvidia-green); text-decoration:none;">← Human-AI Interaction & Oversight</a>
+        <a href="../index.html" style="color:var(--nvidia-green); text-decoration:none;">Back to Curriculum Maps</a>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/script.js"></script>
+</body>
+</html>

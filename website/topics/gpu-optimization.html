@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GPU Optimization for LLMs — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <div class="domain-group"><div class="domain-toggle open">🚀 Deployment & Scaling <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
+      <a class="sidebar-link" href="triton.html">NVIDIA Triton</a>
+      <a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a>
+      <a class="sidebar-link active" href="gpu-optimization.html">GPU Optimization</a>
+      <a class="sidebar-link" href="serverless-agents.html">Serverless Agents</a>
+    </div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Deployment & Scaling</span><span class="sep">›</span><span>GPU Optimization</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Deployment</span><span class="tag tag-nvidia">TensorRT</span><span class="tag tag-difficulty-advanced">Advanced</span></div>
+    <h1 class="page-title">GPU Optimization for LLM Inference</h1>
+    <p class="page-subtitle">Understand how TensorRT-LLM and vLLM maximize GPU throughput via Continuous Batching and PagedAttention.</p>
+  </div>
+  
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> Throughput vs Latency</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> The KV Cache Bottleneck</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> PagedAttention</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> In-flight / Continuous Batching</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Exam Implications</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>Throughput vs Latency</h2>
+    <div class="section-content">
+      <p><strong>Latency</strong>: Time to first token (TTFT) or time per token. Critical for interactive chatbots.</p>
+      <p><strong>Throughput</strong>: Total tokens generated per second across all users. Critical for Agentic workflows performing asynchronous background tasks.</p>
+      <p>Optimization techniques often sacrifice latency slightly to massively scale throughput.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>The KV Cache Bottleneck</h2>
+    <div class="section-content">
+      <p>During inference, an LLM generates tokens autoregressively (one by one). To compute Token 5, it needs to attend to Tokens 1-4. Rather than re-computing Tokens 1-4 from scratch, the Keys and Values (K & V) from the Transformer attention mechanism are cached in VRAM.</p>
+      <p>This <strong>KV Cache</strong> grows linearly with context size and batch size. Multi-agent loops sending thousands of tokens memory-starve GPUs exceptionally fast.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>PagedAttention</h2>
+    <div class="section-content">
+      <p>Historically, KV cache memory was allocated contiguously per request. If a request might need 4k tokens, 4k of contiguous memory was blocked, leading to massive memory fragmentation (wasted space) if the request only used 500 tokens.</p>
+      <p><strong>PagedAttention</strong> solves this by partitioning the KV cache into non-contiguous "pages" (blocks of tokens), dynamically allocating them as the sequence grows. This eliminates memory fragmentation and allows the server to pack many more concurrent requests onto the GPU.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>In-flight / Continuous Batching</h2>
+    <div class="section-content">
+      <p>Standard "Static" Batching waits for <em>all</em> requests in a batch to finish generating their sequences before starting the next batch. If one request is 100 tokens and another is 1000, the GPU idles waiting for the 1000-token request to finish.</p>
+      <p><strong>Continuous Batching</strong> (or In-flight Batching) evaluates at the token level. As soon as Request A finishes, Request C is dynamically inserted into the batch *at the next token generation step*, keeping GPU utilization at 100%.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Exam Question Targets</h2>
+    <div class="section-content">
+      <div class="callout callout-warning">
+        <p><strong>Exam Trap</strong>: What NVIDIA library implements In-flight Batching and FP8 quantization out-of-the-box for peak inference?</p>
+        <p><strong>Answer</strong>: TensorRT-LLM (often deployed via Triton Inference Server).</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>

@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Python Playground — NCP-AAI Study Guide</title>
+  <meta name="description" content="In-browser Python playground for NCP-AAI. Run transformer attention, BPE tokenization, cosine similarity, ReAct loop, RAGAS scoring, and more — no install needed."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+  <style>
+    .playground-layout { display:grid; grid-template-columns:240px 1fr; gap:0; height:calc(100vh - 60px); }
+    .snippet-panel { background:var(--bg-secondary); border-right:1px solid var(--border-color); overflow-y:auto; padding:16px; }
+    .snippet-btn { display:block; width:100%; text-align:left; padding:10px 12px; margin-bottom:6px; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px; color:var(--text-secondary); font-size:12px; cursor:pointer; transition:all 0.2s; }
+    .snippet-btn:hover, .snippet-btn.active { background:rgba(118,185,0,0.1); border-color:var(--nvidia-green); color:var(--text-primary); }
+    .snippet-btn .snippet-domain { font-size:10px; color:var(--text-muted); margin-bottom:2px; }
+    .editor-panel { display:flex; flex-direction:column; overflow:hidden; }
+    .editor-toolbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-secondary); border-bottom:1px solid var(--border-color); flex-shrink:0; }
+    .editor-toolbar h3 { flex:1; font-size:14px; font-weight:600; color:var(--text-primary); margin:0; }
+    .run-btn { background:var(--nvidia-green); color:#000; border:none; padding:8px 20px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; transition:opacity 0.2s; }
+    .run-btn:hover { opacity:0.85; }
+    .run-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .editor-container { flex:1; overflow:hidden; position:relative; }
+    .CodeMirror { height:100% !important; font-size:13px; font-family:'JetBrains Mono','Fira Code',monospace; }
+    .output-panel { height:200px; flex-shrink:0; border-top:1px solid var(--border-color); display:flex; flex-direction:column; }
+    .output-toolbar { padding:8px 16px; background:var(--bg-secondary); border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; }
+    .output-toolbar span { font-size:12px; font-weight:600; color:var(--text-secondary); }
+    .clear-btn { font-size:11px; color:var(--text-muted); cursor:pointer; background:none; border:none; }
+    .output-content { flex:1; overflow-y:auto; padding:12px 16px; font-family:'JetBrains Mono','Fira Code',monospace; font-size:12px; line-height:1.7; background:var(--bg-primary); white-space:pre-wrap; word-wrap:break-word; }
+    .output-content .out-info { color:var(--text-secondary); }
+    .output-content .out-err { color:#f97316; }
+    .output-content .out-success { color:var(--nvidia-green); }
+    .loading-banner { background:rgba(118,185,0,0.1); border:1px solid var(--nvidia-green); border-radius:8px; padding:12px 16px; margin:16px; font-size:13px; color:var(--text-secondary); display:flex; align-items:center; gap:10px; }
+    @media (max-width:768px) { .playground-layout { grid-template-columns:1fr; } .snippet-panel { display:none; } }
+  </style>
+</head>
+<body style="overflow:hidden">
+<header class="topbar" style="position:relative;z-index:10">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Playground</a>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="#" class="active">⚡ Playground</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+
+<div class="playground-layout">
+  <!-- SNIPPET SIDEBAR -->
+  <div class="snippet-panel">
+    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">10 Python Snippets</div>
+
+    <button class="snippet-btn active" onclick="loadSnippet(0)">
+      <div class="snippet-domain">Agent Development</div>
+      🔮 Scaled Dot-Product Attention
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(1)">
+      <div class="snippet-domain">Agent Development</div>
+      🔤 BPE Tokenizer (60 lines)
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(2)">
+      <div class="snippet-domain">Knowledge Integration</div>
+      📐 Cosine Similarity Search
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(3)">
+      <div class="snippet-domain">Knowledge Integration</div>
+      📄 Text Chunking Strategies
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(4)">
+      <div class="snippet-domain">Agent Architecture</div>
+      🤖 ReAct Loop Skeleton
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(5)">
+      <div class="snippet-domain">Evaluation & Tuning</div>
+      💰 Token Cost Estimator
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(6)">
+      <div class="snippet-domain">Cognition & Planning</div>
+      📝 Prompt Template Builder
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(7)">
+      <div class="snippet-domain">Evaluation & Tuning</div>
+      🧪 Faithfulness Scorer (RAGAS-style)
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(8)">
+      <div class="snippet-domain">Evaluation & Tuning</div>
+      🔧 LoRA Rank Decomposition Math
+    </button>
+    <button class="snippet-btn" onclick="loadSnippet(9)">
+      <div class="snippet-domain">Agent Development</div>
+      🗺️ Semantic Agent Router
+    </button>
+  </div>
+
+  <!-- EDITOR + OUTPUT -->
+  <div class="editor-panel">
+    <div id="loading-banner" class="loading-banner">
+      <span style="animation:spin 1s linear infinite;display:inline-block">⟳</span>
+      Loading Python runtime (Pyodide)… This takes ~5 seconds on first load.
+    </div>
+    <div id="main-editor" style="display:none;flex:1;overflow:hidden;display:none;flex-direction:column">
+      <div class="editor-toolbar">
+        <h3 id="snippet-title">🔮 Scaled Dot-Product Attention</h3>
+        <button class="run-btn" id="run-btn" onclick="runCode()" disabled>▶ Run</button>
+      </div>
+      <div class="editor-container">
+        <textarea id="code-editor"></textarea>
+      </div>
+      <div class="output-panel">
+        <div class="output-toolbar">
+          <span>📤 Output</span>
+          <button class="clear-btn" onclick="clearOutput()">Clear</button>
+        </div>
+        <div class="output-content" id="output">Run a snippet to see output here.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script>
+const SNIPPETS = [
+  {
+    title: "🔮 Scaled Dot-Product Attention",
+    code: `import numpy as np
+
+def scaled_dot_product_attention(Q, K, V, mask=None):
+    """
+    Scaled Dot-Product Attention
+    Q, K, V: (seq_len, d_k)
+    Returns: attended output, attention weights
+    """
+    d_k = Q.shape[-1]
+    
+    # 1. Compute raw attention scores
+    scores = Q @ K.T / np.sqrt(d_k)   # (seq_len, seq_len)
+    
+    # 2. Apply causal mask (optional, for GPT-style)
+    if mask is not None:
+        scores = np.where(mask, scores, -1e9)
+    
+    # 3. Softmax to get attention weights
+    scores_shifted = scores - scores.max(axis=-1, keepdims=True)
+    exp_scores = np.exp(scores_shifted)
+    attn_weights = exp_scores / exp_scores.sum(axis=-1, keepdims=True)
+    
+    # 4. Weighted sum of values
+    output = attn_weights @ V
+    return output, attn_weights
+
+# Example: 4-token sequence, 8-dimensional keys
+np.random.seed(42)
+seq_len, d_k = 4, 8
+Q = np.random.randn(seq_len, d_k)
+K = np.random.randn(seq_len, d_k)
+V = np.random.randn(seq_len, d_k)
+
+# Causal mask: token i can only attend to positions j <= i
+causal_mask = np.tril(np.ones((seq_len, seq_len), dtype=bool))
+print("Causal mask:")
+print(causal_mask.astype(int))
+
+output, weights = scaled_dot_product_attention(Q, K, V, causal_mask)
+print("\\nAttention weights (rows sum to 1.0):")
+print(np.round(weights, 3))
+print("\\nRow sums (should all be 1.0):", np.round(weights.sum(axis=-1), 4))
+print("\\nOutput shape:", output.shape)
+print("\\nKey insight: token 0 attends to itself only (causal mask)")
+print("Token 3 attends to all 4 tokens [w0, w1, w2, w3]")
+`
+  },
+  {
+    title: "🔤 BPE Tokenizer from Scratch",
+    code: `# BPE (Byte-Pair Encoding) Tokenizer — 60 lines
+# No libraries — understand the algorithm fully
+
+def get_vocab(corpus):
+    """Build initial character-level vocabulary from corpus."""
+    vocab = {}
+    for word in corpus:
+        chars = ' '.join(list(word)) + ' </w>'  # </w> marks word end
+        vocab[chars] = corpus[word]
+    return vocab
+
+def get_stats(vocab):
+    """Count frequency of all adjacent character pairs."""
+    pairs = {}
+    for word, freq in vocab.items():
+        symbols = word.split()
+        for i in range(len(symbols) - 1):
+            pair = (symbols[i], symbols[i+1])
+            pairs[pair] = pairs.get(pair, 0) + freq
+    return pairs
+
+def merge_vocab(pair, vocab):
+    """Merge the most frequent pair into a single token."""
+    new_vocab = {}
+    bigram = ' '.join(pair)
+    replacement = ''.join(pair)
+    for word, freq in vocab.items():
+        new_word = word.replace(bigram, replacement)
+        new_vocab[new_word] = freq
+    return new_vocab
+
+# Sample corpus: word -> frequency
+corpus = {
+    'low': 5, 'lower': 2, 'newest': 6, 'widest': 3,
+    'hello': 10, 'help': 4, 'helped': 2
+}
+
+vocab = get_vocab(corpus)
+print("Initial vocabulary (character-level):")
+for word, freq in list(vocab.items())[:3]:
+    print(f"  '{word}' (freq={freq})")
+
+# Run 10 BPE merge operations
+print("\\nBPE Merge steps:")
+for i in range(10):
+    pairs = get_stats(vocab)
+    if not pairs:
+        break
+    best = max(pairs, key=pairs.get)
+    vocab = merge_vocab(best, vocab)
+    print(f"  Step {i+1}: merge {best} → '{best[0]+best[1]}' (freq={pairs[best]})")
+
+print("\\nFinal vocabulary (after 10 merges):")
+for word in list(vocab.keys())[:5]:
+    print(f"  '{word}'")
+print("\\n→ Common subwords ('er', 'est', 'low') get merged into single tokens")
+print("→ This is exactly how GPT-4 and Llama tokenizers are built!")
+`
+  },
+  {
+    title: "📐 Cosine Similarity Search",
+    code: `import numpy as np
+
+def cosine_similarity(a, b):
+    """Cosine similarity between two vectors."""
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+def batch_cosine_search(query_vec, doc_vecs, doc_names, top_k=3):
+    """Find top-k most similar documents to query."""
+    scores = [(name, cosine_similarity(query_vec, vec)) 
+              for name, vec in zip(doc_names, doc_vecs)]
+    scores.sort(key=lambda x: x[1], reverse=True)
+    return scores[:top_k]
+
+# Simulate document embeddings (normally from a real embedding model)
+# In production: sentence-transformers, NVIDIA NIM embed endpoints
+np.random.seed(42)
+dim = 16  # 16 dims for demo (real embeddings: 384-1536 dims)
+
+# Create 5 "documents" with controlled similarity
+docs = {
+    "Triton uses gRPC on port 8001": np.random.randn(dim),
+    "HTTP port 8000 is for REST in Triton": np.random.randn(dim),
+    "TensorRT-LLM supports FP8 on H100": np.random.randn(dim),
+    "NeMo Guardrails uses Colang language": np.random.randn(dim),
+    "LoRA rank controls trainable parameters": np.random.randn(dim),
+}
+
+# L2-normalize all vectors (standard for cosine search)
+doc_vecs = [v / np.linalg.norm(v) for v in docs.values()]
+doc_names = list(docs.keys())
+
+# Query
+query = "What port does Triton Inference Server gRPC use?"
+query_vec = np.random.randn(dim)  # In real use: embed this with same model
+
+# Bias query to be similar to Triton docs (for the demo)
+query_vec = query_vec + 2.0 * doc_vecs[0] + 1.5 * doc_vecs[1]
+query_vec = query_vec / np.linalg.norm(query_vec)
+
+print(f"Query: '{query}'\\n")
+results = batch_cosine_search(query_vec, doc_vecs, doc_names)
+print("Top matches (cosine similarity):")
+for name, score in results:
+    bar = "█" * int(score * 20)
+    print(f"  {score:.3f} {bar} '{name}'")
+
+print("\\nKey insight:")
+print("  • Cosine only measures direction, not magnitude")
+print("  • After L2-normalization: cosine = dot product (faster!)")
+print("  • HNSW builds a graph over these vectors for O(log N) search")
+`
+  },
+  {
+    title: "📄 Text Chunking Strategies",
+    code: `# Text chunking strategies for RAG
+# Chunk size affects RAGAS Context Precision/Recall tradeoff
+
+def fixed_window_chunk(text, chunk_size=200, overlap=50):
+    """Split text into fixed-size chunks with overlap."""
+    words = text.split()
+    chunks = []
+    start = 0
+    while start < len(words):
+        end = min(start + chunk_size, len(words))
+        chunk = ' '.join(words[start:end])
+        chunks.append(chunk)
+        start += chunk_size - overlap  # overlap for context continuity
+    return chunks
+
+def sentence_chunk(text, sentences_per_chunk=3):
+    """Chunk by sentence boundaries — better semantic coherence."""
+    sentences = text.replace('!', '.').replace('?', '.').split('.')
+    sentences = [s.strip() for s in sentences if s.strip()]
+    chunks = []
+    for i in range(0, len(sentences), sentences_per_chunk):
+        chunk = '. '.join(sentences[i:i+sentences_per_chunk]) + '.'
+        chunks.append(chunk)
+    return chunks
+
+# Test document (simulate NCP-AAI study content)
+doc = """NVIDIA Triton Inference Server is an open-source model serving platform.
+It uses gRPC on port 8001 and HTTP on port 8000 for serving requests.
+The metrics endpoint runs on port 8002 for Prometheus scraping.
+TensorRT-LLM optimizes LLM inference with quantization techniques.
+FP8 quantization is supported on H100 and Ada GPUs only.
+In-flight batching groups requests at the token level for maximum throughput.
+Paged KV cache enables near-zero memory waste for variable-length sequences.
+NeMo Guardrails uses Colang language to define topical and safety rails.
+The input rail blocks harmful prompts before they reach the LLM.
+Output rails prevent the model from generating unsafe content."""
+
+print("=== Fixed Window Chunking (size=30 words, overlap=10) ===")
+fixed_chunks = fixed_window_chunk(doc, chunk_size=30, overlap=10)
+for i, c in enumerate(fixed_chunks[:3]):
+    print(f"Chunk {i+1} ({len(c.split())} words): {c[:80]}...")
+
+print(f"\\nTotal fixed chunks: {len(fixed_chunks)}")
+
+print("\\n=== Sentence Chunking (3 sentences per chunk) ===")
+sent_chunks = sentence_chunk(doc, sentences_per_chunk=3)
+for i, c in enumerate(sent_chunks):
+    print(f"Chunk {i+1}: {c[:100]}...")
+
+print("\\n=== Tradeoffs ===")
+print("Small chunks → High Context Precision, Low Context Recall")
+print("Large chunks → High Context Recall, Lower Context Precision")
+print("Overlap → Prevents context loss at chunk boundaries")
+print("Sentence chunking → Better semantic coherence than fixed window")
+`
+  },
+  {
+    title: "🤖 ReAct Loop Skeleton",
+    code: `# ReAct Loop: Thought → Action → Observation
+# No LLM call here (browser demo) — shows the pattern
+
+# Simulate tools
+TOOLS = {
+    "calculator": lambda expr: str(eval(expr)),
+    "weather": lambda city: f"Sunny, 22°C in {city}",
+    "facts": lambda topic: f"{topic}: A fascinating subject with deep history.",
+}
+
+def parse_action(text):
+    """Extract Action and Input from LLM response."""
+    lines = text.strip().split('\\n')
+    action, action_input = None, None
+    for line in lines:
+        if line.startswith("Action:"):
+            action = line.split(":", 1)[1].strip()
+        if line.startswith("Action Input:"):
+            action_input = line.split(":", 1)[1].strip()
+    return action, action_input
+
+def react_loop(question, max_steps=5):
+    """Simulate the ReAct Thought → Action → Observation loop."""
+    print(f"Question: {question}\\n")
+    
+    # Simulated LLM responses (in real code, this is an LLM API call)
+    simulated_steps = [
+        "Thought: I need to calculate 47 * 23 to answer this.\\nAction: calculator\\nAction Input: 47 * 23",
+        "Thought: I now have the calculation result. I can form the final answer.\\nAction: None\\nFinal Answer: 47 * 23 = {obs}",
+    ]
+    
+    observations = []
+    
+    for step, response in enumerate(simulated_steps, 1):
+        print(f"--- Step {step} ---")
+        
+        # Fill in previous observation
+        obs = observations[-1] if observations else ""
+        response = response.replace("{obs}", obs)
+        
+        # Show LLM response
+        for line in response.strip().split('\\n'):
+            print(f"  {line}")
+        
+        # Check for final answer
+        if "Final Answer:" in response:
+            final = response.split("Final Answer:", 1)[1].strip()
+            print(f"\\n✓ Final Answer: {final}")
+            break
+        
+        # Execute tool
+        action, action_input = parse_action(response)
+        if action and action in TOOLS:
+            obs = TOOLS[action](action_input)
+            observations.append(obs)
+            print(f"  Observation: {obs}")
+        else:
+            print("  Observation: Tool not found or no action.")
+        print()
+
+react_loop("What is 47 times 23?")
+print("\\n=== Key ReAct Insight ===")
+print("Single-step reasoning → CoT (one pass)")
+print("Thought+Action+Observation loop → ReAct (multi-pass)")
+print("ReAct reduces hallucinations by grounding in real tool outputs")
+`
+  },
+  {
+    title: "💰 Token Cost Estimator",
+    code: `# Agent Cost Estimator: token counting + NIM pricing
+# Exam KPI: "cost per interaction" = sum of tokens × price
+
+# Simplified tokenizer (approximate: 1 token ≈ 4 chars for English)
+def estimate_tokens(text):
+    """Quick estimate: ~4 chars per token for English text."""
+    return max(1, len(text) // 4)
+
+def count_message_tokens(messages):
+    """Estimate tokens in a ChatML message list."""
+    total = 2  # base tokens for any message list
+    for msg in messages:
+        total += 4  # per-message overhead (role, content markers)
+        total += estimate_tokens(msg.get("content", ""))
+    return total
+
+# NIM pricing (approximate as of 2025, check build.nvidia.com for current)
+PRICING = {
+    "meta/llama-3.1-8b-instruct":  {"input": 0.15, "output": 0.15},  # per 1M tokens
+    "meta/llama-3.1-70b-instruct": {"input": 0.89, "output": 0.89},
+    "meta/llama-3.3-70b-instruct": {"input": 0.89, "output": 0.89},
+    "nvidia/llama-3.1-nemotron-70b": {"input": 0.55, "output": 0.55},
+}
+
+def estimate_cost(messages, response_text, model):
+    """Estimate cost of one LLM call."""
+    input_tokens = count_message_tokens(messages)
+    output_tokens = estimate_tokens(response_text)
+    
+    if model not in PRICING:
+        return None, input_tokens, output_tokens
+        
+    p = PRICING[model]
+    input_cost = (input_tokens / 1_000_000) * p["input"]
+    output_cost = (output_tokens / 1_000_000) * p["output"]
+    total = input_cost + output_cost
+    return total, input_tokens, output_tokens
+
+# Simulate a multi-turn agent interaction
+print("=== Agent Cost Estimation ===\\n")
+
+system = "You are an expert NVIDIA technology assistant. Answer concisely."
+interactions = [
+    ("What port does Triton gRPC use?",
+     "NVIDIA Triton uses gRPC on port 8001 (preferred for production)."),
+    ("What is paged KV cache?",
+     "Paged KV cache splits the key-value cache into fixed-size pages, similar to OS virtual memory. This enables near-zero memory waste and supports prefix caching for improved throughput."),
+    ("Which GPUs support FP8 quantization in TRT-LLM?",
+     "FP8 quantization in TensorRT-LLM is supported on H100 (Hopper) and Ada Lovelace GPUs only."),
+]
+
+total_session_cost = 0
+messages = [{"role": "system", "content": system}]
+
+for i, (user_msg, response) in enumerate(interactions, 1):
+    messages.append({"role": "user", "content": user_msg})
+    
+    for model in ["meta/llama-3.1-8b-instruct", "meta/llama-3.1-70b-instruct"]:
+        cost, in_tok, out_tok = estimate_cost(messages, response, model)
+        if i == 1:
+            print(f"Turn {i} — '{user_msg[:40]}...'")
+        if i == 1:
+            print(f"  {model.split('/')[1]:35} → {in_tok:4} in + {out_tok:3} out = \${cost*1000:.6f} (\${cost*1000000:.4f}/M)")
+    
+    messages.append({"role": "assistant", "content": response})
+    cost_70b, _, _ = estimate_cost(messages, response, "meta/llama-3.1-70b-instruct")
+    total_session_cost += cost_70b
+
+print(f"\\nFull 3-turn session cost (70B): \${total_session_cost*1000:.6f} USD")
+print(f"Annualized at 10k sessions/day: \${total_session_cost*10000*365:.2f}/year")
+print("\\nKey exam fact: 'cost per interaction' = one of the 4 core agent KPIs")
+`
+  },
+  {
+    title: "📝 Prompt Template Builder",
+    code: `# Prompt Template Builder for Agent Pipelines
+# Shows how to construct structured prompts
+
+class PromptTemplate:
+    """Reusable prompt template with variable interpolation."""
+    
+    def __init__(self, template, input_variables):
+        self.template = template
+        self.input_variables = input_variables
+    
+    def format(self, **kwargs):
+        # Validate inputs
+        for var in self.input_variables:
+            if var not in kwargs:
+                raise ValueError(f"Missing variable: {var}")
+        return self.template.format(**kwargs)
+    
+    def token_estimate(self, **kwargs):
+        """Estimate token count of rendered prompt."""
+        rendered = self.format(**kwargs)
+        return len(rendered) // 4  # rough estimate
+
+# ── Template 1: RAG Answer Generation ────────────────────────────────────────
+rag_template = PromptTemplate(
+    template="""You are a precise, factual AI assistant for NVIDIA certification prep.
+
+## Retrieved Context
+{context}
+
+## Question
+{question}
+
+## Instructions
+1. Answer ONLY based on the provided context
+2. If the answer is not in the context, say "I cannot find this in the provided context"
+3. Be concise — maximum 3 sentences
+4. Quote the specific section that supports your answer
+
+## Answer""",
+    input_variables=["context", "question"]
+)
+
+# ── Template 2: Agent Tool-Call Prompt ────────────────────────────────────────
+tool_template = PromptTemplate(
+    template="""You are an AI agent with access to the following tools:
+
+{tools_description}
+
+To use a tool, respond in this EXACT format:
+Thought: [your reasoning about what to do next]
+Action: [tool_name]
+Action Input: [exact input to pass to the tool]
+
+If you have enough information to answer without a tool, respond:
+Thought: [reasoning]
+Final Answer: [your complete answer]
+
+## Current Task
+{task}
+
+## Conversation History
+{history}
+
+## Your Response""",
+    input_variables=["tools_description", "task", "history"]
+)
+
+# ── Render examples ────────────────────────────────────────────────────────
+context = "NVIDIA Triton Inference Server uses gRPC on port 8001 (preferred for production). HTTP is on port 8000. Metrics for Prometheus scraping are on port 8002."
+question = "What port should I use for my production agent to call Triton?"
+
+rendered_rag = rag_template.format(context=context, question=question)
+print("=== RAG Template Rendered ===")
+print(rendered_rag)
+print(f"\\nEstimated tokens: ~{rag_template.token_estimate(context=context, question=question)}")
+
+print("\\n" + "="*50)
+
+tools_desc = """• calculator(expression): Evaluates math expressions
+• search_docs(query): Searches documentation database
+• get_config(service): Returns service configuration"""
+rendered_tool = tool_template.format(
+    tools_description=tools_desc,
+    task="Find the correct Triton gRPC port and calculate annual cost at $0.001 per query with 100k daily queries",
+    history="[No previous turns]"
+)
+print("\\n=== Tool Agent Template (first 400 chars) ===")
+print(rendered_tool[:400] + "...")
+print(f"\\nEstimated tokens: ~{tool_template.token_estimate(tools_description=tools_desc, task='...', history='...')}")
+`
+  },
+  {
+    title: "🧪 Faithfulness Scorer (RAGAS-style)",
+    code: `# RAGAS-style Faithfulness Scorer (algorithmic, no LLM)
+# Faithfulness = fraction of answer claims that are entailed by the context
+# Real RAGAS uses LLM-as-a-judge; this shows the algorithmic logic
+
+def simple_faithfulness_score(answer, context):
+    """
+    Simplified faithfulness: checks how many key answer phrases
+    appear in or are semantically matched in the context.
+    
+    Real RAGAS: LLM decomposes answer into claims, 
+    then verifies each claim against context using LLM.
+    """
+    # Extract key phrases from answer (simplified: sentence fragments)
+    answer_phrases = [s.strip().lower() for s in answer.split(',') if len(s.strip()) > 5]
+    context_lower = context.lower()
+    
+    supported = 0
+    verdicts = []
+    
+    for phrase in answer_phrases:
+        # Check if key words from phrase appear in context
+        words = [w for w in phrase.split() if len(w) > 3]
+        if not words:
+            continue
+        # Simple heuristic: phrase is "supported" if >50% of key words are in context
+        matches = sum(1 for w in words if w in context_lower)
+        is_supported = matches / len(words) >= 0.5
+        supported += int(is_supported)
+        verdicts.append((phrase[:40], is_supported, f"{matches}/{len(words)} words matched"))
+    
+    score = supported / len(answer_phrases) if answer_phrases else 0
+    return score, verdicts
+
+# Test cases
+test_cases = [
+    {
+        "name": "✓ Faithful answer",
+        "context": "NVIDIA Triton Inference Server uses gRPC on port 8001 for production. HTTP is available on port 8000. Metrics endpoint is on port 8002.",
+        "answer": "Triton uses gRPC on port 8001, HTTP on port 8000, and metrics on port 8002",
+    },
+    {
+        "name": "✗ Hallucinated answer",
+        "context": "NVIDIA Triton Inference Server uses gRPC on port 8001 for production.",
+        "answer": "Triton uses WebSocket on port 8003, and supports REST on port 9000 with SSL termination",
+    },
+    {
+        "name": "△ Partial answer",
+        "context": "TensorRT-LLM supports FP8 on H100 GPUs. In-flight batching improves throughput.",
+        "answer": "TensorRT-LLM supports FP8 on H100, INT4 on A100, and uses paged KV cache for memory efficiency",
+    }
+]
+
+print("=== Faithfulness Evaluation (RAGAS-style Logic) ===\\n")
+for tc in test_cases:
+    score, verdicts = simple_faithfulness_score(tc["answer"], tc["context"])
+    bar = "█" * int(score * 15) + "░" * (15 - int(score * 15))
+    print(f"{tc['name']}")
+    print(f"  Score: {score:.2f} [{bar}]")
+    for phrase, supported, detail in verdicts[:2]:
+        status = "✓" if supported else "✗"
+        print(f"  {status} '{phrase}' — {detail}")
+    print()
+
+print("=== Real RAGAS Faithfulness ===")
+print("1. LLM decomposes answer into atomic claims")  
+print("2. For each claim: LLM verdict = supported by context? (yes/no)")
+print("3. Faithfulness = supported_claims / total_claims")
+print("4. Score 0.0-1.0; Production threshold: > 0.85")
+`
+  },
+  {
+    title: "🔧 LoRA Rank Decomposition Math",
+    code: `import numpy as np
+
+# LoRA: Low-Rank Adaptation
+# Instead of updating W (d x d), train only A (d x r) and B (r x d)
+# where r << d. Forward pass: W' = W + scaling * (B @ A)
+
+np.random.seed(42)
+
+def show_lora_math(d=64, r=8, alpha=16):
+    """
+    d: model dimension (hidden size)
+    r: LoRA rank
+    alpha: scaling factor (alpha/r is the actual scale)
+    """
+    scaling = alpha / r
+    
+    # Original weight matrix (FROZEN during LoRA training)
+    W_orig = np.random.randn(d, d) * 0.02
+    
+    # LoRA matrices (these are TRAINED)
+    # A initialized to Gaussian, B initialized to ZERO
+    A = np.random.randn(d, r) * 0.01  # (d x r)
+    B = np.zeros((r, d))              # (r x d) — starts at zero
+    # Why B=0? So LoRA adapter starts as identity (no change to W)
+    
+    print(f"=== LoRA Configuration ===")
+    print(f"Model dimension d = {d}")
+    print(f"LoRA rank      r = {r}")
+    print(f"Alpha          α = {alpha}")
+    print(f"Scaling     α/r = {scaling:.2f}")
+    print()
+    
+    # Parameter counts
+    original_params = d * d
+    lora_params = d * r + r * d  # A + B
+    reduction = (1 - lora_params / original_params) * 100
+    
+    print(f"=== Parameter Counts ===")
+    print(f"Full weight W: {d}×{d} = {original_params:,} parameters")
+    print(f"LoRA A:        {d}×{r} = {d*r:,} parameters")
+    print(f"LoRA B:        {r}×{d} = {r*d:,} parameters")
+    print(f"LoRA total:    {lora_params:,} parameters")
+    print(f"Reduction:     {reduction:.1f}% fewer trainable parameters!")
+    print()
+    
+    # Forward pass comparison
+    x = np.random.randn(1, d)  # input vector
+    
+    # Standard forward (full fine-tuning)
+    y_full = x @ W_orig
+    
+    # LoRA forward: (frozen) + (adapter)
+    # At step 0: B=0, so adapter output is 0 (perfect initialization!)
+    delta_W = scaling * (B @ A).T   # LoRA delta (shape: d x d)
+    y_lora = x @ (W_orig + delta_W)
+    
+    print(f"=== Forward Pass ===")
+    print(f"Input x shape:        {x.shape}")
+    print(f"Output (base W):      mean={y_full.mean():.4f}")
+    print(f"Output (W + LoRA):    mean={y_lora.mean():.4f}")
+    print(f"LoRA delta (B@0=0):   {np.abs(delta_W).max():.6f} (starts at 0 ✓)")
+    print()
+    print("=== Memory Savings (at scale) ===")
+    for d_scale, r_scale in [(768, 8), (4096, 16), (8192, 64)]:
+        full = d_scale * d_scale
+        lora = d_scale * r_scale * 2
+        pct_trained = lora / full * 100
+        print(f"  d={d_scale:5}, r={r_scale:3}: Full={full/1e6:.1f}M params → LoRA={lora/1e3:.0f}K params ({pct_trained:.2f}%)")
+
+show_lora_math(d=64, r=8, alpha=16)
+`
+  },
+  {
+    title: "🗺️ Semantic Agent Router",
+    code: `import numpy as np
+
+# Semantic Router: embedding-based agent dispatch
+# Routes user queries to the most appropriate specialized agent
+# In production: use real embeddings (SentenceTransformer / NIM)
+
+def cosine_sim(a, b):
+    return np.dot(a,b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+class SemanticRouter:
+    def __init__(self, agents):
+        """
+        agents: dict of {name: (description_words, embedding)}
+        """
+        self.agents = agents
+    
+    def route(self, query_embedding, threshold=0.0):
+        """Return best matching agent name and score."""
+        scores = {
+            name: cosine_sim(query_embedding, data["embedding"])
+            for name, data in self.agents.items()
+        }
+        best = max(scores, key=scores.get)
+        return best, scores
+
+# Simulate agents with embeddings (in real code: embed the descriptions)
+np.random.seed(42)
+dim = 32
+
+# Base embeddings for different domains
+deployment_base = np.random.randn(dim)
+safety_base = np.random.randn(dim)
+rag_base = np.random.randn(dim)
+training_base = np.random.randn(dim)
+
+def L2(v): return v / np.linalg.norm(v)
+
+agents = {
+    "deployment_agent": {
+        "description": "Triton Inference Server, TensorRT-LLM, NVIDIA NIMs, quantization, serving, perf_analyzer, gRPC, HTTP ports",
+        "embedding": L2(deployment_base + 0.1 * np.random.randn(dim))
+    },
+    "safety_agent": {
+        "description": "NeMo Guardrails, Colang, topical rails, input rail, output rail, jailbreak prevention, PII detection, content safety",
+        "embedding": L2(safety_base + 0.1 * np.random.randn(dim))
+    },
+    "rag_agent": {
+        "description": "RAG pipeline, vector databases, HNSW, ChromaDB, embeddings, retrieval, chunking, RAGAS evaluation, faithfulness",
+        "embedding": L2(rag_base + 0.1 * np.random.randn(dim))
+    },
+    "training_agent": {
+        "description": "LoRA fine-tuning, SFT, DPO, NeMo Customizer, training data, QLoRA, PEFT, epochs, learning rate",
+        "embedding": L2(training_base + 0.1 * np.random.randn(dim))
+    },
+}
+
+router = SemanticRouter(agents)
+
+# Simulate test queries (biased toward their expected domain)
+queries = [
+    ("What gRPC port does Triton use in production?", L2(deployment_base + 0.3 * np.random.randn(dim))),
+    ("How do I write a Colang topical rail to block off-topic queries?", L2(safety_base + 0.3 * np.random.randn(dim))),
+    ("How do I improve RAGAS faithfulness score in my RAG pipeline?", L2(rag_base + 0.3 * np.random.randn(dim))),
+    ("What rank should I use for LoRA fine-tuning Llama-3?", L2(training_base + 0.3 * np.random.randn(dim))),
+]
+
+print("=== Semantic Router: Agent Dispatch ===\\n")
+print(f"{'Query':55} → {'Routed To':20} Score")
+print("-" * 90)
+for query_text, query_emb in queries:
+    best, scores = router.route(query_emb)
+    score = scores[best]
+    short_q = query_text[:52] + "..."
+    print(f"{short_q:55} → {best:20} {score:.3f}")
+    
+print("\\n=== All Scores (last query) ===")
+for name, score in sorted(scores.items(), key=lambda x: -x[1]):
+    bar = "█" * int(score * 10 + 5)
+    print(f"  {name:20} {score:.3f} {bar}")
+
+print("\\n=== Production Implementation ===")
+print("1. Embed agent descriptions with SentenceTransformer once at startup")
+print("2. Embed each user query on every request")
+print("3. Return agent with highest cosine similarity")
+print("4. Threshold: if max_score < 0.5, route to 'general' fallback agent")
+`
+  }
+];
+
+let editor = null;
+let pyodide = null;
+let currentSnippet = 0;
+
+async function initPyodide() {
+  try {
+    pyodide = await loadPyodide({
+      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+    });
+    
+    document.getElementById('loading-banner').innerHTML = '<span style="animation:spin 1s linear infinite;display:inline-block">⟳</span> Installing Python packages (numpy)...';
+    await pyodide.loadPackage(["numpy", "micropip"]);
+    
+    document.getElementById('loading-banner').style.display = 'none';
+    const main = document.getElementById('main-editor');
+    main.style.display = 'flex';
+    document.getElementById('run-btn').disabled = false;
+    
+    appendOutput('✅ Python runtime ready (with numpy)! Click ▶ Run to execute.', 'out-success');
+  } catch(e) {
+    document.getElementById('loading-banner').innerHTML = '❌ Failed to load Python runtime. Check your internet connection.';
+  }
+}
+
+function initEditor() {
+  editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+    mode: 'python',
+    theme: 'dracula',
+    lineNumbers: true,
+    matchBrackets: true,
+    indentUnit: 4,
+    tabSize: 4,
+    indentWithTabs: false,
+    lineWrapping: false,
+    extraKeys: { "Ctrl-Enter": runCode, "Cmd-Enter": runCode }
+  });
+  editor.setValue(SNIPPETS[0].code.trim());
+}
+
+function loadSnippet(idx) {
+  currentSnippet = idx;
+  const s = SNIPPETS[idx];
+  document.getElementById('snippet-title').textContent = s.title;
+  if (editor) editor.setValue(s.code.trim());
+  
+  document.querySelectorAll('.snippet-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === idx);
+  });
+  clearOutput();
+}
+
+function appendOutput(text, cls = 'out-info') {
+  const out = document.getElementById('output');
+  const span = document.createElement('span');
+  span.className = cls;
+  span.textContent = text + '\n';
+  if (out.textContent === 'Run a snippet to see output here.') out.textContent = '';
+  out.appendChild(span);
+  out.scrollTop = out.scrollHeight;
+}
+
+function clearOutput() {
+  const out = document.getElementById('output');
+  out.textContent = '';
+}
+
+async function runCode() {
+  if (!pyodide) { appendOutput('Python runtime not ready yet...', 'out-err'); return; }
+  
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⟳ Running…';
+  clearOutput();
+  
+  const code = editor ? editor.getValue() : '';
+  
+  try {
+    // Redirect stdout/stderr
+    pyodide.runPython(`
+import sys
+from io import StringIO
+_stdout = StringIO()
+_stderr = StringIO()
+sys.stdout = _stdout
+sys.stderr = _stderr
+    `);
+    
+    await pyodide.runPythonAsync(code);
+    
+    const stdout = pyodide.runPython('_stdout.getvalue()');
+    const stderr = pyodide.runPython('_stderr.getvalue()');
+    
+    if (stdout) appendOutput(stdout, 'out-info');
+    if (stderr) appendOutput(stderr, 'out-err');
+    if (!stdout && !stderr) appendOutput('✅ Code ran successfully with no output.', 'out-success');
+    
+  } catch(e) {
+    appendOutput('❌ Error: ' + e.message, 'out-err');
+  } finally {
+    // Restore stdout
+    try { pyodide.runPython('sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__'); } catch(_) {}
+    btn.disabled = false;
+    btn.textContent = '▶ Run';
+  }
+}
+
+// Init
+window.addEventListener('DOMContentLoaded', () => {
+  initEditor();
+});
+
+// Load Pyodide
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
+script.onload = initPyodide;
+document.head.appendChild(script);
+</script>
+</body>
+</html>

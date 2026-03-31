@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Agent Frameworks Deep Dive — NCP-AAI Study Guide</title>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
+  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
+  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
+    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
+    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
+    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
+  </div>
+  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
+    <!-- Abbreviated Sidebar -->
+    <div class="domain-group"><div class="domain-toggle open">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
+      <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
+      <a class="sidebar-link" href="planning-architectures.html">Planning & Reflection</a>
+      <a class="sidebar-link active" href="frameworks-deep-dive.html">Multi-Agent Frameworks</a>
+    </div></div>
+    <div class="domain-group"><div class="domain-toggle">🧠 Cognition & Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics">
+      <a class="sidebar-link" href="tree-of-thought.html">Tree of Thought</a>
+      <a class="sidebar-link" href="agent-memory.html">Agentic Memory</a>
+    </div></div>
+  </div>
+</aside>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agentic System Design</span><span class="sep">›</span><span>Multi-Agent Frameworks</span></div>
+  <div class="page-header">
+    <div class="tags"><span class="tag tag-domain">Agentic Architecture</span></div>
+    <h1 class="page-title">Multi-Agent Frameworks: LangGraph vs. CrewAI vs. AutoGen</h1>
+    <p class="page-subtitle">Understand the distinct architectural differences between the three industry-standard multi-agent orchestration frameworks.</p>
+  </div>
+  <div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">
+    <li><a href="#s1"><span class="toc-num">1</span> LangGraph (State Machine)</a></li>
+    <li><a href="#s2"><span class="toc-num">2</span> CrewAI (Role-Based Teams)</a></li>
+    <li><a href="#s3"><span class="toc-num">3</span> AutoGen (Conversational Programming)</a></li>
+    <li><a href="#s4"><span class="toc-num">4</span> Comparison Table</a></li>
+    <li><a href="#s5"><span class="toc-num">5</span> Exam Relevance</a></li>
+  </ul></div>
+
+  <div class="section" id="s1">
+    <h2 class="section-title"><span class="section-number">1</span>LangGraph (State Machine)</h2>
+    <div class="section-content">
+      <p><strong>Architecture</strong>: Graph-based State Machine.</p>
+      <p>LangGraph forces you to define every possible state, node, and edge for your agent workflow. It treats agent reasoning like a classical software computational graph. You pass a single "state" dictionary between nodes. One node mutates the state, and passes it via conditional edges to the next node.</p>
+      <p><strong>Use Case</strong>: Highly deterministic workflows that require strict control over exactly what process executes next (e.g. rigid Data Analysis pipelines with explicit Human-in-the-Loop checkpoints).</p>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <h2 class="section-title"><span class="section-number">2</span>CrewAI (Role-Based Teams)</h2>
+    <div class="section-content">
+      <p><strong>Architecture</strong>: Goal-oriented HR Organization.</p>
+      <p>CrewAI wraps agents in "Roles" with "Backstories" (e.g. Senior Researcher, Content Writer). Instead of defining a graph of execution, you define a sequence of "Tasks". You assign one agent to execute each task. The agents pass their outputs linearly (or hierarchically if using a Manager agent) to each other until the final task completes.</p>
+      <p><strong>Use Case</strong>: Content generation pipelines, research teams, and environments where assigning distinct LLM personas to sub-tasks improves output quality.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <h2 class="section-title"><span class="section-number">3</span>AutoGen (Conversational Programming)</h2>
+    <div class="section-content">
+      <p><strong>Architecture</strong>: Fully autonomous group chat.</p>
+      <p>Developed by Microsoft, AutoGen models agents as completely independent conversational participants. You put multiple agents (e.g. a Python execution agent, a Critics agent, and a User Proxy) into a "Group Chat". They independently talk to each other to solve a goal. The dialogue only stops when one agent emits a predefined "TERMINATE" string.</p>
+      <p><strong>Use Case</strong>: Code generation, complex debugging, and open-ended research where the execution path is impossible to map out beforehand.</p>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <h2 class="section-title"><span class="section-number">4</span>Comparison Table</h2>
+    <div class="section-content">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>LangGraph</th>
+            <th>CrewAI</th>
+            <th>AutoGen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Paradigm</strong></td>
+            <td>State Graphs</td>
+            <td>Task Delegation</td>
+            <td>Conversational Exchange</td>
+          </tr>
+          <tr>
+            <td><strong>Determinism</strong></td>
+            <td>High (Explicit Edges)</td>
+            <td>Medium (Assigned Tasks)</td>
+            <td>Low (Emergent Chat)</td>
+          </tr>
+          <tr>
+            <td><strong>Best For</strong></td>
+            <td>Hardcoded routing</td>
+            <td>Content/Research teams</td>
+            <td>Coding & Problem Solving</td>
+          </tr>
+          <tr>
+            <td><strong>Learning Curve</strong></td>
+            <td>Steep</td>
+            <td>Easy</td>
+            <td>Moderate</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <h2 class="section-title"><span class="section-number">5</span>Exam Question Targets</h2>
+    <div class="section-content">
+      <div class="callout callout-exam">
+        <p><strong>Exam Trap</strong>: You are building an autonomous system to generate, execute, and debug Python code iteratively without a strict pre-determined sequence. Which framework is best?</p>
+        <p><strong>Answer</strong>: AutoGen. AutoGen's conversational model (with a UserProxy agent explicitly executing code and chatting the results back to an Assistant agent) is inherently designed for open-loop iterative problem solving, whereas CrewAI and LangGraph prefer step-by-step sequential node tasks.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+<site-footer basepath=".."></site-footer>
+</main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="../assets/js/script.js"></script>
+</body></html>
