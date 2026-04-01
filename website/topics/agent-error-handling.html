@@ -8,40 +8,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
 </head>
 <body>
-<header class="topbar">
-  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
-  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
-  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search…"/><div class="search-results" id="search-results"></div></div>
-  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../labs/index.html">🔬 Labs</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
-</header>
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="home"></site-header>
 <div class="layout">
-<aside class="sidebar">
-  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
-    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
-    <a class="sidebar-link" href="../labs/index.html"><span class="link-icon">🔬</span> Labs</a>
-    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
-    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
-  </div>
-  <div class="sidebar-section"><div class="sidebar-section-title">Exam Domains</div>
-    <div class="domain-group"><div class="domain-toggle">🤖 Agent Architecture <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a><a class="sidebar-link" href="langgraph.html">LangGraph</a><a class="sidebar-link" href="crewai.html">CrewAI</a><a class="sidebar-link" href="autogen.html">AutoGen</a><a class="sidebar-link" href="multi-agent.html">Multi-Agent Orchestration</a></div></div>
-    <div class="domain-group open"><div class="domain-toggle">🔧 Agent Development <span class="toggle-arrow">▼</span></div>
-      <div class="domain-topics" style="display:block;">
-        <a class="sidebar-link" href="tool-use.html">Tool Use</a>
-        <a class="sidebar-link active" href="agent-error-handling.html">Error Handling</a>
-        <a class="sidebar-link" href="tokenization.html">Tokenization</a>
-        <a class="sidebar-link" href="transformer-architecture.html">Transformer Architecture</a>
-      </div>
-    </div>
-    <div class="domain-group"><div class="domain-toggle">📊 Evaluation <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-evaluation.html">Agent Evaluation</a><a class="sidebar-link" href="fine-tuning-lora.html">Fine-Tuning LoRA</a></div></div>
-    <div class="domain-group"><div class="domain-toggle">🚀 Deployment <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="triton.html">Triton</a><a class="sidebar-link" href="tensorrt-llm.html">TensorRT-LLM</a><a class="sidebar-link" href="nvidia-nims.html">NIMs</a></div></div>
-    <div class="domain-group"><div class="domain-toggle">🧠 Cognition <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="prompt-engineering.html">Prompt Engineering</a><a class="sidebar-link" href="chain-of-thought.html">Chain-of-Thought</a></div></div>
-    <div class="domain-group"><div class="domain-toggle">🗄️ Knowledge <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="rag-pipeline.html">RAG Pipeline</a><a class="sidebar-link" href="vector-databases.html">Vector Databases</a></div></div>
-    <div class="domain-group"><div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agentiq.html">AgentIQ</a><a class="sidebar-link" href="nemo-toolkit.html">NeMo Toolkit</a><a class="sidebar-link" href="nvidia-nims.html">NVIDIA NIMs</a></div></div>
-    <div class="domain-group"><div class="domain-toggle">🛡️ Safety <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="nemo-guardrails.html">NeMo Guardrails</a></div></div>
-    <div class="domain-group"><div class="domain-toggle">👤 Human-AI <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="hitl-oversight.html">HITL &amp; Oversight</a></div></div>
-    <div class="domain-group"><div class="domain-toggle">📡 Run &amp; Monitor <span class="toggle-arrow">▶</span></div><div class="domain-topics"><a class="sidebar-link" href="agent-observability.html">Agent Observability</a></div></div>
-  </div>
-</aside>
+<site-sidebar basepath=".." active="agent-error-handling"></site-sidebar>
 <main class="main"><div class="content">
   <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Agent Development</span><span class="sep">›</span><span>Production Error Handling</span></div>
   <div class="page-header">
@@ -454,8 +424,9 @@ def orchestrator_node(state):
     <a class="topic-nav-btn" href="agent-observability.html">Agent Observability →</a>
   </div>
 </div>
-<site-footer basepath=".."></site-footer>
-</main></div>
+
+</main>
+<site-footer basepath=".."></site-footer></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 <script src="../assets/js/script.js"></script>

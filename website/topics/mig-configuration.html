@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MIG Configuration — Multi-Instance GPU | NCP-AAI Study Guide</title>
+  <meta name="description" content="NVIDIA MIG: Multi-Instance GPU partitioning on A100/H100, MIG profiles, nvidia-smi mig commands, GI/CI instances, and exam preparation."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="home"></site-header>
+<div class="layout">
+<site-sidebar basepath=".." active="mig-configuration"></site-sidebar>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>AI Infrastructure</span><span class="sep">›</span><span>MIG Configuration</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Physical Layer Management</span>
+      <span class="tag tag-nvidia">MIG</span>
+      <span class="tag tag-difficulty-advanced">Advanced</span>
+    </div>
+    <h1 class="page-title">MIG Configuration</h1>
+    <p class="page-subtitle">Multi-Instance GPU partitioning — isolate a single A100 or H100 into up to 7 independent GPU instances with guaranteed memory and compute bandwidth.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#what">1. What Is MIG?</a>
+    <a href="#architecture">2. MIG Architecture (GI & CI)</a>
+    <a href="#profiles">3. MIG Profiles on A100/H100</a>
+    <a href="#enable">4. Enabling & Disabling MIG</a>
+    <a href="#create">5. Creating GI and CI Instances</a>
+    <a href="#verify">6. Verification Commands</a>
+    <a href="#dcgm">7. MIG with DCGM</a>
+    <a href="#exam">8. Exam Prep & Quick Reference</a>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="what">1. What Is MIG?</h2>
+  <p>Multi-Instance GPU (MIG) is a GPU partitioning technology available on A100 (80 GB / 40 GB), H100 SXM, and H100 PCIe. It allows one physical GPU to be split into up to 7 isolated instances, each with dedicated memory bandwidth, L2 cache, and compute resources — hardware-enforced isolation, not virtualization.</p>
+  <div class="callout callout-info">
+    <div class="callout-title">MIG vs vGPU</div>
+    MIG is hardware partitioning — the GPU slices are physically separate at the chip level. vGPU is software virtualization sharing the full GPU via a hypervisor. MIG provides better isolation guarantees and is used in HPC/cloud multi-tenant scenarios.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="architecture">2. MIG Architecture (GI & CI)</h2>
+  <p>MIG has two levels of partitioning:</p>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Term</th><th>Full Name</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>GI</strong></td><td>GPU Instance</td><td>Top-level partition — dedicated memory slices and SM partitions. Created first.</td></tr>
+        <tr><td><strong>CI</strong></td><td>Compute Instance</td><td>Sub-partition within a GI — defines which SMs within the GI are usable. Created second inside a GI.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>A workload runs on a MIG device only when <strong>both</strong> a GI and a CI exist. The combined (GI+CI) is exposed as a MIG device (e.g., <code>MIG-GPU-UUID/4/0</code>).</p>
+
+  <!-- 3 -->
+  <h2 id="profiles">3. MIG Profiles on A100/H100</h2>
+  <p>Profiles define how many GPU Memory Slices (GMS) and SM partitions each instance gets. The A100 80 GB has 8 GMS (1 GMS = 10 GB).</p>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Profile Name</th><th>Memory (A100 80GB)</th><th>Memory (H100 80GB)</th><th>Max Instances per GPU</th><th>SMs</th></tr></thead>
+      <tbody>
+        <tr><td><code>1g.10gb</code></td><td>10 GB</td><td>10 GB</td><td>7</td><td>1/7</td></tr>
+        <tr><td><code>2g.20gb</code></td><td>20 GB</td><td>20 GB</td><td>3</td><td>2/7</td></tr>
+        <tr><td><code>3g.40gb</code></td><td>40 GB</td><td>40 GB</td><td>2</td><td>3/7</td></tr>
+        <tr><td><code>4g.40gb</code></td><td>40 GB</td><td>40 GB</td><td>1</td><td>4/7</td></tr>
+        <tr><td><code>7g.80gb</code></td><td>80 GB (full GPU)</td><td>80 GB</td><td>1</td><td>7/7</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-warning">
+    <div class="callout-title">Profile Naming Format</div>
+    Format: <code>{compute_slices}g.{memory_gb}gb</code>. The number before "g" is compute slice count (not GPU count). <code>1g.10gb</code> = 1 compute slice, 10 GB memory. H100 SXM has additional profiles like <code>1g.10gb+me</code> with Media Extensions.
+  </div>
+
+  <!-- 4 -->
+  <h2 id="enable">4. Enabling & Disabling MIG</h2>
+  <pre><code class="language-bash"># Enable MIG mode on GPU 0 (requires root, terminates running processes)
+sudo nvidia-smi -i 0 -mig 1
+
+# Disable MIG mode on GPU 0
+sudo nvidia-smi -i 0 -mig 0
+
+# Check MIG mode status for all GPUs
+nvidia-smi --query-gpu=index,name,mig.mode.current --format=csv,noheader
+
+# Enable MIG on all GPUs in the system
+sudo nvidia-smi -mig 1
+
+# IMPORTANT: Reboot may be required after enabling MIG on some systems
+# Check: nvidia-smi returns "Pending Enable" → reboot needed</code></pre>
+  <div class="callout callout-warning">
+    <div class="callout-title">Enabling MIG Terminates All GPU Processes</div>
+    Enabling or disabling MIG mode kills all CUDA processes on that GPU. Always drain workloads from Slurm partitions before enabling MIG in production.
+  </div>
+
+  <!-- 5 -->
+  <h2 id="create">5. Creating GI and CI Instances</h2>
+  <pre><code class="language-bash"># Step 1 — List available GI profiles on GPU 0
+nvidia-smi mig -lgip -i 0
+
+# Step 2 — Create a GPU Instance using profile ID
+# Profile IDs are listed in nvidia-smi mig -lgip output
+nvidia-smi mig -cgi 9,9,9,9,9,9,9 -i 0    # Seven 1g.10gb GIs
+nvidia-smi mig -cgi 5,5 -i 0               # Two 3g.40gb GIs
+nvidia-smi mig -cgi 14 -i 0               # One 7g.80gb GI (full GPU as MIG)
+
+# Step 3 — List created GIs
+nvidia-smi mig -lgi -i 0
+
+# Step 4 — Create Compute Instances within each GI
+nvidia-smi mig -cci -i 0 -gi 0    # Create default CI in GI 0
+nvidia-smi mig -cci -i 0          # Create default CIs in all GIs
+
+# Step 5 — List all MIG devices (GI+CI combined)
+nvidia-smi mig -lme
+
+# Delete all instances and start fresh
+sudo nvidia-smi mig -dci && sudo nvidia-smi mig -dgi -i 0</code></pre>
+
+  <!-- 6 -->
+  <h2 id="verify">6. Verification Commands</h2>
+  <pre><code class="language-bash"># List all MIG devices with UUIDs
+nvidia-smi -L
+
+# Expected output for 7x 1g.10gb on GPU 0:
+# GPU 0: A100 80GB SXM4 (UUID: GPU-xxxx)
+#   MIG 1g.10gb     Device  0: (UUID: MIG-GPU-xxxx/1/0)
+#   MIG 1g.10gb     Device  1: (UUID: MIG-GPU-xxxx/2/0)
+#   ...
+
+# Show detailed MIG topology
+nvidia-smi mig -lme -i 0
+
+# Check CUDA_VISIBLE_DEVICES for MIG (use full MIG UUID)
+export CUDA_VISIBLE_DEVICES=MIG-GPU-xxxx/1/0
+python3 -c "import torch; print(torch.cuda.get_device_name(0))"
+
+# Query MIG-specific metrics
+nvidia-smi --query-gpu=index,mig.mode.current,gpu_uuid --format=csv</code></pre>
+
+  <!-- 7 -->
+  <h2 id="dcgm">7. MIG with DCGM</h2>
+  <p>DCGM (Data Center GPU Manager) supports MIG instances natively. Each MIG device gets its own DCGM entity and can be monitored/alerted independently.</p>
+  <pre><code class="language-bash"># Discover MIG entities in DCGM
+dcgmi discovery -l          # Lists all GPUs and MIG instances
+
+# Field watch on a MIG instance entity ID
+dcgmi dmon -e 203,204,1001 -d 1000   # SM util, memory util, MIG mode per entity
+
+# Create DCGM group with only MIG instances
+dcgmi group -c mig_group --default
+dcgmi group -a -g mig_group -i MIG:GPU-xxxx/1/0</code></pre>
+
+  <!-- 8 -->
+  <h2 id="exam">8. Exam Prep & Quick Reference</h2>
+  <div class="callout callout-warning">
+    <div class="callout-title">Must-Know for Exam</div>
+    <ul>
+      <li>MIG is available on: A100, H100, H200 — NOT on A10, A30, T4, or consumer GPUs</li>
+      <li>Maximum 7 MIG instances per A100/H100 GPU (using 1g.10gb profile)</li>
+      <li>Creating GI comes before creating CI — both needed to use the MIG device</li>
+      <li>Enable MIG: <code>nvidia-smi -i 0 -mig 1</code>, then reboot may be required</li>
+      <li>MIG devices in CUDA_VISIBLE_DEVICES use the full UUID format</li>
+      <li>MIG does NOT support NVLink between instances — each instance is isolated</li>
+      <li>Profile format: <code>{compute_slices}g.{memory_gb}gb</code></li>
+    </ul>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>nvidia-smi -i 0 -mig 1</code></td><td>Enable MIG on GPU 0</td></tr>
+        <tr><td><code>nvidia-smi mig -lgip -i 0</code></td><td>List available GI profiles</td></tr>
+        <tr><td><code>nvidia-smi mig -cgi 9 -i 0</code></td><td>Create GI with profile ID 9</td></tr>
+        <tr><td><code>nvidia-smi mig -cci -i 0 -gi 0</code></td><td>Create CI within GI 0</td></tr>
+        <tr><td><code>nvidia-smi mig -lme</code></td><td>List all MIG devices</td></tr>
+        <tr><td><code>nvidia-smi mig -dci && nvidia-smi mig -dgi</code></td><td>Delete all CIs then GIs</td></tr>
+        <tr><td><code>nvidia-smi -L</code></td><td>List GPUs and MIG UUIDs</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="quiz-section">
+    <h3>Quick Check</h3>
+    <div class="quiz-question" data-answer="C">
+      <p><strong>Q:</strong> On a DGX A100 with 8 GPUs each using the <code>1g.10gb</code> MIG profile, what is the maximum number of independent MIG compute instances available across the whole system?</p>
+      <div class="quiz-options">
+        <button class="quiz-option" data-option="A">A) 8</button>
+        <button class="quiz-option" data-option="B">B) 14</button>
+        <button class="quiz-option" data-option="C">C) 56</button>
+        <button class="quiz-option" data-option="D">D) 64</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </div>
+
+</div></main>
+</div>
+<script src="../assets/js/script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

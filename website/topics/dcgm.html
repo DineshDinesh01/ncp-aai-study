@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DCGM Diagnostics — Data Center GPU Manager | NCP-AAI Study Guide</title>
+  <meta name="description" content="NVIDIA DCGM: dcgmi commands, health monitoring, diagnostics, group management, field IDs, policies, and cluster GPU verification for NCP-AII exam."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="home"></site-header>
+<div class="layout">
+<site-sidebar basepath=".." active="dcgm"></site-sidebar>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>AI Infrastructure</span><span class="sep">›</span><span>DCGM Diagnostics</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Cluster Test & Verification</span>
+      <span class="tag tag-nvidia">DCGM</span>
+      <span class="tag tag-difficulty-advanced">Advanced</span>
+    </div>
+    <h1 class="page-title">DCGM — Data Center GPU Manager</h1>
+    <p class="page-subtitle">NVIDIA's cluster-level GPU health monitoring and diagnostics framework — dcgmi commands, field IDs, health checks, diagnostic levels, and policy enforcement.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#what">1. What Is DCGM?</a>
+    <a href="#discovery">2. Discovery & Groups</a>
+    <a href="#health">3. Health Monitoring</a>
+    <a href="#diag">4. Diagnostics (dcgmi diag)</a>
+    <a href="#dmon">5. Field Monitoring (dmon)</a>
+    <a href="#fields">6. Key Field IDs</a>
+    <a href="#policy">7. Policy Engine</a>
+    <a href="#exam">8. Exam Prep & Quick Reference</a>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="what">1. What Is DCGM?</h2>
+  <p>Data Center GPU Manager (DCGM) is NVIDIA's lightweight agent for cluster-scale GPU monitoring, health checking, policy enforcement, and diagnostics. It runs as a host daemon (<code>nv-hostengine</code>) and is controlled via the <code>dcgmi</code> CLI or REST API.</p>
+  <div class="callout callout-info">
+    <div class="callout-title">DCGM vs nvidia-smi</div>
+    <ul>
+      <li><strong>nvidia-smi</strong>: Single-node, per-process view. Interactive and ad-hoc.</li>
+      <li><strong>DCGM</strong>: Cluster-aware, group-based monitoring. Integrates with Prometheus, Kubernetes (DCGM Exporter), and Slurm. Better for production observability.</li>
+    </ul>
+  </div>
+  <pre><code class="language-bash"># Start the DCGM host engine
+sudo systemctl start nvidia-dcgm      # systemd service
+# OR standalone:
+sudo nv-hostengine
+
+# Verify DCGM is running
+dcgmi discovery -l                    # Should list all GPUs</code></pre>
+
+  <!-- 2 -->
+  <h2 id="discovery">2. Discovery & Groups</h2>
+  <pre><code class="language-bash"># Discovery
+dcgmi discovery -l                   # List all detected GPUs
+dcgmi discovery -i 0                 # Detailed info for GPU 0
+
+# Groups — manage sets of GPUs together
+dcgmi group -l                       # List all groups
+dcgmi group -c mygroup               # Create group named 'mygroup'
+dcgmi group -a -g 1 -i 0,1,2,3      # Add GPU 0-3 to group ID 1
+dcgmi group -r -g 1 -i 2            # Remove GPU 2 from group 1
+dcgmi group -d -g 1                  # Delete group 1
+dcgmi group --default                # Use built-in 'all GPUs' group (ID 1)</code></pre>
+
+  <!-- 3 -->
+  <h2 id="health">3. Health Monitoring</h2>
+  <pre><code class="language-bash"># Check health of all GPUs
+dcgmi health -g 1 -c         # Set health watches on group 1
+dcgmi health -g 1 -e         # Check (evaluate) health on group 1
+
+# Health subsystems checked:
+# - pcie:    PCIe bus errors
+# - nvlink:  NVLink errors
+# - ecc:     Memory ECC errors
+# - power:   Power limit violations
+# - thermal: Temperature threshold violations
+# - mem:     Memory bandwidth errors
+
+# Example: check individual subsystems
+dcgmi health -g 1 -e --pcie --nvlink --ecc</code></pre>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Health Result</th><th>Meaning</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><code>Healthy</code></td><td>No issues detected</td><td>None</td></tr>
+        <tr><td><code>Warning</code></td><td>Correctable errors above threshold</td><td>Investigate, schedule maintenance</td></tr>
+        <tr><td><code>Failure</code></td><td>Uncorrectable errors or hardware fault</td><td>Drain workload, replace GPU</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4 -->
+  <h2 id="diag">4. Diagnostics (dcgmi diag)</h2>
+  <p>DCGM diagnostics run active tests against GPUs, ranging from quick checks to full stress tests:</p>
+  <pre><code class="language-bash"># Diagnostic run levels:
+# Level 1 — Quick (seconds): basic configuration check
+dcgmi diag -g 1 -r 1
+
+# Level 2 — Medium (minutes): memory bandwidth, PCIe, NVLink tests
+dcgmi diag -g 1 -r 2
+
+# Level 3 — Extended (hours): full stress test, burn-in level
+dcgmi diag -g 1 -r 3
+
+# Run specific tests only
+dcgmi diag -g 1 -r 2 --plugin memtest --plugin pcie
+
+# Output to file
+dcgmi diag -g 1 -r 2 --debugLogFile /tmp/dcgm_diag.log</code></pre>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Diagnostic Level</th><th>Duration</th><th>Tests Included</th><th>Use Case</th></tr></thead>
+      <tbody>
+        <tr><td>Level 1</td><td>&lt;30 seconds</td><td>Config check, driver init</td><td>Quick sanity after install</td></tr>
+        <tr><td>Level 2</td><td>2-10 minutes</td><td>Memory, PCIe bandwidth, NVLink, ECC</td><td>Post-maintenance verification</td></tr>
+        <tr><td>Level 3</td><td>Hours</td><td>Full compute stress, power, thermal, memory</td><td>Pre-production burn-in</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout callout-warning">
+    <div class="callout-title">Exam: Which Level for Which Scenario?</div>
+    Quick install verification = Level 1. After replacing a GPU = Level 2 or 3. Before accepting a new DGX into production cluster = Level 3 (extended burn-in).
+  </div>
+
+  <!-- 5 -->
+  <h2 id="dmon">5. Field Monitoring (dmon)</h2>
+  <pre><code class="language-bash"># Monitor all GPUs every 1000ms, fields: SM util, memory util, power
+dcgmi dmon -e 203,204,155 -d 1000
+
+# Monitor specific GPU group
+dcgmi dmon -g 1 -e 203,204,155 -d 500
+
+# Monitor and write to CSV file
+dcgmi dmon -e 203,204,155 -d 1000 > /tmp/gpu_metrics.csv
+
+# Watch NVLink throughput counters
+dcgmi dmon -e 740,742 -d 1000   # NVLink RX/TX bandwidth per GPU</code></pre>
+
+  <!-- 6 -->
+  <h2 id="fields">6. Key Field IDs</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Field ID</th><th>Metric</th><th>Unit</th></tr></thead>
+      <tbody>
+        <tr><td>203</td><td>SM Utilization</td><td>%</td></tr>
+        <tr><td>204</td><td>Memory Utilization</td><td>%</td></tr>
+        <tr><td>155</td><td>Power Usage</td><td>Watts</td></tr>
+        <tr><td>150</td><td>GPU Temperature</td><td>°C</td></tr>
+        <tr><td>310</td><td>ECC Corrected Errors (single bit)</td><td>count</td></tr>
+        <tr><td>311</td><td>ECC Uncorrected Errors (double bit)</td><td>count</td></tr>
+        <tr><td>390</td><td>PCIe RX Bandwidth</td><td>MB/s</td></tr>
+        <tr><td>391</td><td>PCIe TX Bandwidth</td><td>MB/s</td></tr>
+        <tr><td>740</td><td>NVLink RX Bandwidth</td><td>MB/s</td></tr>
+        <tr><td>742</td><td>NVLink TX Bandwidth</td><td>MB/s</td></tr>
+        <tr><td>1001</td><td>MIG Mode Status</td><td>0/1</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7 -->
+  <h2 id="policy">7. Policy Engine</h2>
+  <p>DCGM policies automatically trigger actions (script, notification) when GPU conditions are met:</p>
+  <pre><code class="language-bash"># View current policies on a group
+dcgmi policy -g 1 -l
+
+# Set policy: action when double-bit ECC error occurs
+dcgmi policy -g 1 --set 0,0     # Parameters: ECC action, XID action
+
+# Register a callback script
+dcgmi policy -g 1 --reg          # Register action handler
+
+# Policy conditions (configure thresholds):
+# --ecc       : ECC memory error threshold
+# --pci       : PCIe error threshold
+# --maxpages  : GPU page retirement threshold
+# --thermal   : Temperature threshold
+# --power     : Power violation threshold</code></pre>
+
+  <!-- 8 -->
+  <h2 id="exam">8. Exam Prep & Quick Reference</h2>
+  <div class="callout callout-warning">
+    <div class="callout-title">Must-Know for Exam (33% domain weight)</div>
+    <ul>
+      <li>DCGM daemon: <code>nv-hostengine</code> or <code>systemctl start nvidia-dcgm</code></li>
+      <li>Check all GPUs healthy: <code>dcgmi health -g 1 -e</code></li>
+      <li>Quick verification after driver install: <code>dcgmi diag -r 1</code></li>
+      <li>Post-GPU replacement verification: <code>dcgmi diag -r 2</code> or <code>-r 3</code></li>
+      <li>Monitor SM util in real-time: <code>dcgmi dmon -e 203</code></li>
+      <li>ECC uncorrected errors field ID: 311</li>
+      <li>DCGM group with all GPUs: group ID = 1 (default)</li>
+      <li>DCGM integrates with Prometheus via DCGM Exporter (Kubernetes sidecar)</li>
+    </ul>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>dcgmi discovery -l</code></td><td>List all GPUs visible to DCGM</td></tr>
+        <tr><td><code>dcgmi group -c &lt;name&gt;</code></td><td>Create GPU group</td></tr>
+        <tr><td><code>dcgmi health -g 1 -e</code></td><td>Evaluate group health</td></tr>
+        <tr><td><code>dcgmi diag -g 1 -r 1</code></td><td>Quick diagnostic (30s)</td></tr>
+        <tr><td><code>dcgmi diag -g 1 -r 2</code></td><td>Medium diagnostic (minutes)</td></tr>
+        <tr><td><code>dcgmi diag -g 1 -r 3</code></td><td>Extended burn-in (hours)</td></tr>
+        <tr><td><code>dcgmi dmon -e 203,204,155</code></td><td>Monitor util + power</td></tr>
+        <tr><td><code>dcgmi policy -g 1 -l</code></td><td>List active policies</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="quiz-section">
+    <h3>Quick Check</h3>
+    <div class="quiz-question" data-answer="B">
+      <p><strong>Q:</strong> After replacing a faulty GPU in a production DGX, which DCGM diagnostic level should you run before returning it to the Slurm pool?</p>
+      <div class="quiz-options">
+        <button class="quiz-option" data-option="A">A) Level 1 only — quick sanity check is sufficient</button>
+        <button class="quiz-option" data-option="B">B) Level 2 or 3 — medium or extended to verify memory, PCIe, and NVLink</button>
+        <button class="quiz-option" data-option="C">C) No diagnostic needed — DCGM health check is sufficient</button>
+        <button class="quiz-option" data-option="D">D) Level 4 — DCGM extended with network testing</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </div>
+
+</div></main>
+</div>
+<script src="../assets/js/script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

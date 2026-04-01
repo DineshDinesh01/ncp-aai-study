@@ -45,6 +45,14 @@ async function loadTopics() {
     { title: "AutoGen", domain: "Agent Architecture & Design", path: "topics/autogen.html" },
     { title: "NVIDIA AgentIQ", domain: "NVIDIA Platform Implementation", path: "topics/agentiq.html" },
     { title: "Production Agent Error Handling", domain: "Agent Development", path: "topics/agent-error-handling.html" },
+    { title: "DGX Architecture", domain: "AI Infrastructure — Systems & Bring-Up", path: "topics/dgx-architecture.html" },
+    { title: "MIG Configuration", domain: "AI Infrastructure — Physical Layer", path: "topics/mig-configuration.html" },
+    { title: "DCGM Diagnostics", domain: "AI Infrastructure — Cluster Verification", path: "topics/dcgm.html" },
+    { title: "InfiniBand Networking", domain: "AI Infrastructure — Cluster Verification", path: "topics/infiniband-networking.html" },
+    { title: "NVLink & Fabric Manager", domain: "AI Infrastructure — Physical Layer", path: "topics/nvlink-fabric-manager.html" },
+    { title: "Slurm Cluster Management", domain: "AI Infrastructure — Control Plane", path: "topics/slurm-cluster.html" },
+    { title: "Pyxis & Enroot", domain: "AI Infrastructure — Control Plane", path: "topics/pyxis-enroot.html" },
+    { title: "XID Error Reference", domain: "AI Infrastructure — Troubleshooting", path: "topics/xid-errors.html" },
   ];
 }
 
@@ -239,6 +247,10 @@ const DOMAIN_TOPICS = {
   'hitl':       ['hitl-oversight'],
   'monitor':    ['agent-observability'],
   'nvidia':     ['agentiq', 'nemo-toolkit'],
+  // AI Infrastructure domains
+  'infra-systems':  ['dgx-architecture', 'mig-configuration', 'nvlink-fabric-manager'],
+  'infra-cluster':  ['dcgm', 'infiniband-networking', 'slurm-cluster', 'pyxis-enroot'],
+  'infra-trouble':  ['xid-errors'],
 };
 
 function trackTopicVisit() {

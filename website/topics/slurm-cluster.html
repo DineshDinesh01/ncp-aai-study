@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Slurm Cluster Management — AI HPC Scheduling | NCP-AAI Study Guide</title>
+  <meta name="description" content="Slurm workload manager for AI clusters: sinfo, squeue, scontrol, sbatch, GPU GRES, partitions, reservations, and NCP-AII exam preparation."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="home"></site-header>
+<div class="layout">
+<site-sidebar basepath=".." active="slurm-cluster"></site-sidebar>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>AI Infrastructure</span><span class="sep">›</span><span>Slurm Cluster</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Control Plane Installation</span>
+      <span class="tag tag-nvidia">Slurm</span>
+      <span class="tag tag-difficulty-advanced">Advanced</span>
+    </div>
+    <h1 class="page-title">Slurm Cluster Management</h1>
+    <p class="page-subtitle">Simple Linux Utility for Resource Management — the standard HPC workload scheduler for DGX clusters: partitions, GPU GRES, job arrays, and cluster state management.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#overview">1. Slurm Architecture</a>
+    <a href="#sinfo">2. sinfo — Cluster State</a>
+    <a href="#squeue">3. squeue — Job Queue</a>
+    <a href="#sbatch">4. sbatch — Job Submission</a>
+    <a href="#scontrol">5. scontrol — Admin Control</a>
+    <a href="#gres">6. GPU GRES Configuration</a>
+    <a href="#drain">7. Draining & Resuming Nodes</a>
+    <a href="#exam">8. Exam Prep & Quick Reference</a>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="overview">1. Slurm Architecture</h2>
+  <p>Slurm (Simple Linux Utility for Resource Management) is the dominant workload scheduler in HPC and AI clusters. It manages job queuing, resource allocation (GPUs, CPUs, memory), and node state tracking.</p>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Component</th><th>Role</th><th>Runs On</th></tr></thead>
+      <tbody>
+        <tr><td><strong>slurmctld</strong></td><td>Central controller daemon — maintains cluster state, schedules jobs</td><td>Head/login node</td></tr>
+        <tr><td><strong>slurmd</strong></td><td>Worker daemon — executes jobs, reports node state</td><td>Every compute node (DGX)</td></tr>
+        <tr><td><strong>slurmdbd</strong></td><td>Accounting database daemon — records job history, usage</td><td>Database server</td></tr>
+        <tr><td><strong>sinfo</strong></td><td>Show cluster partitions and node state</td><td>CLI (any node)</td></tr>
+        <tr><td><strong>squeue</strong></td><td>Show running and pending jobs</td><td>CLI</td></tr>
+        <tr><td><strong>sbatch</strong></td><td>Submit batch jobs</td><td>CLI</td></tr>
+        <tr><td><strong>scontrol</strong></td><td>Admin: drain, resume, show config</td><td>CLI (admin)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2 -->
+  <h2 id="sinfo">2. sinfo — Cluster State</h2>
+  <pre><code class="language-bash"># Basic cluster state view
+sinfo
+
+# Output columns:
+# PARTITION  AVAIL  TIMELIMIT  NODES  STATE  NODELIST
+# dgx        up     7-00:00:0   4     idle   dgx[01-04]
+
+# Show all nodes with detailed state
+sinfo -N -l
+
+# Show GPU resources available
+sinfo -o "%N %G %C %t"       # Node, GRES, CPU info, state
+sinfo --Format=nodelist,gres,cpus,memory,statecompact
+
+# Show nodes by state
+sinfo -t idle                 # Only idle nodes
+sinfo -t drain                # Drained nodes (removed from scheduling)
+sinfo -t down                 # Down nodes
+
+# Node state codes:
+# idle   = available, no jobs running
+# alloc  = fully allocated
+# mix    = partially allocated
+# drain  = draining (admin marked, no new jobs)
+# down   = node unreachable
+# resv   = in reservation</code></pre>
+
+  <!-- 3 -->
+  <h2 id="squeue">3. squeue — Job Queue</h2>
+  <pre><code class="language-bash"># Show all jobs
+squeue
+
+# Show jobs for specific user
+squeue -u username
+
+# Show jobs on specific partition
+squeue -p dgx
+
+# Detailed job info with GPU allocation
+squeue -o "%i %j %u %t %R %b"    # JobID, Name, User, State, Reason, GRES
+
+# Watch queue live
+watch -n 5 squeue
+
+# Job state codes:
+# R  = Running
+# PD = Pending (waiting for resources)
+# CG = Completing
+# CA = Cancelled
+# F  = Failed
+
+# Pending reasons:
+# Resources        = waiting for free GPUs/CPUs
+# Priority         = lower priority than other pending jobs
+# QOSMaxJobsPerUser = user job limit reached
+# Dependency       = waiting for another job</code></pre>
+
+  <!-- 4 -->
+  <h2 id="sbatch">4. sbatch — Job Submission</h2>
+  <pre><code class="language-bash">#!/bin/bash
+#SBATCH --job-name=llm-train
+#SBATCH --partition=dgx
+#SBATCH --nodes=2                    # 2 DGX nodes
+#SBATCH --ntasks-per-node=8         # 8 tasks per node (1 per GPU)
+#SBATCH --gpus-per-node=8           # 8 GPUs per node
+#SBATCH --gres=gpu:8                # GRES GPU request
+#SBATCH --cpus-per-task=12          # CPU threads per task
+#SBATCH --mem=0                     # All available memory
+#SBATCH --time=24:00:00             # 24-hour time limit
+#SBATCH --output=logs/job-%j.out    # %j = job ID
+#SBATCH --error=logs/job-%j.err
+
+# Load modules
+module load cuda/12.3
+module load openmpi/4.1.5
+
+# Run with Pyxis/Enroot container
+srun --container-image=nvcr.io/nvidia/pytorch:24.01-py3 \
+     --container-mounts=/data:/data \
+     python train.py --nodes 2 --gpus 16</code></pre>
+  <pre><code class="language-bash"># Submit the job
+sbatch train_job.sh
+
+# Submit with inline options (override script)
+sbatch --nodes=4 --partition=h100 train_job.sh
+
+# Job arrays (sweep over hyperparameters)
+sbatch --array=1-10 train_job.sh   # Creates jobs 1-10, $SLURM_ARRAY_TASK_ID set
+
+# Cancel a job
+scancel &lt;jobid&gt;
+
+# Cancel all your jobs
+scancel -u $USER</code></pre>
+
+  <!-- 5 -->
+  <h2 id="scontrol">5. scontrol — Admin Control</h2>
+  <pre><code class="language-bash"># Show detailed job information
+scontrol show job &lt;jobid&gt;
+
+# Show node detailed info
+scontrol show node dgx01
+
+# Show partition config
+scontrol show partition dgx
+
+# Drain a node (stop new job scheduling, wait for running jobs to finish)
+scontrol update NodeName=dgx01 State=DRAIN Reason="GPU maintenance"
+
+# Resume a drained/down node
+scontrol update NodeName=dgx01 State=RESUME
+
+# Set a node to DOWN
+scontrol update NodeName=dgx01 State=DOWN Reason="Hardware failure"
+
+# Hold a pending job (prevent it from starting)
+scontrol hold &lt;jobid&gt;
+
+# Release a held job
+scontrol release &lt;jobid&gt;
+
+# Requeue a running job (restart it)
+scontrol requeue &lt;jobid&gt;</code></pre>
+
+  <!-- 6 -->
+  <h2 id="gres">6. GPU GRES Configuration</h2>
+  <p>Generic Resource Scheduling (GRES) is how Slurm tracks GPU resources. Configuration is in <code>/etc/slurm/gres.conf</code> on each node:</p>
+  <pre><code class="language-bash"># /etc/slurm/gres.conf on each DGX node
+Name=gpu Type=h100 File=/dev/nvidia0
+Name=gpu Type=h100 File=/dev/nvidia1
+Name=gpu Type=h100 File=/dev/nvidia2
+Name=gpu Type=h100 File=/dev/nvidia3
+Name=gpu Type=h100 File=/dev/nvidia4
+Name=gpu Type=h100 File=/dev/nvidia5
+Name=gpu Type=h100 File=/dev/nvidia6
+Name=gpu Type=h100 File=/dev/nvidia7
+
+# /etc/slurm/slurm.conf (cluster config, relevant lines)
+GresTypes=gpu
+NodeName=dgx01 Gres=gpu:h100:8 CPUs=128 RealMemory=2048000</code></pre>
+  <pre><code class="language-bash"># Request specific GPU type in job
+sbatch --gres=gpu:h100:4 myjob.sh    # 4× H100 GPUs
+
+# Request any GPU type
+sbatch --gpus-per-node=8 myjob.sh
+
+# Check GRES allocation in running job
+scontrol show job &lt;jobid&gt; | grep GRES</code></pre>
+  <div class="callout callout-warning">
+    <div class="callout-title">MIG + Slurm GRES</div>
+    With MIG enabled, each MIG instance is a separate GRES entry. Configure gres.conf with MIG device files and use <code>--gres=gpu:1g.10gb:4</code> to request specific MIG profiles in Slurm jobs.
+  </div>
+
+  <!-- 7 -->
+  <h2 id="drain">7. Draining & Resuming Nodes</h2>
+  <p>Before maintenance (driver update, GPU replacement, firmware update), drain the node:</p>
+  <pre><code class="language-bash"># 1. Drain the node (gracefully stop new allocations)
+scontrol update NodeName=dgx01 State=DRAIN Reason="Replacing GPU 4"
+
+# 2. Wait for running jobs to complete
+squeue -w dgx01               # Watch until no jobs remain
+
+# 3. Perform maintenance (GPU swap, driver update, etc.)
+
+# 4. Verify system is healthy
+nvidia-smi -L                 # All GPUs visible?
+dcgmi diag -g 1 -r 2          # Run DCGM diagnostics
+
+# 5. Resume the node
+scontrol update NodeName=dgx01 State=RESUME
+
+# 6. Verify node is back in Slurm
+sinfo -N | grep dgx01         # Should show 'idle'</code></pre>
+
+  <!-- 8 -->
+  <h2 id="exam">8. Exam Prep & Quick Reference</h2>
+  <div class="callout callout-warning">
+    <div class="callout-title">Must-Know for Exam (19% domain weight — Control Plane)</div>
+    <ul>
+      <li>Slurm daemons: <code>slurmctld</code> (controller) and <code>slurmd</code> (worker on each node)</li>
+      <li>GPU GRES configured in <code>/etc/slurm/gres.conf</code> and referenced in <code>slurm.conf</code></li>
+      <li>Drain a node before maintenance: <code>scontrol update NodeName=... State=DRAIN</code></li>
+      <li>Resume after maintenance: <code>State=RESUME</code></li>
+      <li><code>sinfo -t drain</code> shows nodes in maintenance mode</li>
+      <li>Pending reason "Resources" = not enough free GPUs</li>
+      <li><code>scontrol show job &lt;id&gt;</code> gives full job details including GRES allocation</li>
+      <li>Node state: idle → alloc (fully used) → mix (partially used)</li>
+    </ul>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>sinfo</code></td><td>Show cluster partition and node state</td></tr>
+        <tr><td><code>squeue -u USER</code></td><td>Show user's jobs</td></tr>
+        <tr><td><code>sbatch job.sh</code></td><td>Submit batch job</td></tr>
+        <tr><td><code>scancel &lt;jobid&gt;</code></td><td>Cancel a job</td></tr>
+        <tr><td><code>scontrol show job &lt;id&gt;</code></td><td>Detailed job info</td></tr>
+        <tr><td><code>scontrol show node &lt;node&gt;</code></td><td>Detailed node info</td></tr>
+        <tr><td><code>scontrol update ... State=DRAIN</code></td><td>Drain node for maintenance</td></tr>
+        <tr><td><code>scontrol update ... State=RESUME</code></td><td>Return node to service</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="quiz-section">
+    <h3>Quick Check</h3>
+    <div class="quiz-question" data-answer="C">
+      <p><strong>Q:</strong> A Slurm node shows state "drain" in <code>sinfo</code>. What does this mean?</p>
+      <div class="quiz-options">
+        <button class="quiz-option" data-option="A">A) The node has failed and is unreachable</button>
+        <button class="quiz-option" data-option="B">B) All GPUs are fully allocated to running jobs</button>
+        <button class="quiz-option" data-option="C">C) The node will accept no new jobs but currently running jobs can finish</button>
+        <button class="quiz-option" data-option="D">D) The node is in a reservation and blocked for a specific user</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </div>
+
+</div></main>
+</div>
+<script src="../assets/js/script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

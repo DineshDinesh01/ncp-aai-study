@@ -7,32 +7,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
 </head>
 <body>
-<header class="topbar">
-  <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
-  <a class="topbar-logo" href="../index.html"><div class="logo-dot">N</div> NCP-AAI Study Guide</a>
-  <div class="topbar-search"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Search topics…"/><div class="search-results" id="search-results"></div></div>
-  <nav class="topbar-nav"><a href="../index.html">Home</a><a href="../resources/index.html">Resources</a><a href="../mock-tests/index.html">Mock Tests</a></nav>
-</header>
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="home"></site-header>
 <div class="layout">
-<aside class="sidebar">
-  <div class="sidebar-section"><div class="sidebar-section-title">Navigation</div>
-    <a class="sidebar-link" href="../index.html"><span class="link-icon">🏠</span> Home</a>
-    <a class="sidebar-link" href="../resources/index.html"><span class="link-icon">📚</span> Resources</a>
-    <a class="sidebar-link" href="../mock-tests/index.html"><span class="link-icon">📝</span> Mock Tests</a>
-  </div>
-  <div class="sidebar-section"><div class="sidebar-section-title">Domains</div>
-    <!-- Abbreviated Sidebar -->
-    <div class="domain-group"><div class="domain-toggle open">🧠 Cognition & Planning <span class="toggle-arrow">▶</span></div><div class="domain-topics open">
-      <a class="sidebar-link" href="tree-of-thought.html">Tree of Thought</a>
-      <a class="sidebar-link active" href="agent-memory.html">Agentic Memory</a>
-    </div></div>
-    <div class="domain-group"><div class="domain-toggle">🤖 Agentic System Design <span class="toggle-arrow">▶</span></div><div class="domain-topics">
-      <a class="sidebar-link" href="react-agent.html">ReAct Agent Loop</a>
-      <a class="sidebar-link" href="planning-architectures.html">Planning & Reflection</a>
-      <a class="sidebar-link" href="frameworks-deep-dive.html">Multi-Agent Frameworks</a>
-    </div></div>
-  </div>
-</aside>
+<site-sidebar basepath=".." active="agent-memory"></site-sidebar>
 <main class="main"><div class="content">
   <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>Cognition & Planning</span><span class="sep">›</span><span>Agentic Memory</span></div>
   <div class="page-header">
@@ -100,8 +78,9 @@ app.invoke({"messages": [new_input]}, config={"configurable": {"thread_id": "use
   </div>
 
 </div>
-<site-footer basepath=".."></site-footer>
-</main></div>
+
+</main>
+<site-footer basepath=".."></site-footer></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="../assets/js/script.js"></script>
 </body></html>

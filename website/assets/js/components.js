@@ -77,6 +77,8 @@ class SiteSidebar extends HTMLElement {
               <a class="sidebar-link ${isAct('crewai')}" href="${base}/topics/crewai.html">CrewAI</a>
               <a class="sidebar-link ${isAct('autogen')}" href="${base}/topics/autogen.html">AutoGen</a>
               <a class="sidebar-link ${isAct('multi-agent')}" href="${base}/topics/multi-agent.html">Multi-Agent Orchestration</a>
+              <a class="sidebar-link ${isAct('planning-architectures')}" href="${base}/topics/planning-architectures.html">Planning & Reflection</a>
+              <a class="sidebar-link ${isAct('frameworks-deep-dive')}" href="${base}/topics/frameworks-deep-dive.html">Frameworks Deep Dive</a>
             </div>
           </div>
 
@@ -104,6 +106,8 @@ class SiteSidebar extends HTMLElement {
               <a class="sidebar-link ${isAct('triton')}" href="${base}/topics/triton.html">NVIDIA Triton</a>
               <a class="sidebar-link ${isAct('tensorrt-llm')}" href="${base}/topics/tensorrt-llm.html">TensorRT-LLM</a>
               <a class="sidebar-link ${isAct('nvidia-nims')}" href="${base}/topics/nvidia-nims.html">NVIDIA NIMs</a>
+              <a class="sidebar-link ${isAct('gpu-optimization')}" href="${base}/topics/gpu-optimization.html">GPU Optimization</a>
+              <a class="sidebar-link ${isAct('serverless-agents')}" href="${base}/topics/serverless-agents.html">Serverless Agents</a>
             </div>
           </div>
 
@@ -112,6 +116,8 @@ class SiteSidebar extends HTMLElement {
             <div class="domain-topics">
               <a class="sidebar-link ${isAct('prompt-engineering')}" href="${base}/topics/prompt-engineering.html">Prompt Engineering</a>
               <a class="sidebar-link ${isAct('chain-of-thought')}" href="${base}/topics/chain-of-thought.html">Chain-of-Thought & Planning</a>
+              <a class="sidebar-link ${isAct('tree-of-thought')}" href="${base}/topics/tree-of-thought.html">Tree of Thought & MCTS</a>
+              <a class="sidebar-link ${isAct('agent-memory')}" href="${base}/topics/agent-memory.html">Agentic Memory</a>
             </div>
           </div>
 
@@ -120,6 +126,7 @@ class SiteSidebar extends HTMLElement {
             <div class="domain-topics">
               <a class="sidebar-link ${isAct('rag-pipeline')}" href="${base}/topics/rag-pipeline.html">RAG Pipeline</a>
               <a class="sidebar-link ${isAct('vector-databases')}" href="${base}/topics/vector-databases.html">Vector Databases</a>
+              <a class="sidebar-link ${isAct('advanced-rag')}" href="${base}/topics/advanced-rag.html">Advanced Retrieval</a>
             </div>
           </div>
 
@@ -127,8 +134,8 @@ class SiteSidebar extends HTMLElement {
             <div class="domain-toggle">⬡ NVIDIA Platform <span class="toggle-arrow">▶</span></div>
             <div class="domain-topics">
               <a class="sidebar-link ${isAct('nemo-toolkit')}" href="${base}/topics/nemo-toolkit.html">NeMo Toolkit</a>
-              <a class="sidebar-link ${isAct('nvidia-nims')}" href="${base}/topics/nvidia-nims.html">NVIDIA NIMs</a>
               <a class="sidebar-link ${isAct('agentiq')}" href="${base}/topics/agentiq.html">NVIDIA AgentIQ</a>
+              <a class="sidebar-link ${isAct('nemo-microservices')}" href="${base}/topics/nemo-microservices.html">NeMo Microservices</a>
             </div>
           </div>
 
@@ -136,6 +143,8 @@ class SiteSidebar extends HTMLElement {
             <div class="domain-toggle">🛡️ Safety & Compliance <span class="toggle-arrow">▶</span></div>
             <div class="domain-topics">
               <a class="sidebar-link ${isAct('nemo-guardrails')}" href="${base}/topics/nemo-guardrails.html">NeMo Guardrails</a>
+              <a class="sidebar-link ${isAct('agent-security')}" href="${base}/topics/agent-security.html">Agent Security Threats</a>
+              <a class="sidebar-link ${isAct('agent-alignment')}" href="${base}/topics/agent-alignment.html">Agent Alignment & DPO</a>
             </div>
           </div>
 
@@ -150,6 +159,36 @@ class SiteSidebar extends HTMLElement {
             <div class="domain-toggle">📡 Run, Monitor & Maintain <span class="toggle-arrow">▶</span></div>
             <div class="domain-topics">
               <a class="sidebar-link ${isAct('agent-observability')}" href="${base}/topics/agent-observability.html">Agent Observability</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">AI Infrastructure</div>
+
+          <div class="domain-group">
+            <div class="domain-toggle">🖥️ Systems & Bring-Up <span class="toggle-arrow">▶</span></div>
+            <div class="domain-topics">
+              <a class="sidebar-link ${isAct('dgx-architecture')}" href="${base}/topics/dgx-architecture.html">DGX Architecture</a>
+              <a class="sidebar-link ${isAct('mig-configuration')}" href="${base}/topics/mig-configuration.html">MIG Configuration</a>
+              <a class="sidebar-link ${isAct('nvlink-fabric-manager')}" href="${base}/topics/nvlink-fabric-manager.html">NVLink & Fabric Manager</a>
+            </div>
+          </div>
+
+          <div class="domain-group">
+            <div class="domain-toggle">🔧 Cluster Management <span class="toggle-arrow">▶</span></div>
+            <div class="domain-topics">
+              <a class="sidebar-link ${isAct('dcgm')}" href="${base}/topics/dcgm.html">DCGM Diagnostics</a>
+              <a class="sidebar-link ${isAct('infiniband-networking')}" href="${base}/topics/infiniband-networking.html">InfiniBand Networking</a>
+              <a class="sidebar-link ${isAct('slurm-cluster')}" href="${base}/topics/slurm-cluster.html">Slurm Cluster</a>
+              <a class="sidebar-link ${isAct('pyxis-enroot')}" href="${base}/topics/pyxis-enroot.html">Pyxis & Enroot</a>
+            </div>
+          </div>
+
+          <div class="domain-group">
+            <div class="domain-toggle">🛠️ Troubleshooting <span class="toggle-arrow">▶</span></div>
+            <div class="domain-topics">
+              <a class="sidebar-link ${isAct('xid-errors')}" href="${base}/topics/xid-errors.html">XID Error Reference</a>
             </div>
           </div>
         </div>

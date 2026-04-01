@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>XID Error Reference — GPU Fault Triage | NCP-AAI Study Guide</title>
+  <meta name="description" content="NVIDIA XID error codes reference: XID 8, 13, 31, 48, 63, 79, 119 — meaning, cause, detection commands, and remediation for NCP-AII exam."/>
+  <link rel="stylesheet" href="../assets/css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"/>
+</head>
+<body>
+<script src="../assets/js/components.js"></script>
+<site-header basepath=".." active="home"></site-header>
+<div class="layout">
+<site-sidebar basepath=".." active="xid-errors"></site-sidebar>
+<main class="main"><div class="content">
+  <div class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span>AI Infrastructure</span><span class="sep">›</span><span>XID Error Reference</span></div>
+  <div class="page-header">
+    <div class="tags">
+      <span class="tag tag-domain">Troubleshooting & Optimization</span>
+      <span class="tag tag-nvidia">XID Errors</span>
+      <span class="tag tag-difficulty-advanced">Advanced</span>
+    </div>
+    <h1 class="page-title">XID Error Reference</h1>
+    <p class="page-subtitle">NVIDIA GPU XID error codes — hardware fault indicators logged in dmesg, nvidia-smi, and DCGM. Know the critical codes, their causes, and the right remediation action for each.</p>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <a href="#what">1. What Are XID Errors?</a>
+    <a href="#detection">2. Detection Commands</a>
+    <a href="#critical">3. Critical XID Reference Table</a>
+    <a href="#ecc">4. ECC Errors (XID 48, 63)</a>
+    <a href="#memory">5. Memory Faults (XID 8, 31)</a>
+    <a href="#engine">6. Engine Errors (XID 13, 32)</a>
+    <a href="#bus">7. Bus & Driver Errors (XID 79, 119)</a>
+    <a href="#triage">8. Triage Flowchart</a>
+    <a href="#thermal">9. Thermal Troubleshooting</a>
+    <a href="#exam">10. Exam Prep & Quick Reference</a>
+  </div>
+
+  <!-- 1 -->
+  <h2 id="what">1. What Are XID Errors?</h2>
+  <p>XID (eXternal Interrupt Description) errors are hardware and software fault codes logged by the NVIDIA GPU driver when it detects an abnormal condition on the GPU. They appear in the kernel ring buffer (<code>dmesg</code>), system logs, and DCGM.</p>
+  <div class="callout callout-warning">
+    <div class="callout-title">XID Errors Are Not All Equal</div>
+    Some XIDs are transient and expected under normal operation. Others (especially XID 48 double-bit ECC, XID 79 GPU off bus) indicate hardware failure requiring GPU replacement. Knowing which is which is critical for the exam.
+  </div>
+
+  <!-- 2 -->
+  <h2 id="detection">2. Detection Commands</h2>
+  <pre><code class="language-bash"># Primary: check dmesg for XID errors
+sudo dmesg | grep -i "NVRM: Xid"
+sudo dmesg | grep "Xid"
+
+# Example XID error in dmesg:
+# NVRM: Xid (PCI:0000:03:00): 48, pid='', name=, Ch 00000008, ...
+# NVRM: Xid (PCI:0000:03:00): 79, pid=0, name=<unknown>, ...
+
+# Real-time monitoring
+sudo dmesg -w | grep Xid
+
+# Check nvidia-smi for ECC error counts
+nvidia-smi --query-gpu=gpu_bus_id,ecc.errors.corrected.aggregate.total,ecc.errors.uncorrected.aggregate.total --format=csv
+
+# DCGM — check for XID events
+dcgmi health -g 1 -e
+
+# Check system journal for NVRM XID entries
+journalctl -k | grep "Xid"
+journalctl -k --since="1 hour ago" | grep -i "nvrm\|xid\|nvidia"
+
+# Nvidia SMI event log
+nvidia-smi events -i 0   # Watch events for GPU 0 (keep running)</code></pre>
+
+  <!-- 3 -->
+  <h2 id="critical">3. Critical XID Reference Table</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>XID</th><th>Name</th><th>Severity</th><th>Cause</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><strong>XID 8</strong></td><td>GPU memory access fault</td><td>Medium</td><td>CUDA application accessed invalid memory address (out-of-bounds, use-after-free)</td><td>Debug the application; usually software bug, not hardware</td></tr>
+        <tr><td><strong>XID 13</strong></td><td>Graphics engine exception</td><td>Medium</td><td>GPU compute engine encountered an error — usually driver or application bug</td><td>Restart the workload; update driver if recurring</td></tr>
+        <tr><td><strong>XID 31</strong></td><td>GPU memory page fault</td><td>Medium</td><td>Unified memory or peer access fault; can be driver or app bug</td><td>Check application memory access patterns</td></tr>
+        <tr><td><strong>XID 32</strong></td><td>Invalid or corrupted push buffer</td><td>Medium</td><td>Driver-level command stream error</td><td>Update driver; if persistent, hardware fault</td></tr>
+        <tr><td><strong>XID 43</strong></td><td>GPU stopped processing</td><td>High</td><td>GPU hang — watchdog timer expired</td><td>Reset GPU; investigate power or thermal issues</td></tr>
+        <tr><td><strong>XID 48</strong></td><td>Double-bit ECC error (DBE)</td><td><strong>Critical</strong></td><td>Uncorrectable memory error — HBM hardware fault</td><td>Page retirement; if aggregate DBE persists → replace GPU</td></tr>
+        <tr><td><strong>XID 63</strong></td><td>ECC page retirement</td><td>Warning</td><td>Single-bit ECC page retired (correctable); normal below threshold</td><td>Monitor count; if rapidly growing → replace GPU</td></tr>
+        <tr><td><strong>XID 74</strong></td><td>NVLink error</td><td>High</td><td>NVLink link error — cable, connector, or NVSwitch fault</td><td>Check Fabric Manager; inspect NVLink physical connections</td></tr>
+        <tr><td><strong>XID 79</strong></td><td>GPU fallen off the bus</td><td><strong>Critical</strong></td><td>GPU no longer visible on PCIe — catastrophic hardware failure</td><td>Reseat GPU; if recurring → replace GPU immediately</td></tr>
+        <tr><td><strong>XID 119</strong></td><td>GSP RPC timeout</td><td>High</td><td>GPU System Processor firmware/driver mismatch or firmware hang</td><td>Check driver vs firmware version match; update or reinstall</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4 -->
+  <h2 id="ecc">4. ECC Errors (XID 48, XID 63)</h2>
+  <p>ECC (Error Correcting Code) is built into HBM GPU memory. It classifies errors into two types:</p>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Error Type</th><th>XID</th><th>Bits Flipped</th><th>Correctable?</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>SBE (Single-Bit Error)</td><td>63 (page retirement)</td><td>1 bit</td><td>Yes — corrected by ECC hardware</td><td>Page is retired; monitor count</td></tr>
+        <tr><td>DBE (Double-Bit Error)</td><td>48</td><td>2+ bits</td><td>No — data is corrupt</td><td>Workload killed; GPU may need replacement</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre><code class="language-bash"># Check ECC error counts
+nvidia-smi -q -d ECC -i 0
+
+# Key fields:
+# Volatile ECC Errors:   errors since last driver load
+# Aggregate ECC Errors:  total since GPU was manufactured
+
+# Volatile counts reset on driver reload/reboot
+# Aggregate counts are permanent hardware counters
+
+# Page retirement status
+nvidia-smi --query-remapped-rows=gpu_bus_id,remapped_rows.correctable,remapped_rows.uncorrectable --format=csv
+
+# Rule of thumb for GPU replacement:
+# > 0 DBE uncorrectable aggregate errors = investigate immediately
+# Persistent SBE row retirements (growing) = schedule GPU replacement
+# All HBM rows retired = GPU must be replaced</code></pre>
+  <div class="callout callout-warning">
+    <div class="callout-title">XID 48 = Critical — GPU May Need Replacement</div>
+    A single XID 48 (double-bit ECC) means a CUDA workload was terminated with corrupted data. If the aggregate DBE count is non-zero and growing, plan for GPU replacement. NVIDIA support typically uses persistent DBE count to authorize RMA.
+  </div>
+
+  <!-- 5 -->
+  <h2 id="memory">5. Memory Faults (XID 8, XID 31)</h2>
+  <pre><code class="language-bash"># XID 8: GPU memory access fault — usually application bug
+# Look for stack trace in dmesg after the XID
+sudo dmesg | grep -A 5 "Xid.*8,"
+
+# XID 31: GPU memory page fault — unified memory issue
+# Check if application uses CUDA Unified Memory
+grep -r "cudaMallocManaged\|torch.zeros(" app_code/
+
+# Test GPU memory integrity (use dcgmi diag -r 3 or cuda memtest)
+dcgmi diag -g 1 -r 3 --plugin memtest
+
+# nvidia-smi memory error check
+nvidia-smi --query-gpu=index,memory.used,ecc.errors.corrected.volatile.total --format=csv</code></pre>
+
+  <!-- 6 -->
+  <h2 id="engine">6. Engine Errors (XID 13, XID 32)</h2>
+  <pre><code class="language-bash"># XID 13: Graphics/compute engine exception
+# Usually means GPU compute unit encountered unexpected state
+
+# Check if it's a driver issue
+nvidia-smi --query-gpu=driver_version --format=csv
+# Compare against latest stable driver for your GPU generation
+
+# XID 32: Invalid push buffer — driver command stream corrupted
+# This often indicates driver bugs — check release notes for fixes
+
+# Check for recurring XID 13 on specific GPU
+sudo dmesg | grep "Xid.*13" | awk '{print $4}' | sort | uniq -c</code></pre>
+
+  <!-- 7 -->
+  <h2 id="bus">7. Bus & Driver Errors (XID 79, XID 119)</h2>
+  <pre><code class="language-bash"># XID 79: GPU fallen off PCIe bus — catastrophic failure
+# The GPU is no longer visible; nvidia-smi will show fewer GPUs
+
+# Detection
+nvidia-smi -L          # Count GPUs — if fewer than 8, one fell off bus
+sudo dmesg | grep "Xid.*79"
+
+# Remediation steps for XID 79:
+# 1. Power off system
+# 2. Reseat the GPU in PCIe slot
+# 3. Check PCIe power connectors
+# 4. Power on and verify GPU returns to nvidia-smi -L
+# 5. If recurring → hardware failure, replace GPU
+
+# XID 119: GSP (GPU System Processor) RPC timeout
+# GSP is embedded ARM processor running GPU firmware
+
+# Check driver vs firmware version
+nvidia-smi --query-gpu=driver_version --format=csv
+cat /proc/driver/nvidia/version
+
+# Update driver and firmware together
+apt install nvidia-driver-550     # Example for Ubuntu
+# Firmware updates may also be needed via firmware package</code></pre>
+
+  <!-- 8 -->
+  <h2 id="triage">8. Triage Flowchart</h2>
+  <div class="callout callout-info">
+    <div class="callout-title">XID Triage Decision Tree</div>
+    <ol>
+      <li><strong>Check <code>dmesg | grep Xid</code></strong> → note XID number and GPU PCI address</li>
+      <li><strong>Is the GPU still visible?</strong> (<code>nvidia-smi -L</code>)
+        <ul>
+          <li>No → XID 79 (GPU off bus) → power off, reseat, replace if recurring</li>
+          <li>Yes → continue</li>
+        </ul>
+      </li>
+      <li><strong>Check ECC error counts</strong> (<code>nvidia-smi -q -d ECC</code>)
+        <ul>
+          <li>DBE aggregate > 0 → XID 48 → plan GPU replacement</li>
+          <li>SBE growing rapidly → XID 63 → monitor, schedule replacement</li>
+        </ul>
+      </li>
+      <li><strong>Check Fabric Manager</strong> (<code>systemctl status nvidia-fabricmanager</code>)
+        <ul>
+          <li>Failed → XID 74 (NVLink) → check FM version, restart FM</li>
+        </ul>
+      </li>
+      <li><strong>Driver/firmware</strong> → XID 119 → verify version match, update</li>
+      <li><strong>Application fault</strong> (XID 8, 13, 31) → debug workload, update driver</li>
+    </ol>
+  </div>
+
+  <!-- 9 -->
+  <h2 id="thermal">9. Thermal Troubleshooting</h2>
+  <pre><code class="language-bash"># Monitor GPU temperatures
+nvidia-smi --query-gpu=index,temperature.gpu,temperature.memory --format=csv
+nvidia-smi dmon -s t    # Continuous temperature monitoring
+
+# Temperature thresholds for A100/H100:
+# Normal operation:    40-80°C GPU core
+# Warning threshold:   83°C (may start throttling)
+# Critical/shutdown:   90°C (thermal emergency, GPU shuts down)
+# HBM memory limit:    95°C
+
+# Check for thermal throttling
+nvidia-smi --query-gpu=clocks_throttle_reasons.hw_thermal_slowdown --format=csv
+# "Active" = GPU is throttling due to heat
+
+# Check power limit and current draw
+nvidia-smi --query-gpu=power.limit,power.draw --format=csv
+
+# Fan status (for systems with fans, not liquid cooled)
+ipmitool sdr type Fan    # Check fan speeds via BMC
+
+# Thermal event in SEL log
+ipmitool sel list | grep -i "thermal\|temp"</code></pre>
+
+  <!-- 10 -->
+  <h2 id="exam">10. Exam Prep & Quick Reference</h2>
+  <div class="callout callout-warning">
+    <div class="callout-title">Must-Know XID Codes for Exam (12% Troubleshooting domain)</div>
+    <ul>
+      <li><strong>XID 8</strong> = GPU memory access fault — usually application bug (software)</li>
+      <li><strong>XID 13</strong> = Graphics engine exception — driver or application</li>
+      <li><strong>XID 31</strong> = Memory page fault — unified memory issue</li>
+      <li><strong>XID 48</strong> = Double-bit ECC error — uncorrectable, hardware fault → GPU replacement</li>
+      <li><strong>XID 63</strong> = ECC page retirement — single-bit, corrected, but monitor growth</li>
+      <li><strong>XID 74</strong> = NVLink error — check Fabric Manager</li>
+      <li><strong>XID 79</strong> = GPU fallen off PCIe bus — reseat/replace GPU immediately</li>
+      <li><strong>XID 119</strong> = GSP RPC timeout — driver/firmware version mismatch</li>
+    </ul>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>XID</th><th>Critical?</th><th>First Command</th><th>Likely Action</th></tr></thead>
+      <tbody>
+        <tr><td>XID 8</td><td>No</td><td><code>dmesg -A 5 "Xid.*8"</code></td><td>Fix application code</td></tr>
+        <tr><td>XID 13</td><td>No</td><td>Check driver version</td><td>Update driver</td></tr>
+        <tr><td>XID 48</td><td><strong>Yes</strong></td><td><code>nvidia-smi -q -d ECC</code></td><td>Replace GPU</td></tr>
+        <tr><td>XID 63</td><td>Warning</td><td><code>nvidia-smi --query-remapped-rows</code></td><td>Monitor; replace if growing</td></tr>
+        <tr><td>XID 79</td><td><strong>Yes</strong></td><td><code>nvidia-smi -L</code> (GPU count)</td><td>Reseat; replace if recurring</td></tr>
+        <tr><td>XID 119</td><td>High</td><td>Check driver + firmware version</td><td>Update to matching versions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="quiz-section">
+    <h3>Quick Check</h3>
+    <div class="quiz-question" data-answer="D">
+      <p><strong>Q:</strong> A production DGX H100 node shows <code>NVRM: Xid (PCI:0000:03:00): 48</code> repeatedly in dmesg. What is the correct immediate response?</p>
+      <div class="quiz-options">
+        <button class="quiz-option" data-option="A">A) Reboot the node — XID 48 is a transient software error</button>
+        <button class="quiz-option" data-option="B">B) Update CUDA drivers only — XID 48 is a driver issue</button>
+        <button class="quiz-option" data-option="C">C) Reset ECC counters with nvidia-smi and continue the workload</button>
+        <button class="quiz-option" data-option="D">D) Drain the node from Slurm, check aggregate ECC DBE count, and plan GPU replacement if persistent</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </div>
+
+</div></main>
+</div>
+<script src="../assets/js/script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
