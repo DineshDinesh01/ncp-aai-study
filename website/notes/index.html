@@ -15,22 +15,48 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
   
   <style>
+    /* Override global layout constraints so notes fills the full screen */
+    .layout {
+      height: 100vh;
+      overflow: hidden;
+      /* keep padding-top from global CSS so topbar doesn't overlap */
+    }
+    /* Hide the global site sidebar — notes has its own panel */
+    .sidebar { display: none !important; }
+    /* .content is a flex item inside .layout (row direction),
+       so DO NOT set height: 0 — let align-self: stretch fill it */
+    .content {
+      max-width: none !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
     /* Specific styles for Notes App */
     .notes-container {
       display: flex;
-      height: calc(100vh - 60px - 2rem); /* minus topbar and padding */
-      gap: 1rem;
+      flex: 1;
+      min-height: 0; /* prevent overflow in column flex */
+      gap: 0;
       background: var(--bg-primary);
-      border-radius: 8px;
+      border-radius: 0;
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: none;
+      border-top: 1px solid var(--border);
     }
     .notes-sidebar {
       width: 250px;
+      min-width: 250px;
       background: var(--bg-card);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
+      transition: transform 0.3s ease, width 0.3s ease;
     }
     .notes-sidebar-header {
       padding: 1rem;
@@ -68,6 +94,7 @@
       font-size: 0.85rem;
       outline: none;
       margin-bottom: 0.5rem;
+      box-sizing: border-box;
     }
     #notes-search-input:focus { border-color: var(--nvidia-green); }
     .notes-sidebar-actions {
@@ -121,16 +148,19 @@
       display: flex;
       flex-direction: column;
       background: var(--bg-card);
+      min-width: 0;
     }
     .notes-toolbar {
       padding: 0.75rem 1rem;
       border-bottom: 1px solid var(--border);
       display: flex;
-      gap: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
       align-items: center;
     }
     .note-title-input {
       flex: 1;
+      min-width: 120px;
       background: var(--bg-primary);
       border: 1px solid var(--border);
       border-radius: 4px;
@@ -156,7 +186,7 @@
       max-width: 200px;
     }
     .note-topic-select:focus { border-color: var(--nvidia-green); }
-    
+
     .btn-action {
       background: transparent;
       border: 1px solid var(--border);
@@ -166,10 +196,48 @@
       cursor: pointer;
       font-size: 0.85rem;
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .btn-action:hover { background: var(--bg-primary); }
     .btn-delete { color: #ff5c5c; border-color: #ff5c5c; }
     .btn-delete:hover { background: rgba(255,92,92,0.1); }
+
+    /* Mobile toggle for notes sidebar */
+    .btn-notes-sidebar-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      border-radius: 4px;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      transition: all 0.2s;
+    }
+    .btn-notes-sidebar-toggle:hover { background: var(--bg-card); color: #fff; }
+
+    /* Mobile editor/preview tab bar */
+    .notes-view-tabs {
+      display: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .notes-view-tabs button {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .notes-view-tabs button.active {
+      color: var(--nvidia-green);
+      border-bottom-color: var(--nvidia-green);
+    }
 
     .notes-editor-split {
       display: flex;
@@ -188,6 +256,7 @@
     }
     .notes-format-bar {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.5rem;
       padding-bottom: 0.5rem;
       margin-bottom: 0.5rem;
@@ -251,7 +320,7 @@
       color: var(--text-muted);
     }
     .notes-preview-pane ul, .notes-preview-pane ol { margin-left: 1.5rem; margin-bottom: 1rem; }
-    
+
     /* Empty State */
     .empty-state {
       display: flex;
@@ -261,6 +330,98 @@
       height: 100%;
       color: var(--text-muted);
       flex: 1;
+    }
+
+    /* ── Notes Responsive ──────────────────────────────────── */
+
+    /* Tablet: shrink sidebar slightly */
+    @media (max-width: 900px) {
+      .notes-sidebar { width: 210px; min-width: 210px; }
+      .note-title-input { font-size: 1rem; }
+    }
+
+    /* Mobile: full overlay sidebar + tab-based editor/preview */
+    @media (max-width: 768px) {
+      .notes-container {
+        border-top: none;
+        position: relative;
+        overflow: visible;
+      }
+
+      /* Sidebar becomes a sliding overlay */
+      .notes-sidebar {
+        position: fixed;
+        top: var(--topbar-height, 56px);
+        left: 0;
+        bottom: 0;
+        width: 80vw;
+        max-width: 300px;
+        min-width: 0;
+        z-index: 200;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 16px rgba(0,0,0,0.5);
+      }
+      .notes-sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      /* Overlay backdrop */
+      .notes-sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 199;
+      }
+      .notes-sidebar-backdrop.visible { display: block; }
+
+      /* Show the sidebar toggle button */
+      .btn-notes-sidebar-toggle { display: inline-flex; align-items: center; }
+
+      /* Show tab bar, hide split view */
+      .notes-view-tabs { display: flex; }
+
+      .notes-editor-split {
+        flex-direction: column;
+      }
+      /* Default: show editor, hide preview */
+      .notes-editor-pane {
+        flex: 1;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .notes-preview-pane {
+        flex: 1;
+      }
+      /* Tab-driven visibility */
+      .notes-editor-split.show-preview .notes-editor-pane { display: none; }
+      .notes-editor-split.show-editor .notes-preview-pane { display: none; }
+
+      /* Toolbar wraps on small screens */
+      .notes-toolbar {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        padding: 0.5rem 0.75rem;
+      }
+      .note-title-input {
+        width: 100%;
+        flex: unset;
+        font-size: 1rem;
+        padding: 0.4rem 0.75rem;
+        order: 2;
+      }
+      .btn-notes-sidebar-toggle { order: 1; }
+      .note-topic-select { order: 3; flex: 1; max-width: unset; }
+      #save-status { order: 4; margin: 0; }
+      .btn-download-note { order: 5; }
+      .btn-delete-note { order: 6; }
+      #btn-save-note { order: 7; }
+    }
+
+    @media (max-width: 480px) {
+      .notes-sidebar { width: 92vw; }
+      .note-title-input { font-size: 0.9rem; }
+      .notes-toolbar { gap: 0.3rem; padding: 0.4rem 0.5rem; }
     }
   </style>
 </head>
@@ -272,10 +433,13 @@
     <site-sidebar basepath=".." active="notes"></site-sidebar>
     
     <main class="content">
+      <!-- Mobile sidebar backdrop -->
+      <div id="notes-sidebar-backdrop" class="notes-sidebar-backdrop"></div>
+
       <div class="notes-container">
-        
+
         <!-- Sidebar for notes list -->
-        <div class="notes-sidebar">
+        <div class="notes-sidebar" id="notes-sidebar">
           <div class="notes-sidebar-header">
             <h3>My Write-ups</h3>
             <button id="btn-new-note" class="btn-new-note">+ New</button>
@@ -296,16 +460,22 @@
         <!-- Main Editor Area -->
         <div id="notes-main-area" class="notes-main" style="display: none;">
           <div class="notes-toolbar">
+            <button id="btn-notes-sidebar-toggle" class="btn-notes-sidebar-toggle" title="Toggle notes list">☰</button>
             <input type="text" id="note-title" class="note-title-input" placeholder="Note Title..." autocomplete="off">
             <select id="note-topic-select" class="note-topic-select">
               <option value="">No Domain / Topic</option>
             </select>
-            <span id="save-status" style="color: var(--text-muted); font-size: 0.8rem; margin-left: auto; margin-right: 1rem;"></span>
-            <button id="btn-download-note" class="btn-action" title="Download note as .md">⬇️ .md</button>
-            <button id="btn-delete-note" class="btn-action btn-delete">Delete</button>
+            <span id="save-status" style="color: var(--text-muted); font-size: 0.8rem; margin-left: auto; margin-right: 0.5rem;"></span>
+            <button id="btn-download-note" class="btn-action btn-download-note" title="Download note as .md">⬇️ .md</button>
+            <button id="btn-delete-note" class="btn-action btn-delete btn-delete-note">Delete</button>
             <button id="btn-save-note" class="btn-new-note">Save</button>
           </div>
-          <div class="notes-editor-split">
+          <!-- Mobile editor/preview tabs -->
+          <div class="notes-view-tabs" id="notes-view-tabs">
+            <button id="tab-editor" class="active" onclick="switchNotesTab('editor')">Editor</button>
+            <button id="tab-preview" onclick="switchNotesTab('preview')">Preview</button>
+          </div>
+          <div class="notes-editor-split show-editor" id="notes-editor-split">
             <div class="notes-editor-pane">
               <div class="notes-format-bar">
                 <button type="button" class="format-btn" data-tag="**" title="Bold">B</button>
@@ -336,5 +506,49 @@
   <site-footer basepath=".."></site-footer>
   
   <script src="../assets/js/notes.js"></script>
+  <script>
+    // ── Mobile notes sidebar toggle ──────────────────────────
+    (function () {
+      const toggle   = document.getElementById('btn-notes-sidebar-toggle');
+      const sidebar  = document.getElementById('notes-sidebar');
+      const backdrop = document.getElementById('notes-sidebar-backdrop');
+
+      function openSidebar() {
+        sidebar.classList.add('mobile-open');
+        backdrop.classList.add('visible');
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.remove('visible');
+      }
+
+      if (toggle)   toggle.addEventListener('click', openSidebar);
+      if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+      // Close sidebar when a note is selected (mobile UX)
+      document.getElementById('notes-list').addEventListener('click', function () {
+        if (window.innerWidth <= 768) closeSidebar();
+      });
+    })();
+
+    // ── Mobile editor / preview tabs ────────────────────────
+    function switchNotesTab(tab) {
+      const split      = document.getElementById('notes-editor-split');
+      const tabEditor  = document.getElementById('tab-editor');
+      const tabPreview = document.getElementById('tab-preview');
+      if (!split) return;
+      if (tab === 'preview') {
+        split.classList.remove('show-editor');
+        split.classList.add('show-preview');
+        tabEditor.classList.remove('active');
+        tabPreview.classList.add('active');
+      } else {
+        split.classList.remove('show-preview');
+        split.classList.add('show-editor');
+        tabPreview.classList.remove('active');
+        tabEditor.classList.add('active');
+      }
+    }
+  </script>
 </body>
 </html>
