@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chapter 1 — Agent Architecture & Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080c10;
+    --bg2: #0d1117;
+    --bg3: #131a22;
+    --border: #1e2d3d;
+    --text: #c9d9e8;
+    --muted: #5a7a96;
+    --lg-accent: #00d4aa;   /* LangGraph teal */
+    --nv-accent: #76b900;   /* NVIDIA green */
+    --gold: #f0b429;
+    --red: #ff4d6d;
+    --white: #eaf4ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── HEADER ── */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 60px 40px 50px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #080c10 0%, #0a1520 60%, #091810 100%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 300px at 80% 50%, rgba(0,212,170,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 400px at 10% 80%, rgba(118,185,0,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; max-width: 1100px; margin: 0 auto; }
+  .cert-tag {
+    display: inline-block;
+    background: rgba(118,185,0,0.12);
+    border: 1px solid rgba(118,185,0,0.35);
+    color: var(--nv-accent);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 5vw, 52px);
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .hero h1 span { color: var(--lg-accent); }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 13px;
+    max-width: 560px;
+    margin-bottom: 30px;
+  }
+  .badges {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .badge-lg {
+    background: rgba(0,212,170,0.1);
+    border: 1px solid rgba(0,212,170,0.3);
+    color: var(--lg-accent);
+  }
+  .badge-nv {
+    background: rgba(118,185,0,0.1);
+    border: 1px solid rgba(118,185,0,0.3);
+    color: var(--nv-accent);
+  }
+  .badge-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  .badge-lg .badge-dot { background: var(--lg-accent); }
+  .badge-nv .badge-dot { background: var(--nv-accent); }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.5; transform:scale(0.8); }
+  }
+
+  /* ── LAYOUT ── */
+  .wrapper { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── SETUP SECTION ── */
+  .setup-section {
+    margin: 40px 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .setup-header {
+    background: var(--bg3);
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .setup-header:hover { background: #18232e; }
+  .setup-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--white);
+    flex: 1;
+  }
+  .setup-icon { font-size: 18px; }
+  .chevron {
+    color: var(--muted); font-size: 12px;
+    transition: transform 0.3s;
+  }
+  .setup-body {
+    display: none;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .setup-body.open { display: block; }
+  .setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media(max-width:700px){ .setup-grid { grid-template-columns:1fr; } }
+  .setup-card {
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .setup-card-header {
+    padding: 10px 16px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .setup-card.lg .setup-card-header { background: rgba(0,212,170,0.15); color: var(--lg-accent); border-left: 3px solid var(--lg-accent); }
+  .setup-card.nv .setup-card-header { background: rgba(118,185,0,0.15); color: var(--nv-accent); border-left: 3px solid var(--nv-accent); }
+  .setup-card-body { padding: 16px; background: var(--bg3); }
+  .doc-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--muted); font-size: 11px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 3px;
+    margin-bottom: 12px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .doc-link:hover { color: var(--white); border-color: var(--muted); }
+  .doc-link.lg:hover { color: var(--lg-accent); border-color: var(--lg-accent); }
+  .doc-link.nv:hover { color: var(--nv-accent); border-color: var(--nv-accent); }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap { position: relative; margin: 10px 0; }
+  pre {
+    background: #060a0e;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #a8c4d8;
+  }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--muted); font-size: 10px;
+    padding: 3px 8px; border-radius: 3px;
+    cursor: pointer; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { color: var(--white); border-color: var(--muted); }
+  .copy-btn.copied { color: var(--lg-accent); border-color: var(--lg-accent); }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    margin: 32px 0 8px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .progress-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+  .progress-track {
+    flex: 1; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--lg-accent), var(--nv-accent));
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .progress-pct { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  /* ── TOC ── */
+  .toc {
+    margin: 28px 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+  }
+  .toc h3 {
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--white); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1.5px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap: 6px;
+  }
+  .toc-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 3px;
+    cursor: pointer; font-size: 12px; color: var(--muted);
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .toc-item:hover { color: var(--white); background: var(--bg3); border-color: var(--border); }
+  .toc-num {
+    font-size: 10px; font-weight: 600; color: var(--gold);
+    background: rgba(240,180,41,0.1); padding: 2px 6px; border-radius: 2px;
+  }
+  .toc-done { color: var(--lg-accent) !important; }
+  .toc-done .toc-num { color: var(--lg-accent); background: rgba(0,212,170,0.1); }
+
+  /* ── TOPIC CARD ── */
+  .topic-card {
+    margin: 20px 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .topic-card:hover { border-color: #2e4a62; }
+  .topic-header {
+    padding: 18px 24px;
+    background: var(--bg3);
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .topic-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 800;
+    color: var(--gold);
+    min-width: 40px;
+  }
+  .topic-title-wrap { flex: 1; }
+  .topic-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--white);
+  }
+  .topic-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .topic-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 2px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .tag-lg { background: rgba(0,212,170,0.1); color: var(--lg-accent); border: 1px solid rgba(0,212,170,0.2); }
+  .tag-nv { background: rgba(118,185,0,0.1); color: var(--nv-accent); border: 1px solid rgba(118,185,0,0.2); }
+  .tag-core { background: rgba(240,180,41,0.1); color: var(--gold); border: 1px solid rgba(240,180,41,0.2); }
+  .topic-chevron { color: var(--muted); transition: transform 0.3s; font-size: 12px; }
+  .topic-body {
+    display: none;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+  }
+  .topic-body.open { display: block; }
+
+  .topic-section { padding: 24px; border-bottom: 1px solid var(--border); }
+  .topic-section:last-child { border-bottom: none; }
+  .section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .section-label.concept { color: var(--gold); }
+  .section-label.resources { color: #a78bfa; }
+  .section-label.lg-label { color: var(--lg-accent); }
+  .section-label.nv-label { color: var(--nv-accent); }
+  .section-label.checkpoint { color: var(--red); }
+
+  /* concept bullets */
+  .concept-list { list-style: none; }
+  .concept-list li {
+    padding: 6px 0 6px 20px; position: relative; color: var(--text); font-size: 13px;
+  }
+  .concept-list li::before {
+    content: '▸'; position: absolute; left: 0; color: var(--gold); font-size: 10px; top: 9px;
+  }
+
+  /* resource links */
+  .res-list { display: flex; flex-direction: column; gap: 6px; }
+  .res-link {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 4px; text-decoration: none; color: var(--text); font-size: 12px;
+    transition: all 0.2s;
+  }
+  .res-link:hover { border-color: #2e4a62; color: var(--white); background: #131c26; }
+  .res-icon { font-size: 14px; min-width: 20px; }
+  .res-info { flex: 1; }
+  .res-title { color: var(--white); font-weight: 500; }
+  .res-url { font-size: 10px; color: var(--muted); margin-top: 2px; word-break: break-all; }
+  .res-type {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
+    padding: 2px 6px; border-radius: 2px; align-self: flex-start; margin-top: 2px;
+  }
+  .res-type.docs { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
+  .res-type.tutorial { background: rgba(0,212,170,0.1); color: var(--lg-accent); border: 1px solid rgba(0,212,170,0.2); }
+  .res-type.video { background: rgba(255,77,109,0.1); color: var(--red); border: 1px solid rgba(255,77,109,0.2); }
+  .res-type.paper { background: rgba(240,180,41,0.1); color: var(--gold); border: 1px solid rgba(240,180,41,0.2); }
+  .res-type.github { background: rgba(255,255,255,0.05); color: #8b9ab0; border: 1px solid rgba(255,255,255,0.1); }
+
+  /* activity boxes */
+  .activity-box {
+    border-radius: 4px; overflow: hidden; margin-bottom: 12px;
+  }
+  .activity-header {
+    padding: 10px 16px; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .activity-box.lg .activity-header { background: rgba(0,212,170,0.12); color: var(--lg-accent); border-left: 3px solid var(--lg-accent); }
+  .activity-box.nv .activity-header { background: rgba(118,185,0,0.12); color: var(--nv-accent); border-left: 3px solid var(--nv-accent); }
+  .activity-body { background: var(--bg3); padding: 16px; }
+  .activity-desc { font-size: 13px; color: var(--text); margin-bottom: 12px; }
+  .activity-steps { list-style: none; counter-reset: steps; }
+  .activity-steps li {
+    counter-increment: steps;
+    padding: 5px 0 5px 28px; position: relative; font-size: 12px; color: var(--muted);
+  }
+  .activity-steps li::before {
+    content: counter(steps);
+    position: absolute; left: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    width: 18px; height: 18px; border-radius: 50%;
+    font-size: 10px; display: flex; align-items: center; justify-content: center;
+    top: 7px;
+  }
+
+  /* checkpoint */
+  .checkpoint-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media(max-width:600px){ .checkpoint-grid { grid-template-columns:1fr; } }
+  .checkpoint-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 4px; font-size: 12px; color: var(--muted);
+    cursor: pointer; transition: all 0.2s; user-select: none;
+  }
+  .checkpoint-item:hover { border-color: #2e4a62; color: var(--text); }
+  .checkpoint-item.checked { color: var(--white); border-color: rgba(0,212,170,0.4); background: rgba(0,212,170,0.06); }
+  .check-box {
+    width: 16px; height: 16px; min-width: 16px;
+    border: 1px solid var(--border); border-radius: 2px;
+    background: var(--bg2); margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: transparent;
+    transition: all 0.2s;
+  }
+  .checkpoint-item.checked .check-box { background: var(--lg-accent); border-color: var(--lg-accent); color: #000; }
+
+  /* schedule */
+  .schedule-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+  .schedule-table th {
+    text-align: left; padding: 8px 12px;
+    background: var(--bg3); color: var(--muted);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    border-bottom: 1px solid var(--border);
+  }
+  .schedule-table td {
+    padding: 10px 12px; border-bottom: 1px solid rgba(30,45,61,0.5);
+    vertical-align: top;
+  }
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table tr:hover td { background: var(--bg3); }
+  .day-badge {
+    display: inline-block;
+    background: rgba(240,180,41,0.1); color: var(--gold);
+    border: 1px solid rgba(240,180,41,0.2);
+    font-size: 10px; padding: 2px 8px; border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  /* inline code */
+  code {
+    background: rgba(0,212,170,0.08);
+    border: 1px solid rgba(0,212,170,0.15);
+    color: var(--lg-accent);
+    padding: 1px 6px; border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    margin-top: 40px; padding: 24px;
+    text-align: center; color: var(--muted); font-size: 11px;
+  }
+
+  /* scroll animate */
+  .fade-in {
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="cert-tag">NVIDIA Agentic AI Cert · Exam Weight 15%</div>
+    <h1>Chapter 1<br><span>Agent Architecture</span><br>&amp; Design</h1>
+    <p class="hero-sub">Dual-track hands-on study guide — learn with LangGraph and NVIDIA NeMo Agent Toolkit side by side. Concept first, then code.</p>
+    <div class="badges">
+      <div class="badge badge-lg"><span class="badge-dot"></span> LangGraph Track</div>
+      <div class="badge badge-nv"><span class="badge-dot"></span> NVIDIA NeMo Agent Toolkit Track</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- PROGRESS -->
+  <div class="progress-bar-wrap">
+    <span class="progress-label">Chapter Progress</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-pct" id="progressPct">0 / 8 topics</span>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc fade-in">
+    <h3>Topics in this chapter</h3>
+    <div class="toc-grid" id="tocGrid">
+      <div class="toc-item" onclick="scrollTo('t1')"><span class="toc-num">1.1</span> Human-Agent UI Design</div>
+      <div class="toc-item" onclick="scrollTo('t2')"><span class="toc-num">1.2</span> ReAct Framework</div>
+      <div class="toc-item" onclick="scrollTo('t3')"><span class="toc-num">1.3</span> Agent-to-Agent Communication</div>
+      <div class="toc-item" onclick="scrollTo('t4')"><span class="toc-num">1.4</span> Memory Management</div>
+      <div class="toc-item" onclick="scrollTo('t5')"><span class="toc-num">1.5</span> Multi-Agent Orchestration</div>
+      <div class="toc-item" onclick="scrollTo('t6')"><span class="toc-num">1.6</span> Logic Trees &amp; Stateful Chains</div>
+      <div class="toc-item" onclick="scrollTo('t7')"><span class="toc-num">1.7</span> Knowledge Graphs</div>
+      <div class="toc-item" onclick="scrollTo('t8')"><span class="toc-num">1.8</span> Adaptability &amp; Scalability</div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="setup-section fade-in">
+    <div class="setup-header" onclick="toggleSetup()">
+      <span class="setup-icon">⚙️</span>
+      <h2>Environment Setup — Install Both Stacks First</h2>
+      <span class="chevron" id="setupChevron">▼</span>
+    </div>
+    <div class="setup-body" id="setupBody">
+      <div class="setup-grid">
+        <!-- LangGraph -->
+        <div class="setup-card lg">
+          <div class="setup-card-header">🟣 LangGraph Stack</div>
+          <div class="setup-card-body">
+            <a class="doc-link lg" href="https://langchain-ai.github.io/langgraph/" target="_blank">📄 Official Docs → langchain-ai.github.io/langgraph</a>
+            <a class="doc-link lg" href="https://academy.langchain.com/courses/intro-to-langgraph" target="_blank">🎓 LangChain Academy Free Course</a>
+            <div class="code-wrap">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#5a7a96"># Python 3.11+ recommended</span>
+pip install langgraph langchain langchain-openai
+pip install langchain-community python-dotenv
+pip install chainlit gradio  <span style="color:#5a7a96"># for UI (1.1)</span>
+pip install networkx          <span style="color:#5a7a96"># for KG (1.7)</span>
+
+<span style="color:#5a7a96"># Set your API key</span>
+export OPENAI_API_KEY="sk-..."
+<span style="color:#5a7a96"># or in .env file</span>
+OPENAI_API_KEY=sk-...</pre>
+            </div>
+          </div>
+        </div>
+        <!-- NVIDIA -->
+        <div class="setup-card nv">
+          <div class="setup-card-header">🟢 NVIDIA NeMo Agent Toolkit</div>
+          <div class="setup-card-body">
+            <a class="doc-link nv" href="https://docs.nvidia.com/aiqtoolkit/index.html" target="_blank">📄 Official Docs → docs.nvidia.com/aiqtoolkit</a>
+            <a class="doc-link nv" href="https://developer.nvidia.com/nemo-agent-toolkit" target="_blank">🧪 NVIDIA Developer Hub</a>
+            <a class="doc-link nv" href="https://github.com/NVIDIA/NeMo-Agent-Toolkit" target="_blank">⭐ GitHub Repo</a>
+            <div class="code-wrap">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#5a7a96"># Get a free NIM API key at</span>
+<span style="color:#5a7a96"># build.nvidia.com → "Get API Key"</span>
+
+pip install nvidia-aiqtoolkit
+
+<span style="color:#5a7a96"># Or install with LangChain integration</span>
+pip install nvidia-aiqtoolkit[langchain]
+
+<span style="color:#5a7a96"># For NIM hosted LLM endpoints</span>
+pip install langchain-nvidia-ai-endpoints
+
+export NVIDIA_API_KEY="nvapi-..."</pre>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin-top:8px;">💡 No GPU needed — use NVIDIA's hosted NIM endpoints for free during dev.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.1 ══ -->
+  <div class="topic-card fade-in" id="t1">
+    <div class="topic-header" onclick="toggleTopic('body1','chev1')">
+      <span class="topic-num">1.1</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Design User Interfaces for Human-Agent Interaction</div>
+        <div class="topic-sub">Chat UI · Streaming · Human-in-the-loop interrupts</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">Chainlit / Gradio</span>
+          <span class="tag tag-nv">AgentIQ UI</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev1">▼</span>
+    </div>
+    <div class="topic-body" id="body1">
+      <!-- Concepts -->
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li>Chat UI patterns: user sends input → agent thinks → streams response token by token</li>
+          <li>Human-in-the-loop (HITL): agent pauses and waits for human approval before taking an action</li>
+          <li>Visualizing agent tool calls, reasoning traces, and intermediate steps in the UI</li>
+          <li>Interrupt mechanisms: <code>interrupt_before</code>, <code>interrupt_after</code> in LangGraph</li>
+          <li>Async streaming with <code>astream_events</code> so the UI doesn't freeze</li>
+          <li>State visibility: showing the user what the agent "knows" at any moment</li>
+        </ul>
+      </div>
+      <!-- Resources -->
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://docs.chainlit.io/get-started/overview" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">Chainlit Official Docs</div><div class="res-url">docs.chainlit.io/get-started/overview</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/how-tos/human_in_the_loop/wait-user-input/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangGraph — Human-in-the-Loop Guide</div><div class="res-url">langchain-ai.github.io/langgraph/how-tos/human_in_the_loop</div></div>
+            <span class="res-type tutorial">Tutorial</span>
+          </a>
+          <a class="res-link" href="https://docs.nvidia.com/aiqtoolkit/latest/workflows/ui.html" target="_blank">
+            <span class="res-icon">🟢</span>
+            <div class="res-info"><div class="res-title">NVIDIA AgentIQ — UI Chat Interface</div><div class="res-url">docs.nvidia.com/aiqtoolkit/latest/workflows/ui.html</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://www.gradio.app/docs/gradio/chatinterface" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">Gradio ChatInterface Reference</div><div class="res-url">gradio.app/docs/gradio/chatinterface</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+        </div>
+      </div>
+      <!-- LangGraph Activity -->
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Build a Chainlit chat UI with HITL interrupt</div>
+          <div class="activity-body">
+            <p class="activity-desc">Create a simple agent that can search the web, but pauses and asks the user to confirm before executing the search.</p>
+            <ol class="activity-steps">
+              <li>Install: <code>pip install chainlit langgraph langchain-openai</code></li>
+              <li>Create a <code>StateGraph</code> with a tool-calling node and a human approval node</li>
+              <li>Use <code>interrupt_before=["tool_node"]</code> when compiling the graph</li>
+              <li>In Chainlit, call <code>cl.AskActionMessage</code> to show approve/reject buttons</li>
+              <li>Resume the graph with the user's choice using <code>graph.invoke(None, config)</code></li>
+            </ol>
+            <div class="code-wrap" style="margin-top:12px">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#5a7a96"># app.py (Chainlit entry point)</span>
+<span style="color:#76b900">import</span> chainlit <span style="color:#76b900">as</span> cl
+<span style="color:#76b900">from</span> langgraph.graph <span style="color:#76b900">import</span> StateGraph, MessagesState, START, END
+<span style="color:#76b900">from</span> langgraph.prebuilt <span style="color:#76b900">import</span> ToolNode, tools_condition
+
+<span style="color:#76b900">def</span> <span style="color:#00d4aa">my_tool</span>(query: str) -> str:
+    <span style="color:#5a7a96">"""Search the web for a query."""</span>
+    <span style="color:#76b900">return</span> f<span style="color:#c8e88a">"Results for: {query}"</span>
+
+<span style="color:#5a7a96"># Build graph with interrupt before tools</span>
+builder = StateGraph(MessagesState)
+builder.add_node(<span style="color:#c8e88a">"agent"</span>, call_model)
+builder.add_node(<span style="color:#c8e88a">"tools"</span>, ToolNode([my_tool]))
+builder.add_edge(START, <span style="color:#c8e88a">"agent"</span>)
+builder.add_conditional_edges(<span style="color:#c8e88a">"agent"</span>, tools_condition)
+builder.add_edge(<span style="color:#c8e88a">"tools"</span>, <span style="color:#c8e88a">"agent"</span>)
+
+graph = builder.compile(interrupt_before=[<span style="color:#c8e88a">"tools"</span>])
+
+<span style="color:#76b900">@cl.on_message</span>
+<span style="color:#76b900">async def</span> <span style="color:#00d4aa">main</span>(msg: cl.Message):
+    <span style="color:#5a7a96"># invoke graph, it will pause before tools</span>
+    state = graph.invoke({<span style="color:#c8e88a">"messages"</span>: [msg.content]})
+    <span style="color:#5a7a96"># ask user to approve</span>
+    res = <span style="color:#76b900">await</span> cl.AskActionMessage(
+        content=<span style="color:#c8e88a">"Agent wants to run a tool. Approve?"</span>,
+        actions=[cl.Action(name=<span style="color:#c8e88a">"approve"</span>, label=<span style="color:#c8e88a">"✅ Approve"</span>),
+                 cl.Action(name=<span style="color:#c8e88a">"reject"</span>, label=<span style="color:#c8e88a">"❌ Reject"</span>)]
+    ).send()
+    <span style="color:#76b900">if</span> res.get(<span style="color:#c8e88a">"name"</span>) == <span style="color:#c8e88a">"approve"</span>:
+        final = graph.invoke(<span style="color:#76b900">None</span>, config)  <span style="color:#5a7a96"># resume</span>
+        <span style="color:#76b900">await</span> cl.Message(content=final[<span style="color:#c8e88a">"messages"</span>][-1].content).send()</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- NVIDIA Activity -->
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA NeMo Agent Toolkit Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Launch AgentIQ's built-in UI chat interface</div>
+          <div class="activity-body">
+            <p class="activity-desc">NVIDIA's AgentIQ ships with its own UI. Use it to interact with and visualize your agent workflows — no frontend code needed.</p>
+            <ol class="activity-steps">
+              <li>Install toolkit: <code>pip install nvidia-aiqtoolkit[ui]</code></li>
+              <li>Write a simple workflow config YAML pointing to a NIM endpoint</li>
+              <li>Run: <code>aiq ui --config my_workflow.yml</code></li>
+              <li>Open the browser — explore the message trace and tool call timeline</li>
+              <li>Enable profiler: add <code>profiler: enabled: true</code> to see latency breakdown per node</li>
+            </ol>
+            <div class="code-wrap" style="margin-top:12px">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#5a7a96"># my_workflow.yml</span>
+<span style="color:#76b900">llms</span>:
+  nim_llm:
+    <span style="color:#76b900">_type</span>: nim
+    model_name: meta/llama-3.1-8b-instruct
+
+<span style="color:#76b900">workflow</span>:
+  <span style="color:#76b900">_type</span>: react_agent
+  llm_name: nim_llm
+  tools: []
+  verbose: true
+
+<span style="color:#76b900">profiler</span>:
+  enabled: true
+
+<span style="color:#5a7a96"># Then run the UI server</span>
+<span style="color:#5a7a96"># aiq ui --config my_workflow.yml</span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Checkpoint -->
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint — tick when done</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Can build a basic chat UI with Chainlit</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Understand interrupt_before / interrupt_after</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Launched AgentIQ UI and explored traces</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Can stream agent responses token by token</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.2 ══ -->
+  <div class="topic-card fade-in" id="t2">
+    <div class="topic-header" onclick="toggleTopic('body2','chev2')">
+      <span class="topic-num">1.2</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Implement Reasoning & Action Frameworks (ReAct)</div>
+        <div class="topic-sub">Think → Act → Observe loop · Tool binding · Agent executor</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">create_react_agent</span>
+          <span class="tag tag-nv">AgentIQ react_agent</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev2">▼</span>
+    </div>
+    <div class="topic-body" id="body2">
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li><strong>ReAct = Reasoning + Acting</strong>: the agent alternates between thinking in natural language (Thought) and calling tools (Action), then observing the result (Observation)</li>
+          <li>The loop continues until the agent decides it has enough information to give a Final Answer</li>
+          <li>Tool binding: how you attach Python functions to an LLM as callable tools</li>
+          <li><code>@tool</code> decorator in LangChain — docstrings become the tool description the LLM reads</li>
+          <li>Difference between a simple LLM chain and a ReAct agent loop (the loop can run multiple times)</li>
+          <li>Stopping conditions: max iterations, forced output format, explicit stop signal</li>
+        </ul>
+      </div>
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://arxiv.org/abs/2210.03629" target="_blank">
+            <span class="res-icon">📜</span>
+            <div class="res-info"><div class="res-title">ReAct: Synergizing Reasoning and Acting in LLMs (Original Paper)</div><div class="res-url">arxiv.org/abs/2210.03629</div></div>
+            <span class="res-type paper">Paper</span>
+          </a>
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/how-tos/create-react-agent/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangGraph — Create a ReAct Agent</div><div class="res-url">langchain-ai.github.io/langgraph/how-tos/create-react-agent</div></div>
+            <span class="res-type tutorial">Tutorial</span>
+          </a>
+          <a class="res-link" href="https://docs.nvidia.com/aiqtoolkit/latest/workflows/react_agent.html" target="_blank">
+            <span class="res-icon">🟢</span>
+            <div class="res-info"><div class="res-title">NVIDIA AgentIQ — ReAct Agent Workflow</div><div class="res-url">docs.nvidia.com/aiqtoolkit/latest/workflows/react_agent.html</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://www.datacamp.com/tutorial/langgraph-agents" target="_blank">
+            <span class="res-icon">🎓</span>
+            <div class="res-info"><div class="res-title">DataCamp — How to Build LangGraph Agents Tutorial</div><div class="res-url">datacamp.com/tutorial/langgraph-agents</div></div>
+            <span class="res-type tutorial">Tutorial</span>
+          </a>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Build a 2-tool ReAct agent and trace the loop</div>
+          <div class="activity-body">
+            <p class="activity-desc">Build a ReAct agent with a calculator tool and a mock search tool. Print each Thought/Action/Observation step.</p>
+            <ol class="activity-steps">
+              <li>Define two tools using the <code>@tool</code> decorator — one calculator, one web stub</li>
+              <li>Use <code>create_react_agent(llm, tools)</code> from <code>langgraph.prebuilt</code></li>
+              <li>Invoke with a multi-step question (e.g. "What is 25% of the population of India?")</li>
+              <li>Stream with <code>graph.stream()</code> and print each message type</li>
+              <li>Count how many loop iterations the agent took — adjust max_iterations</li>
+            </ol>
+            <div class="code-wrap" style="margin-top:12px">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#76b900">from</span> langgraph.prebuilt <span style="color:#76b900">import</span> create_react_agent
+<span style="color:#76b900">from</span> langchain_openai <span style="color:#76b900">import</span> ChatOpenAI
+<span style="color:#76b900">from</span> langchain_core.tools <span style="color:#76b900">import</span> tool
+
+<span style="color:#76b900">@tool</span>
+<span style="color:#76b900">def</span> <span style="color:#00d4aa">calculator</span>(expression: str) -> str:
+    <span style="color:#c8e88a">"""Evaluate a math expression. Input: Python math string."""</span>
+    <span style="color:#76b900">return</span> str(eval(expression))
+
+<span style="color:#76b900">@tool</span>
+<span style="color:#76b900">def</span> <span style="color:#00d4aa">search</span>(query: str) -> str:
+    <span style="color:#c8e88a">"""Search for a fact. Returns a stub answer."""</span>
+    <span style="color:#76b900">return</span> <span style="color:#c8e88a">"India population is approximately 1.44 billion"</span>
+
+llm = ChatOpenAI(model=<span style="color:#c8e88a">"gpt-4o-mini"</span>)
+agent = create_react_agent(llm, [calculator, search])
+
+<span style="color:#5a7a96"># Stream and print every step</span>
+<span style="color:#76b900">for</span> chunk <span style="color:#76b900">in</span> agent.stream(
+    {<span style="color:#c8e88a">"messages"</span>: [(<span style="color:#c8e88a">"user"</span>, <span style="color:#c8e88a">"What is 25% of India's population?"</span>)]}
+):
+    <span style="color:#76b900">for</span> node, state <span style="color:#76b900">in</span> chunk.items():
+        print(f<span style="color:#c8e88a">"\n[{node}]"</span>, state[<span style="color:#c8e88a">"messages"</span>][-1].content)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA NeMo Agent Toolkit Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Configure a ReAct agent with NIM backend</div>
+          <div class="activity-body">
+            <p class="activity-desc">Use AgentIQ's <code>react_agent</code> workflow type pointing to a free NIM endpoint instead of OpenAI.</p>
+            <ol class="activity-steps">
+              <li>Get your free NIM API key from <a href="https://build.nvidia.com" target="_blank" style="color:var(--nv-accent)">build.nvidia.com</a></li>
+              <li>Create a YAML config with <code>_type: react_agent</code> and <code>llm_name: nim_llm</code></li>
+              <li>Register a Python function as an AgentIQ tool using <code>@register_function</code></li>
+              <li>Run via CLI: <code>aiq run --config react_config.yml --input "your question"</code></li>
+              <li>Check the profiler output — note latency per tool call vs LLM call</li>
+            </ol>
+            <div class="code-wrap" style="margin-top:12px">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#5a7a96"># my_tool.py</span>
+<span style="color:#76b900">from</span> aiq.builder.function_info <span style="color:#76b900">import</span> FunctionInfo
+<span style="color:#76b900">from</span> aiq.cli.register_workflow <span style="color:#76b900">import</span> register_function
+
+<span style="color:#76b900">@register_function</span>(config_type=MyToolConfig)
+<span style="color:#76b900">async def</span> <span style="color:#76b900">my_search_tool</span>(config, builder):
+    <span style="color:#76b900">async def</span> <span style="color:#00d4aa">_fn</span>(query: str) -> str:
+        <span style="color:#76b900">return</span> f<span style="color:#c8e88a">"Stub result for: {query}"</span>
+    <span style="color:#76b900">yield</span> FunctionInfo.from_fn(_fn, description=<span style="color:#c8e88a">"Search the web"</span>)
+
+<span style="color:#5a7a96"># react_config.yml</span>
+<span style="color:#5a7a96"># llms:</span>
+<span style="color:#5a7a96">#   nim_llm:</span>
+<span style="color:#5a7a96">#     _type: nim</span>
+<span style="color:#5a7a96">#     model_name: meta/llama-3.1-8b-instruct</span>
+<span style="color:#5a7a96"># workflow:</span>
+<span style="color:#5a7a96">#   _type: react_agent</span>
+<span style="color:#5a7a96">#   llm_name: nim_llm</span>
+<span style="color:#5a7a96">#   tools: [my_search_tool]</span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Can explain the Thought/Action/Observation loop</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Built a working ReAct agent with LangGraph</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Ran AgentIQ ReAct workflow with NIM backend</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Know how to bind tools using @tool decorator</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.3 ══ -->
+  <div class="topic-card fade-in" id="t3">
+    <div class="topic-header" onclick="toggleTopic('body3','chev3')">
+      <span class="topic-num">1.3</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Configure Agent-to-Agent Communication Protocols</div>
+        <div class="topic-sub">Supervisor patterns · Message passing · MCP protocol</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">LangGraph Multi-Agent</span>
+          <span class="tag tag-nv">AgentIQ MCP</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev3">▼</span>
+    </div>
+    <div class="topic-body" id="body3">
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li>Supervisor pattern: one orchestrator agent routes tasks to specialized worker agents</li>
+          <li>Message passing vs. shared state: agents communicate by reading/writing to a shared state dict</li>
+          <li>Handoff: one agent passes control to another by returning a specific message or tool call</li>
+          <li>Model Context Protocol (MCP): open standard for tool servers — agents connect to MCP servers to use external tools</li>
+          <li>AgentIQ treats agent communication over HTTP/gRPC (not a custom protocol) — aligns with MCP</li>
+          <li>Trust levels between agents: how much should a sub-agent's output be trusted without verification?</li>
+        </ul>
+      </div>
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/concepts/multi_agent/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangGraph — Multi-Agent Systems Concepts</div><div class="res-url">langchain-ai.github.io/langgraph/concepts/multi_agent</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor/" target="_blank">
+            <span class="res-icon">🎓</span>
+            <div class="res-info"><div class="res-title">LangGraph — Agent Supervisor Tutorial</div><div class="res-url">langchain-ai.github.io/langgraph/tutorials/multi_agent/agent_supervisor</div></div>
+            <span class="res-type tutorial">Tutorial</span>
+          </a>
+          <a class="res-link" href="https://docs.nvidia.com/aiqtoolkit/latest/mcp.html" target="_blank">
+            <span class="res-icon">🟢</span>
+            <div class="res-info"><div class="res-title">NVIDIA AgentIQ — MCP Compatibility Guide</div><div class="res-url">docs.nvidia.com/aiqtoolkit/latest/mcp.html</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://modelcontextprotocol.io/introduction" target="_blank">
+            <span class="res-icon">📜</span>
+            <div class="res-info"><div class="res-title">Model Context Protocol (MCP) — Official Intro</div><div class="res-url">modelcontextprotocol.io/introduction</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Build a Supervisor → Worker agent system</div>
+          <div class="activity-body">
+            <p class="activity-desc">Create a supervisor agent that delegates to a "researcher" and a "writer" sub-agent based on the task type.</p>
+            <ol class="activity-steps">
+              <li>Create two sub-graphs: <code>researcher_graph</code> (has search tools) and <code>writer_graph</code> (has format tools)</li>
+              <li>Build a supervisor node that outputs which agent to call next as a routing decision</li>
+              <li>Use <code>add_node("researcher", researcher_graph)</code> to embed sub-graphs</li>
+              <li>Add conditional edges from supervisor → researcher or writer based on output</li>
+              <li>Test: ask a question that requires research first, then writing a summary</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA NeMo Agent Toolkit Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Expose an AgentIQ workflow as an MCP server</div>
+          <div class="activity-body">
+            <p class="activity-desc">AgentIQ tools can be served over MCP, meaning other agents (even on different frameworks) can call them.</p>
+            <ol class="activity-steps">
+              <li>Build a simple AgentIQ tool (e.g., a lookup function)</li>
+              <li>Run: <code>aiq mcp serve --config my_config.yml</code> to expose it as an MCP server</li>
+              <li>From a separate LangGraph agent, connect to the MCP server using <code>langchain-mcp-adapters</code></li>
+              <li>Call the AgentIQ-served tool from within a LangGraph ReAct agent — cross-framework communication!</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Understand supervisor vs peer-to-peer agent patterns</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Built a 2-agent supervisor system in LangGraph</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Know what MCP is and why it matters</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Exposed an AgentIQ tool as an MCP endpoint</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.4 ══ -->
+  <div class="topic-card fade-in" id="t4">
+    <div class="topic-header" onclick="toggleTopic('body4','chev4')">
+      <span class="topic-num">1.4</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Manage Short-Term and Long-Term Memory</div>
+        <div class="topic-sub">In-context memory · Persistent stores · Semantic retrieval</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">MemorySaver · Checkpointer</span>
+          <span class="tag tag-nv">MemMachine Integration</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev4">▼</span>
+    </div>
+    <div class="topic-body" id="body4">
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li><strong>Short-term memory</strong> = the current conversation context window. Lives only for one session.</li>
+          <li><strong>Long-term memory</strong> = persisted outside the LLM. Survives across sessions. Stored in DB, vector store, or key-value store.</li>
+          <li>LangGraph checkpointer: saves graph state to a backend (SQLite, Redis) so agents can resume mid-task</li>
+          <li>Semantic memory: store facts as embeddings, retrieve by similarity using vector search (FAISS, Chroma)</li>
+          <li>Episodic memory: store past agent runs/interactions, let the agent learn from history</li>
+          <li>Memory summarization: when context gets too long, summarize old turns instead of dropping them</li>
+        </ul>
+      </div>
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/concepts/memory/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangGraph — Memory Concepts (short & long term)</div><div class="res-url">langchain-ai.github.io/langgraph/concepts/memory</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/how-tos/memory/add-summary-conversation-history/" target="_blank">
+            <span class="res-icon">🎓</span>
+            <div class="res-info"><div class="res-title">LangGraph — Conversation Summary Memory How-To</div><div class="res-url">langchain-ai.github.io/langgraph/how-tos/memory</div></div>
+            <span class="res-type tutorial">Tutorial</span>
+          </a>
+          <a class="res-link" href="https://docs.nvidia.com/aiqtoolkit/latest/memory.html" target="_blank">
+            <span class="res-icon">🟢</span>
+            <div class="res-info"><div class="res-title">NVIDIA AgentIQ — MemMachine Memory Integration</div><div class="res-url">docs.nvidia.com/aiqtoolkit/latest/memory.html</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://mem0.ai/docs" target="_blank">
+            <span class="res-icon">🧠</span>
+            <div class="res-info"><div class="res-title">Mem0 — Persistent Memory Layer for AI Agents</div><div class="res-url">mem0.ai/docs</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Add SQLite checkpointing for cross-session memory</div>
+          <div class="activity-body">
+            <p class="activity-desc">Make an agent remember facts from a previous conversation using LangGraph's SQLite checkpointer.</p>
+            <ol class="activity-steps">
+              <li>Install: <code>pip install langgraph-checkpoint-sqlite</code></li>
+              <li>Create <code>SqliteSaver</code> pointing to a file: <code>memory.db</code></li>
+              <li>Compile graph with <code>checkpointer=memory</code></li>
+              <li>Run a conversation with <code>thread_id="user-123"</code> in the config</li>
+              <li>Close Python, reopen, reload the graph — ask "What did I tell you earlier?" — it should remember!</li>
+            </ol>
+            <div class="code-wrap" style="margin-top:12px">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#76b900">from</span> langgraph.checkpoint.sqlite <span style="color:#76b900">import</span> SqliteSaver
+<span style="color:#76b900">from</span> langgraph.prebuilt <span style="color:#76b900">import</span> create_react_agent
+<span style="color:#76b900">from</span> langchain_openai <span style="color:#76b900">import</span> ChatOpenAI
+
+memory = SqliteSaver.from_conn_string(<span style="color:#c8e88a">"memory.db"</span>)
+agent = create_react_agent(ChatOpenAI(), tools=[], checkpointer=memory)
+
+config = {<span style="color:#c8e88a">"configurable"</span>: {<span style="color:#c8e88a">"thread_id"</span>: <span style="color:#c8e88a">"session-1"</span>}}
+
+<span style="color:#5a7a96"># Session 1: tell the agent something</span>
+agent.invoke({<span style="color:#c8e88a">"messages"</span>: [(<span style="color:#c8e88a">"user"</span>, <span style="color:#c8e88a">"My name is Ravi and I love Python"</span>)]}, config)
+
+<span style="color:#5a7a96"># Session 2 (new run): agent still remembers</span>
+result = agent.invoke({<span style="color:#c8e88a">"messages"</span>: [(<span style="color:#c8e88a">"user"</span>, <span style="color:#c8e88a">"What is my name?"</span>)]}, config)
+print(result[<span style="color:#c8e88a">"messages"</span>][-1].content)  <span style="color:#5a7a96"># → "Your name is Ravi"</span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA NeMo Agent Toolkit Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Use AgentIQ with MemMachine for long-term memory</div>
+          <div class="activity-body">
+            <p class="activity-desc">AgentIQ has experimental MemMachine integration for GPU-accelerated vector memory. Try the in-memory alternative first.</p>
+            <ol class="activity-steps">
+              <li>In your AgentIQ config, add a <code>memory</code> section with <code>_type: in_memory</code></li>
+              <li>Run two turns of conversation — check that context is retained in the second turn</li>
+              <li>Read the MemMachine docs to understand how it differs (GPU-side KV cache)</li>
+              <li>Compare memory latency in the profiler output between short-term vs retrieved memory</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Can explain short-term vs long-term memory difference</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Built SQLite-backed persistent memory in LangGraph</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Know what a vector store is and why it's used for memory</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Configured memory in AgentIQ workflow YAML</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.5 ══ -->
+  <div class="topic-card fade-in" id="t5">
+    <div class="topic-header" onclick="toggleTopic('body5','chev5')">
+      <span class="topic-num">1.5</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Orchestrate Multi-Agent Workflows and Coordination</div>
+        <div class="topic-sub">DAG pipelines · Conditional routing · Parallel execution</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">StateGraph routing</span>
+          <span class="tag tag-nv">AgentIQ pipelines</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev5">▼</span>
+    </div>
+    <div class="topic-body" id="body5">
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li>Directed Acyclic Graph (DAG): a pipeline where each step feeds into the next with no loops</li>
+          <li>Conditional routing: based on agent output, choose a different next step (if/else in the graph)</li>
+          <li>Parallel fan-out: send the same input to multiple agents simultaneously, then merge results (fan-in)</li>
+          <li>Sequential vs. hierarchical multi-agent: sequential = one after another; hierarchical = supervisor delegates to sub-agents</li>
+          <li>State merging: how do you combine outputs from parallel agents? (LangGraph uses <code>Annotated</code> reducers)</li>
+          <li>Error handling in pipelines: what happens if one agent in the chain fails?</li>
+        </ul>
+      </div>
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/tutorials/multi_agent/multi-agent-collaboration/" target="_blank">
+            <span class="res-icon">🎓</span>
+            <div class="res-info"><div class="res-title">LangGraph — Multi-Agent Collaboration Tutorial</div><div class="res-url">langchain-ai.github.io/langgraph/tutorials/multi_agent</div></div>
+            <span class="res-type tutorial">Tutorial</span>
+          </a>
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/how-tos/branching/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangGraph — Branching & Parallel Nodes How-To</div><div class="res-url">langchain-ai.github.io/langgraph/how-tos/branching</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://github.com/NVIDIA/NeMo-Agent-Toolkit/tree/main/examples" target="_blank">
+            <span class="res-icon">⭐</span>
+            <div class="res-info"><div class="res-title">NVIDIA NeMo Agent Toolkit — Example Workflows</div><div class="res-url">github.com/NVIDIA/NeMo-Agent-Toolkit/tree/main/examples</div></div>
+            <span class="res-type github">GitHub</span>
+          </a>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Build a 3-agent pipeline with conditional branching</div>
+          <div class="activity-body">
+            <p class="activity-desc">Build a workflow: input → classifier → (if "code" → code_agent, if "research" → research_agent) → formatter → output.</p>
+            <ol class="activity-steps">
+              <li>Define a <code>classifier</code> node that returns <code>"code"</code> or <code>"research"</code></li>
+              <li>Add conditional edges: <code>add_conditional_edges("classifier", route_fn, {"code": "code_agent", "research": "research_agent"})</code></li>
+              <li>Both <code>code_agent</code> and <code>research_agent</code> connect to a shared <code>formatter</code> node</li>
+              <li>Test with both a coding question and a research question — verify correct routing</li>
+              <li>Add a <code>Send()</code> to fan out to both agents in parallel and merge results</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA NeMo Agent Toolkit Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Chain two AgentIQ workflows together</div>
+          <div class="activity-body">
+            <p class="activity-desc">Use AgentIQ's pipeline composition feature to chain a summarizer workflow into a translator workflow.</p>
+            <ol class="activity-steps">
+              <li>Create <code>summarize_workflow.yml</code> — takes long text, returns summary</li>
+              <li>Create <code>translate_workflow.yml</code> — takes text, translates to Tamil</li>
+              <li>Reference summarize as a tool inside translate workflow config</li>
+              <li>Run: input long English text → get a Tamil summary in one command</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Built conditional routing between agents in LangGraph</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Understand fan-out/fan-in parallel agent pattern</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Chained two AgentIQ workflows together</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Know difference between sequential and hierarchical multi-agent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.6 ══ -->
+  <div class="topic-card fade-in" id="t6">
+    <div class="topic-header" onclick="toggleTopic('body6','chev6')">
+      <span class="topic-num">1.6</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Logic Trees, Prompt Chains &amp; Stateful Orchestration</div>
+        <div class="topic-sub">LCEL chaining · StateGraph · Reducers · Multi-step reasoning</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">StateGraph · LCEL</span>
+          <span class="tag tag-nv">AgentIQ pipelines</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev6">▼</span>
+    </div>
+    <div class="topic-body" id="body6">
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li><strong>Prompt chaining</strong>: output of one LLM call feeds as input to the next — like a pipeline of prompts</li>
+          <li><strong>Logic trees</strong>: decision points in a workflow where the path depends on model output</li>
+          <li><strong>LangChain LCEL</strong>: pipe operator (<code>|</code>) to compose chains: <code>prompt | llm | parser</code></li>
+          <li><strong>LangGraph StateGraph</strong>: more powerful than LCEL for loops, branches, and persistent state across many steps</li>
+          <li><strong>State reducers</strong>: when multiple nodes update the same state field, a reducer function merges them (e.g., <code>operator.add</code> for lists)</li>
+          <li>When to use LCEL vs StateGraph: LCEL for simple linear chains; StateGraph for complex, stateful, looping workflows</li>
+        </ul>
+      </div>
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://python.langchain.com/docs/concepts/lcel/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangChain — LCEL (Expression Language) Concepts</div><div class="res-url">python.langchain.com/docs/concepts/lcel</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/concepts/low_level/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangGraph — Low-Level Concepts (State, Nodes, Edges)</div><div class="res-url">langchain-ai.github.io/langgraph/concepts/low_level</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://academy.langchain.com/courses/intro-to-langgraph" target="_blank">
+            <span class="res-icon">🎓</span>
+            <div class="res-info"><div class="res-title">LangChain Academy — Intro to LangGraph (Free Course)</div><div class="res-url">academy.langchain.com/courses/intro-to-langgraph</div></div>
+            <span class="res-type video">Course</span>
+          </a>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Convert a prompt chain into a stateful StateGraph</div>
+          <div class="activity-body">
+            <p class="activity-desc">Start with a 3-step LCEL chain (plan → draft → critique), then convert it to a LangGraph StateGraph that tracks each step in state.</p>
+            <ol class="activity-steps">
+              <li>Write a linear LCEL chain: <code>plan_prompt | llm | draft_prompt | llm | critique_prompt | llm</code></li>
+              <li>Refactor: create a <code>TypedDict</code> state with <code>plan</code>, <code>draft</code>, <code>critique</code> fields</li>
+              <li>Make each prompt a separate node that reads/writes to state</li>
+              <li>Add a loop: if critique says "needs improvement", go back to the draft node</li>
+              <li>Add a max_iterations counter in state to prevent infinite loops</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA NeMo Agent Toolkit Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Build a multi-step reasoning pipeline with AgentIQ</div>
+          <div class="activity-body">
+            <p class="activity-desc">Use AgentIQ's workflow chaining to build a plan-then-execute pipeline using NIM-hosted LLMs.</p>
+            <ol class="activity-steps">
+              <li>Create a <code>planner</code> workflow that breaks a task into steps (returns JSON list)</li>
+              <li>Create an <code>executor</code> workflow that takes one step and executes it</li>
+              <li>Write a Python orchestrator that calls planner, then loops over each step calling executor</li>
+              <li>Use AgentIQ's profiler to see total tokens and latency across the whole pipeline</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Can write a 3-step LCEL prompt chain</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Converted LCEL chain to LangGraph StateGraph</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Added a feedback loop in StateGraph with stop condition</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Built plan-then-execute pipeline in AgentIQ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.7 ══ -->
+  <div class="topic-card fade-in" id="t7">
+    <div class="topic-header" onclick="toggleTopic('body7','chev7')">
+      <span class="topic-num">1.7</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Integrate Knowledge Graphs for Relational Reasoning</div>
+        <div class="topic-sub">Nodes · Edges · Graph querying · LLM + KG agent tool</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">NetworkX · Neo4j</span>
+          <span class="tag tag-nv">NeMo Retriever</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev7">▼</span>
+    </div>
+    <div class="topic-body" id="body7">
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li><strong>Knowledge graph (KG)</strong>: a graph of entities (nodes) connected by relationships (edges) — e.g., Person → works_at → Company</li>
+          <li>Why KG for agents? Enables multi-hop reasoning: "Who manages the team that built product X?"</li>
+          <li><strong>NetworkX</strong>: lightweight Python library for building and querying graphs in-memory</li>
+          <li><strong>Neo4j</strong>: production graph database; uses Cypher query language</li>
+          <li>GraphRAG: instead of chunking documents, extract entities and relationships into a KG, then retrieve by traversing the graph</li>
+          <li>LangChain <code>GraphCypherQAChain</code>: lets an LLM write Cypher queries against Neo4j to answer questions</li>
+        </ul>
+      </div>
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://python.langchain.com/docs/integrations/graphs/neo4j_cypher/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangChain — Neo4j Graph QA Chain</div><div class="res-url">python.langchain.com/docs/integrations/graphs/neo4j_cypher</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://networkx.org/documentation/stable/tutorial.html" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">NetworkX Official Tutorial</div><div class="res-url">networkx.org/documentation/stable/tutorial.html</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://neo4j.com/developer/get-started/" target="_blank">
+            <span class="res-icon">🎓</span>
+            <div class="res-info"><div class="res-title">Neo4j Developer Getting Started Guide</div><div class="res-url">neo4j.com/developer/get-started</div></div>
+            <span class="res-type tutorial">Tutorial</span>
+          </a>
+          <a class="res-link" href="https://microsoft.github.io/graphrag/" target="_blank">
+            <span class="res-icon">📜</span>
+            <div class="res-info"><div class="res-title">Microsoft GraphRAG — Knowledge Graph RAG</div><div class="res-url">microsoft.github.io/graphrag</div></div>
+            <span class="res-type github">GitHub</span>
+          </a>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Build a KG query tool and attach it to a LangGraph agent</div>
+          <div class="activity-body">
+            <p class="activity-desc">Create a small knowledge graph (people, companies, roles) with NetworkX. Wrap a graph query as a @tool and attach it to a ReAct agent.</p>
+            <ol class="activity-steps">
+              <li>Build a <code>nx.DiGraph</code> with 5+ people, their employers, and roles</li>
+              <li>Write a <code>@tool</code> function that accepts a name and returns their relationships</li>
+              <li>Add this tool to a <code>create_react_agent</code></li>
+              <li>Ask: "Who does Ravi work for, and what team does that company have?" — test multi-hop reasoning</li>
+              <li>Bonus: replace NetworkX with Neo4j + <code>GraphCypherQAChain</code></li>
+            </ol>
+            <div class="code-wrap" style="margin-top:12px">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#76b900">import</span> networkx <span style="color:#76b900">as</span> nx
+<span style="color:#76b900">from</span> langchain_core.tools <span style="color:#76b900">import</span> tool
+
+<span style="color:#5a7a96"># Build a small knowledge graph</span>
+G = nx.DiGraph()
+G.add_edge(<span style="color:#c8e88a">"Ravi"</span>, <span style="color:#c8e88a">"NVIDIA"</span>, relation=<span style="color:#c8e88a">"works_at"</span>)
+G.add_edge(<span style="color:#c8e88a">"NVIDIA"</span>, <span style="color:#c8e88a">"AI Team"</span>, relation=<span style="color:#c8e88a">"has_team"</span>)
+G.add_edge(<span style="color:#c8e88a">"Priya"</span>, <span style="color:#c8e88a">"NVIDIA"</span>, relation=<span style="color:#c8e88a">"works_at"</span>)
+
+<span style="color:#76b900">@tool</span>
+<span style="color:#76b900">def</span> <span style="color:#00d4aa">query_knowledge_graph</span>(entity: str) -> str:
+    <span style="color:#c8e88a">"""Look up relationships for an entity in the knowledge graph."""</span>
+    <span style="color:#76b900">if</span> entity <span style="color:#76b900">not in</span> G:
+        <span style="color:#76b900">return</span> f<span style="color:#c8e88a">"Entity '{entity}' not found"</span>
+    edges = [(u, d[<span style="color:#c8e88a">'relation'</span>], v) <span style="color:#76b900">for</span> u, v, d <span style="color:#76b900">in</span> G.edges(entity, data=<span style="color:#76b900">True</span>)]
+    <span style="color:#76b900">return</span> str(edges)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Explore NVIDIA NeMo Retriever for graph-augmented RAG</div>
+          <div class="activity-body">
+            <p class="activity-desc">NVIDIA's NeMo Retriever supports graph-based retrieval. Study how it differs from standard vector RAG.</p>
+            <ol class="activity-steps">
+              <li>Read the NeMo Retriever overview at <a href="https://developer.nvidia.com/nemo-retriever" target="_blank" style="color:var(--nv-accent)">developer.nvidia.com/nemo-retriever</a></li>
+              <li>Try the basic example: extract entities from a document and build a graph with NeMo</li>
+              <li>Compare: ask the same question with vector RAG and graph RAG — note the difference in answers for multi-hop questions</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Can build a graph with NetworkX and query it</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Wrapped KG query as an agent @tool</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Understand multi-hop reasoning through a graph</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Know the difference between vector RAG and GraphRAG</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ TOPIC 1.8 ══ -->
+  <div class="topic-card fade-in" id="t8">
+    <div class="topic-header" onclick="toggleTopic('body8','chev8')">
+      <span class="topic-num">1.8</span>
+      <div class="topic-title-wrap">
+        <div class="topic-title">Ensure Adaptability and Scalability of Agent Architecture</div>
+        <div class="topic-sub">Model swapping · Async agents · Fallback logic · Production patterns</div>
+        <div class="topic-tags">
+          <span class="tag tag-core">Exam Topic</span>
+          <span class="tag tag-lg">async / astream</span>
+          <span class="tag tag-nv">NIM endpoints · Profiler</span>
+        </div>
+      </div>
+      <span class="topic-chevron" id="chev8">▼</span>
+    </div>
+    <div class="topic-body" id="body8">
+      <div class="topic-section">
+        <div class="section-label concept">📖 What to Study</div>
+        <ul class="concept-list">
+          <li><strong>Model agnosticism</strong>: design agents so the LLM backend is swappable via config (OpenAI → NVIDIA NIM → Anthropic)</li>
+          <li><strong>Fallback chains</strong>: <code>llm.with_fallbacks([backup_llm])</code> — if primary model fails, try the next one</li>
+          <li><strong>Async execution</strong>: use <code>async def</code> and <code>await</code> throughout so multiple agents can run concurrently</li>
+          <li><strong>Horizontal scaling</strong>: run the same agent workflow on multiple inputs in parallel using <code>asyncio.gather</code></li>
+          <li><strong>Rate limiting & retries</strong>: handle API rate limits with exponential backoff</li>
+          <li><strong>Profiling</strong>: before scaling, profile to find the bottleneck — is it the LLM call, tool call, or memory retrieval?</li>
+        </ul>
+      </div>
+      <div class="topic-section">
+        <div class="section-label resources">🔗 Resources</div>
+        <div class="res-list">
+          <a class="res-link" href="https://python.langchain.com/docs/how_to/fallbacks/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangChain — Fallbacks How-To</div><div class="res-url">python.langchain.com/docs/how_to/fallbacks</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://langchain-ai.github.io/langgraph/how-tos/async/" target="_blank">
+            <span class="res-icon">📄</span>
+            <div class="res-info"><div class="res-title">LangGraph — Async Usage Guide</div><div class="res-url">langchain-ai.github.io/langgraph/how-tos/async</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://docs.nvidia.com/aiqtoolkit/latest/profiler.html" target="_blank">
+            <span class="res-icon">🟢</span>
+            <div class="res-info"><div class="res-title">NVIDIA AgentIQ — Profiler & Optimization Guide</div><div class="res-url">docs.nvidia.com/aiqtoolkit/latest/profiler.html</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+          <a class="res-link" href="https://build.nvidia.com/explore/discover" target="_blank">
+            <span class="res-icon">🟢</span>
+            <div class="res-info"><div class="res-title">NVIDIA NIM — Browse & Try Hosted Model Endpoints</div><div class="res-url">build.nvidia.com/explore/discover</div></div>
+            <span class="res-type docs">Docs</span>
+          </a>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label lg-label">🟣 LangGraph Activity</div>
+        <div class="activity-box lg">
+          <div class="activity-header">🛠️ Make your agent model-agnostic with fallbacks</div>
+          <div class="activity-body">
+            <p class="activity-desc">Refactor an existing agent so the LLM is loaded from a config file, with a fallback chain if the primary model fails.</p>
+            <ol class="activity-steps">
+              <li>Load LLM from a <code>config.yml</code>: <code>provider: openai</code> or <code>provider: nvidia</code></li>
+              <li>Create two LLM instances: <code>primary_llm</code> and <code>fallback_llm</code></li>
+              <li>Chain them: <code>llm = primary_llm.with_fallbacks([fallback_llm])</code></li>
+              <li>Test by setting a bad API key for primary — confirm fallback kicks in</li>
+              <li>Convert agent to async: change <code>invoke</code> → <code>ainvoke</code>, wrap in <code>asyncio.run()</code></li>
+            </ol>
+            <div class="code-wrap" style="margin-top:12px">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><span style="color:#76b900">import</span> asyncio
+<span style="color:#76b900">from</span> langchain_openai <span style="color:#76b900">import</span> ChatOpenAI
+<span style="color:#76b900">from</span> langchain_nvidia_ai_endpoints <span style="color:#76b900">import</span> ChatNVIDIA
+
+<span style="color:#5a7a96"># Primary: OpenAI | Fallback: NVIDIA NIM</span>
+primary = ChatOpenAI(model=<span style="color:#c8e88a">"gpt-4o-mini"</span>)
+fallback = ChatNVIDIA(model=<span style="color:#c8e88a">"meta/llama-3.1-8b-instruct"</span>)
+
+llm = primary.with_fallbacks([fallback])
+
+<span style="color:#5a7a96"># Run 5 tasks in parallel (async)</span>
+<span style="color:#76b900">async def</span> <span style="color:#00d4aa">run_parallel</span>():
+    tasks = [llm.ainvoke(f<span style="color:#c8e88a">"Summarize topic {i}"</span>) <span style="color:#76b900">for</span> i <span style="color:#76b900">in</span> range(5)]
+    results = <span style="color:#76b900">await</span> asyncio.gather(*tasks)
+    <span style="color:#76b900">return</span> results
+
+asyncio.run(run_parallel())</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label nv-label">🟢 NVIDIA NeMo Agent Toolkit Activity</div>
+        <div class="activity-box nv">
+          <div class="activity-header">🚀 Profile your agent and optimize the bottleneck</div>
+          <div class="activity-body">
+            <p class="activity-desc">Use AgentIQ's built-in profiler to find where time is being spent in a multi-step workflow, then optimize.</p>
+            <ol class="activity-steps">
+              <li>Enable profiler in your config: <code>profiler: enabled: true</code></li>
+              <li>Run a complex multi-step task and collect the profiler JSON output</li>
+              <li>Identify the slowest node — is it LLM call, tool, or memory?</li>
+              <li>Swap the slow node's LLM to a faster NIM model (e.g., llama-3.1-8b vs 70b)</li>
+              <li>Re-run and compare token usage and latency in the profiler — document the improvement</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="topic-section">
+        <div class="section-label checkpoint">✅ Checkpoint</div>
+        <div class="checkpoint-grid">
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Agent loads LLM from config — not hardcoded</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Fallback chain works when primary model fails</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Converted agent to async and ran tasks in parallel</div>
+          <div class="checkpoint-item" onclick="toggleCheck(this)"><div class="check-box">✓</div>Used AgentIQ profiler to find and fix a bottleneck</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY SCHEDULE -->
+  <div class="toc fade-in" style="margin-top:32px">
+    <h3>📅 Suggested 7-Day Schedule</h3>
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Topics</th>
+          <th>Focus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="day-badge">Day 1</span></td><td>1.1 + 1.2</td><td>Set up both stacks · Build Chainlit UI · Build ReAct agent</td></tr>
+        <tr><td><span class="day-badge">Day 2</span></td><td>1.3 + 1.5</td><td>Supervisor agents · Conditional routing · Multi-agent pipelines</td></tr>
+        <tr><td><span class="day-badge">Day 3</span></td><td>1.4</td><td>Deep dive on memory — SQLite checkpointing + vector memory</td></tr>
+        <tr><td><span class="day-badge">Day 4</span></td><td>1.6</td><td>LCEL chains → LangGraph StateGraph with feedback loops</td></tr>
+        <tr><td><span class="day-badge">Day 5</span></td><td>1.7</td><td>Build knowledge graph with NetworkX · GraphRAG concepts</td></tr>
+        <tr><td><span class="day-badge">Day 6</span></td><td>1.8</td><td>Model swapping · Fallbacks · Async · AgentIQ profiling</td></tr>
+        <tr><td><span class="day-badge">Day 7</span></td><td>All</td><td>Build one end-to-end agent: memory + tools + multi-step + KG tool + NVIDIA NIM backend</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  Chapter 1 · Agent Architecture & Design · NVIDIA Agentic AI Cert · Study Guide v1.0
+</div>
+
+<script>
+  // Toggle setup
+  function toggleSetup() {
+    const body = document.getElementById('setupBody');
+    const chev = document.getElementById('setupChevron');
+    body.classList.toggle('open');
+    chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+  }
+
+  // Toggle topic
+  function toggleTopic(bodyId, chevId) {
+    const body = document.getElementById(bodyId);
+    const chev = document.getElementById(chevId);
+    body.classList.toggle('open');
+    chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+    updateProgress();
+  }
+
+  // Scroll to topic
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Auto open
+    const num = id.replace('t','');
+    const body = document.getElementById('body'+num);
+    const chev = document.getElementById('chev'+num);
+    if (body && !body.classList.contains('open')) {
+      body.classList.add('open');
+      if (chev) chev.style.transform = 'rotate(180deg)';
+    }
+    updateProgress();
+  }
+
+  // Checkbox toggle
+  let totalChecks = 0;
+  let checkedCount = 0;
+
+  function toggleCheck(el) {
+    el.classList.toggle('checked');
+    updateProgress();
+  }
+
+  // Progress
+  function updateProgress() {
+    const all = document.querySelectorAll('.checkpoint-item');
+    const done = document.querySelectorAll('.checkpoint-item.checked');
+    const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    // Count open topics
+    const openBodies = document.querySelectorAll('.topic-body.open');
+    document.getElementById('progressPct').textContent = done.length + ' / ' + all.length + ' checkpoints';
+    // Update TOC
+    for (let i=1;i<=8;i++) {
+      const topicChecks = document.querySelectorAll(`#body${i} .checkpoint-item`);
+      const topicDone = document.querySelectorAll(`#body${i} .checkpoint-item.checked`);
+      const tocItem = document.querySelectorAll('.toc-item')[i-1];
+      if (tocItem && topicChecks.length > 0 && topicDone.length === topicChecks.length) {
+        tocItem.classList.add('toc-done');
+      } else if (tocItem) {
+        tocItem.classList.remove('toc-done');
+      }
+    }
+  }
+
+  // Copy code
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Scroll fade-in
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  // Init progress
+  updateProgress();
+</script>
+</body>
+</html>
