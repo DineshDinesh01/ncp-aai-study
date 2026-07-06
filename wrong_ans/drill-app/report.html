@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NCP-AAI Prep: Mistake Patterns &amp; Study Plan</title>
+<style>
+.sitenav { display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+.sitenav a { text-decoration:none; font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:20px; border:1px solid var(--border); color:var(--text-secondary); background:var(--surface-1); }
+.sitenav a.here { background:var(--accent); color:#fff; border-color:var(--accent); }
+@font-face {
+  font-family: 'Berkeley';
+  src: local('Berkeley Mono');
+}
+:root {
+  --surface-1: #fcfcfb;
+  --surface-2: #f3f2ee;
+  --page: #f9f9f7;
+  --text-primary: #14140f;
+  --text-secondary: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --border: rgba(11,11,11,0.10);
+  --accent: #1baf7a;
+  --accent-deep: #0d7a52;
+  --blue: #2a78d6;
+  --violet: #4a3aa7;
+  --good: #0ca30c;
+  --warning: #c98500;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --card-radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-1: #1a1a19;
+    --surface-2: #232322;
+    --page: #0d0d0d;
+    --text-primary: #f5f5f2;
+    --text-secondary: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --border: rgba(255,255,255,0.10);
+    --accent: #2ec98f;
+    --accent-deep: #6fe3b8;
+    --blue: #3987e5;
+    --violet: #9085e9;
+    --good: #2ec98f;
+    --warning: #e0a63a;
+    --serious: #f0987a;
+    --critical: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  --surface-1: #1a1a19; --surface-2: #232322; --page: #0d0d0d;
+  --text-primary: #f5f5f2; --text-secondary: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --border: rgba(255,255,255,0.10);
+  --accent: #2ec98f; --accent-deep: #6fe3b8; --blue: #3987e5; --violet: #9085e9;
+  --good: #2ec98f; --warning: #e0a63a; --serious: #f0987a; --critical: #e66767;
+}
+:root[data-theme="light"] {
+  --surface-1: #fcfcfb; --surface-2: #f3f2ee; --page: #f9f9f7;
+  --text-primary: #14140f; --text-secondary: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --border: rgba(11,11,11,0.10);
+  --accent: #1baf7a; --accent-deep: #0d7a52; --blue: #2a78d6; --violet: #4a3aa7;
+  --good: #0ca30c; --warning: #c98500; --serious: #ec835a; --critical: #d03b3b;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 24px 100px; }
+
+.masthead {
+  display: flex; flex-direction: column; gap: 6px;
+  padding-bottom: 28px; margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.eyebrow {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent-deep); font-weight: 600;
+}
+h1 {
+  font-size: 30px; font-weight: 700; margin: 2px 0 0; text-wrap: balance;
+  letter-spacing: -0.01em;
+}
+.masthead p { color: var(--text-secondary); margin: 6px 0 0; max-width: 640px; }
+
+h2 {
+  font-size: 20px; font-weight: 700; margin: 0 0 4px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+h2 .num { font-family: ui-monospace, monospace; font-size: 13px; color: var(--muted); font-weight: 500; }
+.section { margin: 56px 0; }
+.section > .lede { color: var(--text-secondary); margin: 0 0 20px; max-width: 680px; font-size: 14px; }
+
+/* stat tiles */
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.stat-tile {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--card-radius);
+  padding: 16px 18px;
+}
+.stat-tile .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+.stat-tile .value { font-size: 30px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat-tile .sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
+
+/* score bar list */
+.score-list { display: flex; flex-direction: column; gap: 10px; }
+.score-row { display: grid; grid-template-columns: 168px 1fr 56px; align-items: center; gap: 12px; }
+.score-row .name { font-size: 13px; color: var(--text-secondary); }
+.score-row .track { position: relative; height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; border: 1px solid var(--border); }
+.score-row .fill { position: absolute; inset: 0; border-radius: 5px 0 0 5px; }
+.score-row .pct { font-size: 13px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* domain bars */
+.domain-chart { display: flex; flex-direction: column; gap: 8px; }
+.domain-bar-row { display: grid; grid-template-columns: 230px 1fr 44px; align-items: center; gap: 10px; }
+.domain-bar-row .name { font-size: 13px; }
+.domain-bar-row .track { height: 16px; background: var(--surface-2); border-radius: 4px; border: 1px solid var(--border); overflow: hidden; position: relative;}
+.domain-bar-row .fill { height: 100%; border-radius: 3px 0 0 3px; }
+.domain-bar-row .pct { font-size: 12.5px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.domain-note { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+
+/* repeated mistakes */
+.mistake-card {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--card-radius);
+  padding: 16px 18px; margin-bottom: 12px;
+}
+.mistake-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.count-chip {
+  font-family: ui-monospace, monospace; font-size: 11.5px; font-weight: 700;
+  padding: 3px 8px; border-radius: 20px; color: white; white-space: nowrap;
+}
+.topic-tag { font-size: 11px; color: var(--text-secondary); background: var(--surface-2); padding: 3px 9px; border-radius: 20px; border: 1px solid var(--border);}
+.mistake-q { font-size: 14px; font-weight: 600; margin: 0 0 6px; }
+.mistake-fix { font-size: 13px; color: var(--text-secondary); }
+.mistake-fix b { color: var(--good); font-weight: 600; }
+
+/* plan */
+.plan-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.plan-item { display: grid; grid-template-columns: 30px 1fr; gap: 12px; }
+.plan-rank {
+  width: 30px; height: 30px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--accent-deep);
+  font-family: ui-monospace, monospace;
+}
+.plan-item h3 { margin: 2px 0 4px; font-size: 15px; }
+.plan-item p { margin: 0; color: var(--text-secondary); font-size: 13.5px; }
+
+/* glossary */
+.gloss-controls { margin-bottom: 16px; }
+#gloss-search {
+  width: 100%; padding: 11px 14px; font-size: 14px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary);
+  font-family: inherit;
+}
+#gloss-search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.gloss-count { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.gloss-grid { display: flex; flex-direction: column; gap: 10px; }
+.gloss-card {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--card-radius);
+  padding: 14px 16px;
+}
+.gloss-card summary {
+  cursor: pointer; font-weight: 700; font-size: 14.5px; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.gloss-card summary::-webkit-details-marker { display: none; }
+.gloss-card summary .chev { color: var(--muted); font-size: 12px; transition: transform 0.15s ease; }
+.gloss-card[open] summary .chev { transform: rotate(90deg); }
+.gloss-domain { font-size: 10.5px; color: var(--accent-deep); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-top: 6px;}
+.gloss-body { margin-top: 12px; display: flex; flex-direction: column; gap: 9px; font-size: 13.5px; }
+.gloss-body .row b { color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 2px; font-weight: 700; }
+.gloss-body .row span { color: var(--text-primary); }
+
+footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+
+@media (max-width: 640px) {
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .score-row, .domain-bar-row { grid-template-columns: 1fr; gap: 4px; }
+  .score-row .pct, .domain-bar-row .pct { text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sitenav">
+    <a href="index.html">Drill</a>
+    <a href="glossary.html">Glossary</a>
+    <a href="cheatsheet.html">Cheat Sheet</a>
+    <a href="curriculum.html">Curriculum</a>
+    <a href="report.html" class="here">Mistake Report</a>
+  </div>
+  <div class="masthead">
+    <div class="eyebrow">NVIDIA NCP-AAI &middot; Practice Test Analysis</div>
+    <h1>Where the 10&ndash;15% is actually going</h1>
+    <p>Cross-platform review of 5 Preporato exams and 4 CertyIQ exams (411 wrong-answer scans), aimed at the specific gap between an 85%+ score and a pass with real margin.</p>
+  </div>
+
+  <div class="section">
+    <h2><span class="num">01</span> Scoreboard</h2>
+    <p class="lede">Both platforms plateau around the same ceiling. Preporato's domain breakdown is the more reliable signal (larger, more consistent samples); CertyIQ's issue isn't score &mdash; it's the same six questions answered wrong every time.</p>
+    <div class="stat-row" id="stat-row"></div>
+  </div>
+
+  <div class="section">
+    <h2><span class="num">02</span> Score by attempt</h2>
+    <div class="score-list" id="score-list"></div>
+  </div>
+
+  <div class="section">
+    <h2><span class="num">03</span> Weakest domains (Preporato, averaged across 5 sets)</h2>
+    <p class="lede">Sorted weakest first. This is the trustworthy ranking &mdash; each domain here is sampled across 5 separate exams, so it's a pattern, not noise.</p>
+    <div class="domain-chart" id="domain-chart"></div>
+    <p class="domain-note">Run, Monitor &amp; Maintain's 70% average is inflated downward by a single 0/1 question in Set 5 &mdash; treat Agent Architecture &amp; Design (72% avg, sampled 9&ndash;14 Qs per set, never above 80% except once) as the real #1 priority.</p>
+  </div>
+
+  <div class="section">
+    <h2><span class="num">04</span> The repeated-mistake list (CertyIQ)</h2>
+    <p class="lede">CertyIQ reuses its question bank across dates. These are questions you answered <em>identically wrong</em> more than once &mdash; not "unlucky guesses," but a specific misconception each time. Fixing these 13 clusters removes a disproportionate share of your CertyIQ errors.</p>
+    <div id="mistake-list"></div>
+  </div>
+
+  <div class="section">
+    <h2><span class="num">05</span> The fix</h2>
+    <p class="lede">Ranked by leverage &mdash; highest-impact, lowest-effort first.</p>
+    <ol class="plan-list" id="plan-list"></ol>
+  </div>
+
+  <div class="section">
+    <h2><span class="num">06</span> Glossary</h2>
+    <p class="lede">55+ terms you flagged, each with a plain definition, a real-world hook, and a memory aid. Search or click to expand.</p>
+    <div class="gloss-controls">
+      <input id="gloss-search" type="text" placeholder="Search terms (e.g. &quot;LoRA&quot;, &quot;guardrail&quot;, &quot;parallelism&quot;)&hellip;" />
+      <div class="gloss-count" id="gloss-count"></div>
+    </div>
+    <div class="gloss-grid" id="gloss-grid"></div>
+  </div>
+
+  <footer>Generated from your Preporato (sets 3&ndash;7) and CertyIQ (4 dated exports) practice-review PDFs. CertyIQ wrong-answer detection is image-based (explanations were collapsed in-source and unavailable); Preporato is fully text-sourced from the platform's own scoring labels.</footer>
+</div>
+
+<script>
+const scores = [
+  {name: "CertyIQ · final_test", pct: 91.16, platform: "certyiq"},
+  {name: "CertyIQ · Jun 24", pct: 90.67, platform: "certyiq"},
+  {name: "CertyIQ · Jun 30", pct: 83.98, platform: "certyiq"},
+  {name: "CertyIQ · Jul 1", pct: 82.50, platform: "certyiq"},
+  {name: "Preporato · Set 3", pct: 90, platform: "preporato"},
+  {name: "Preporato · Set 4", pct: 86, platform: "preporato"},
+  {name: "Preporato · Set 5", pct: 86, platform: "preporato"},
+  {name: "Preporato · Set 6", pct: 82, platform: "preporato"},
+  {name: "Preporato · Set 7", pct: 94, platform: "preporato"},
+];
+
+const domainAvg = [
+  {domain: "Run, Monitor & Maintain", pct: 70.0, note: "small-sample outlier"},
+  {domain: "Agent Architecture & Design", pct: 72.4},
+  {domain: "Agent Development", pct: 83.2},
+  {domain: "Knowledge Integration & Data Handling", pct: 85.0},
+  {domain: "Cognition, Planning & Memory", pct: 86.0},
+  {domain: "Deployment & Scaling", pct: 90.4},
+  {domain: "Evaluation & Tuning", pct: 91.2},
+  {domain: "NVIDIA Platform Implementation", pct: 96.0},
+  {domain: "Human-AI Interaction & Oversight", pct: 96.5},
+  {domain: "Safety, Ethics & Compliance", pct: 100.0},
+];
+
+const repeatedMistakes = [
+  {times: 5, topic: "Safety, Ethics & Compliance", q: "RAG semantic guardrails: what is their primary purpose?", wrong: "Filtering queries by flagged keywords", correct: "Establishing rules/constraints based on the MEANING of queries and responses (semantic, not keyword-based)"},
+  {times: 4, topic: "Run, Monitor & Maintain", q: "Evaluating an agent's external tool/API integration — which analysis approach identifies issues?", wrong: "Varies by attempt", correct: "Systematic log/trace review of actual tool-call behavior, not just output correctness"},
+  {times: 4, topic: "Safety, Ethics & Compliance", q: "RAGAS and safety guardrails — what can RAGAS actually evaluate?", wrong: "“RAGAS only evaluates retrieval quality, no safety application”", correct: "RAGAS can't cover all safety dimensions alone, but DOES provide guardrail-relevant metrics (Topic Adherence, Agent Goal Accuracy)"},
+  {times: 3, topic: "Knowledge Integration & Data Handling", q: "RAG Fusion — how do you best combine multiple retrieved result sets?", wrong: "Varies (simple concatenation-style distractors)", correct: "Reciprocal Rank Fusion (RRF)-style re-ranking across multiple query variants, not naive merge"},
+  {times: 3, topic: "Deployment & Scaling", q: "GPU utilization inefficiency across A100/H100 clusters running Llama Nemotron — how to find the optimal config?", wrong: "Varies", correct: "Profiling-driven approach (utilization/throughput profiling across configs), not a fixed heuristic"},
+  {times: 3, topic: "Run, Monitor & Maintain", q: "Autonomous-vehicle fleet multi-agent system — real-time sensor/decision coordination design", wrong: "Varies", correct: "Distributed, fault-tolerant coordination pattern with explicit escalation, not a single centralized controller"},
+  {times: 3, topic: "Knowledge Integration & Data Handling", q: "Agent managing tasks via a service API returning mixed metadata + event logs — best data-handling approach", wrong: "Varies", correct: "Structured parsing/separation of metadata vs. log content before use, not treating the blob as one text stream"},
+  {times: 3, topic: "Deployment & Scaling", q: "Multi-agent customer service system with unpredictable scaling costs at peak — best analysis approach", wrong: "Varies", correct: "Cost/performance profiling tied to specific agent roles under load, not blanket over-provisioning"},
+  {times: 3, topic: "Human-AI Interaction & Oversight", q: "Supply-chain multi-agent system — best UI to support human oversight for managers of varying skill levels", wrong: "Simplified high-level-only OR raw comprehensive-dashboard-only options", correct: "A layered interface: intuitive summaries + drill-down + contextual AI-decision explanations + intervention controls together"},
+  {times: 2, topic: "Knowledge Integration & Data Handling", q: "RAG architecture for data freshness while minimizing cost/latency", wrong: "Varies", correct: "Scheduled re-embedding + atomic index swap (freshness pipeline), not full reindex on every change"},
+  {times: 2, topic: "Run, Monitor & Maintain", q: "Financial assistant agent — users report inconsistent transaction categorization — best first diagnostic step", wrong: "Jumping to retraining", correct: "Review tool-call / decision logs first to localize the actual failure before retraining anything"},
+  {times: 2, topic: "Evaluation & Tuning", q: "Which two validation approaches are most critical for agent reliability in production? (Choose two)", wrong: "User satisfaction survey as one pick", correct: "Structured output validation (schema-based) + automated consistency checking"},
+  {times: 2, topic: "Cognition, Planning & Memory", q: "Oil & gas drilling multi-agent system — sub-task specialization design", wrong: "Varies", correct: "Specialized agents with defined roles and explicit shared-state/coordination, not one generalist agent"},
+];
+
+const plan = [
+  {h: "Fix the semantic-guardrails / RAGAS misconception first", p: "This single concept was answered wrong 9 times combined (5 + 4) across two CertyIQ question templates. The fix is narrow: semantic guardrails act on MEANING (embeddings/classifiers), not keyword lists; RAGAS gives you partial safety signal (Topic Adherence, Agent Goal Accuracy) — it is not “retrieval-only.” Re-read the RAG guardrails section once, deliberately, and this alone likely closes ~15-20% of your remaining CertyIQ error rate."},
+  {h: "Drill Agent Architecture & Design specifically, not “agents” generally", p: "It's the one Preporato domain that's consistently weak across every set with a large-enough sample to trust (9-14 questions each time, never clearing 80% except once). This is architecture PATTERNS — choreography vs orchestration, peer-to-peer vs blackboard, monolithic vs modular — not agent behavior. Redo just this domain's questions across all 5 Preporato sets back to back."},
+  {h: "Build a 13-item 'known wrong answer' flashcard set from the repeated-mistake list", p: "Every question in section 04 above is a guaranteed repeat risk on CertyIQ specifically since it reuses its bank. Import these into the ncp-aai-mock app's question bank (or a simple flashcard doc) and drill them until the wrong answer stops being tempting — this is the cheapest score gain available to you."},
+  {h: "Treat Run, Monitor & Maintain and multi-agent coordination questions as a pair", p: "3 of your CertyIQ repeat clusters and your lowest Preporato domain both center on the same skill: diagnosing WHY a deployed multi-agent system is misbehaving (tool logs, coordination pattern, cost/latency root cause) rather than jumping to a fix. Practice the diagnostic framing: logs/traces → isolate component → then propose fix — in that order, every time."},
+  {h: "Don't touch Safety/Ethics, NVIDIA Platform, or Human-AI Oversight conceptually", p: "Preporato shows these at 96-100% — your conceptual understanding there is solid. Your CertyIQ errors in “Safety, Ethics & Compliance” are really the one guardrails misconception from item 1 above, not a broader gap. Don't over-study domains that are already strong; that time is better spent on architecture and the repeat list."},
+];
+
+const glossary = [{"term": "HNSW (Hierarchical Navigable Small World)", "definition": "A graph-based index for approximate nearest-neighbor (ANN) search. It builds multiple layers of a navigable graph so that a query can 'skip' across long-range links at the top layer and refine locally at the bottom layer, instead of scanning every vector.", "example": "Your vector DB (e.g., Milvus, cuVS, FAISS) uses HNSW to find the top-5 most similar chunks out of 10M embeddings in milliseconds instead of doing brute-force cosine similarity across all 10M.", "mnemonic": "Think of it like airline routes: hub airports (top layer) for long jumps, then local flights (bottom layer) to your exact destination.", "usage": "RAG retrieval layer, vector search", "domain": "Knowledge Integration & Data Handling"}, {"term": "Brute-force linear search (vs ANN)", "definition": "Comparing a query vector against every single vector in the dataset (O(n)) to guarantee the exact nearest neighbor \u2014 accurate but slow at scale.", "example": "Fine for a 10K-document FAQ bot; falls apart at 50M+ embeddings, which is why production RAG uses ANN (HNSW/IVF) instead.", "mnemonic": "'Brute force' = check everyone, no shortcuts.", "usage": "Baseline to compare ANN recall/speed trade-offs against", "domain": "Knowledge Integration & Data Handling"}, {"term": "ANN (Approximate Nearest Neighbor)", "definition": "A family of algorithms (HNSW, IVF, product quantization) that trade a small amount of recall accuracy for a huge speedup over brute-force search.", "example": "NVIDIA cuVS and FAISS both implement ANN indexes to serve vector search at GPU speed for RAG pipelines.", "mnemonic": "'Approximate' = good enough, fast enough.", "usage": "Core to any RAG/vector-search question on the exam", "domain": "Knowledge Integration & Data Handling"}, {"term": "NVIDIA cuVS", "definition": "NVIDIA's GPU-accelerated vector search library \u2014 implements ANN algorithms (like IVF-PQ, CAGRA) optimized for CUDA, meant to replace CPU-bound FAISS-style search at scale.", "example": "Swapping a CPU FAISS index for cuVS in a RAG pipeline to cut retrieval latency when the corpus grows past tens of millions of vectors.", "mnemonic": "cuVS = 'CUDA Vector Search'.", "usage": "NVIDIA platform / infra questions", "domain": "NVIDIA Platform Implementation"}, {"term": "A/B Testing", "definition": "Running two versions (A = control, B = variant) of a system concurrently on live traffic and comparing a target metric to decide which performs better.", "example": "Testing whether a new prompt template increases task-completion rate before rolling it out to 100% of users.", "mnemonic": "A vs B \u2014 the classic split test.", "usage": "Evaluation & rollout strategy for agent changes", "domain": "Evaluation & Tuning"}, {"term": "Peer-to-peer vs Shared Blackboard multi-agent architecture", "definition": "Peer-to-peer: agents message each other directly (mesh topology), useful for tight bilateral collaboration but harder to scale/observe. Shared blackboard: all agents read/write to one common data store (the 'blackboard'), enabling loose coupling and easy auditability but a potential bottleneck/single point of contention.", "example": "Peer-to-peer: two agents haggling over a task hand-off directly. Blackboard: multiple specialist agents (pricing, inventory, fraud) all posting findings to a shared state object that a coordinator reads.", "mnemonic": "Blackboard = classroom board everyone writes on; peer-to-peer = passing notes directly.", "usage": "Multi-agent architecture design questions", "domain": "Agent Architecture & Design"}, {"term": "Choreography vs Orchestration (multi-agent)", "definition": "Orchestration: a central coordinator agent explicitly directs other agents' actions (like a conductor). Choreography: agents react to shared events/state independently with no central controller (like dancers following the same music).", "example": "Orchestration: a 'planner' agent calls sub-agents in sequence. Choreography: agents subscribe to an event bus and each decides independently when to act on a new fraud-alert event.", "mnemonic": "Orchestra needs a conductor; choreography just needs everyone to know the moves.", "usage": "Multi-agent coordination pattern questions", "domain": "Agent Architecture & Design"}, {"term": "NVIDIA AI Blueprint", "definition": "NVIDIA-provided reference workflows/architectures (built on NIM microservices) for common enterprise AI use cases (e.g., RAG chatbot, digital human, fraud detection) \u2014 a starting template, not a finished product.", "example": "Using the 'AI Blueprint for RAG' as the scaffold to stand up an internal document Q&A agent instead of building the retrieval pipeline from scratch.", "mnemonic": "Blueprint = architectural template you customize, not a finished house.", "usage": "NVIDIA platform ecosystem questions", "domain": "NVIDIA Platform Implementation"}, {"term": "NVIDIA AI Enterprise (NVAIE)", "definition": "NVIDIA's commercial software suite/subscription that bundles optimized AI frameworks, NIM microservices, security patching, and enterprise support for production deployment.", "example": "A company licenses NVAIE to get supported, hardened containers for Triton and NeMo instead of assembling open-source pieces themselves.", "mnemonic": "NVAIE = the 'enterprise support' wrapper around NVIDIA's AI stack.", "usage": "Deployment/licensing questions", "domain": "Deployment & Scaling"}, {"term": "NVIDIA CUDA-X AI software stack", "definition": "The collection of CUDA-accelerated libraries (cuDNN, cuBLAS, TensorRT, cuVS, RAPIDS, etc.) that sit on top of raw CUDA to accelerate specific AI/data-science workloads.", "example": "TensorRT (part of CUDA-X) is used to optimize a trained model for low-latency inference on a GPU.", "mnemonic": "CUDA-X = 'CUDA plus extensions' for AI.", "usage": "NVIDIA platform stack layering questions", "domain": "NVIDIA Platform Implementation"}, {"term": "NVIDIA DeepStream", "definition": "An SDK for building GPU-accelerated video/vision AI pipelines (decode \u2192 inference \u2192 tracking \u2192 analytics) at scale, commonly for streaming camera feeds.", "example": "A retail store analytics agent using DeepStream to run real-time object detection across dozens of camera streams on one GPU.", "mnemonic": "DeepStream = deep learning + video streams.", "usage": "Multimodal/vision pipeline questions", "domain": "NVIDIA Platform Implementation"}, {"term": "NVIDIA NV-Ingest", "definition": "NVIDIA's document-ingestion microservice/pipeline that extracts text, tables, charts, and images from complex documents (PDFs, PPTs) and prepares them for embedding/RAG.", "example": "Using NV-Ingest to pull structured tables out of financial-report PDFs before chunking and embedding them for a RAG chatbot.", "mnemonic": "NV-Ingest = NVIDIA's 'document eater' for RAG prep.", "usage": "Knowledge/data pipeline questions", "domain": "Knowledge Integration & Data Handling"}, {"term": "gRPC + Protobuf", "definition": "gRPC is a high-performance RPC framework (built on HTTP/2) for service-to-service calls; Protobuf (Protocol Buffers) is the binary serialization format gRPC uses to define message schemas efficiently (smaller/faster than JSON).", "example": "An agent's tool-calling microservice architecture uses gRPC+Protobuf between the orchestrator and tool services instead of REST/JSON for lower latency.", "mnemonic": "gRPC = 'fast phone call between services'; Protobuf = the compact language they speak.", "usage": "Microservice tool-architecture questions", "domain": "Agent Development"}, {"term": "SLO, SLI, SLA", "definition": "SLI (Service Level Indicator) = the actual measured metric (e.g., p99 latency). SLO (Service Level Objective) = the internal target for that metric (e.g., p99 < 300ms). SLA (Service Level Agreement) = the external contractual promise to a customer, often with penalties.", "example": "SLI: 'current p99 latency is 280ms.' SLO: 'we aim to keep p99 under 300ms.' SLA: 'we guarantee 99.9% uptime to the customer or refund fees.'", "mnemonic": "SLI = measured, SLO = target, SLA = promise (with teeth).", "usage": "Run/monitor/maintain reliability questions", "domain": "Run, Monitor & Maintain"}, {"term": "DORA metrics", "definition": "DevOps Research and Assessment metrics used to measure software delivery/operational performance: deployment frequency, lead time for changes, change failure rate, and mean time to recovery (MTTR).", "example": "Tracking MTTR to see how fast the team recovers after an agent pipeline regression reaches production.", "mnemonic": "DORA = the 4 'how good is our delivery pipeline' numbers.", "usage": "Deployment/ops maturity questions", "domain": "Run, Monitor & Maintain"}, {"term": "Blameless postmortem", "definition": "An incident review process that focuses on systemic/process causes rather than blaming individuals, to encourage honest reporting and real fixes.", "example": "After an agent hallucinated and sent a wrong refund, the postmortem focuses on 'why did guardrails not catch this' rather than 'who approved the deploy'.", "mnemonic": "Blameless = fix the system, not the person.", "usage": "Safety/ops culture questions", "domain": "Run, Monitor & Maintain"}, {"term": "Horizontal Pod Autoscaling (HPA) vs Vertical Pod Autoscaling (VPA)", "definition": "HPA adds/removes pod replicas based on load (scale out/in). VPA adjusts the CPU/memory resource requests of existing pods (scale up/down).", "example": "An agent-serving deployment uses HPA to add more replicas during a traffic spike, while VPA right-sizes each pod's memory request based on observed usage.", "mnemonic": "Horizontal = more copies (wide); Vertical = bigger copies (tall).", "usage": "Deployment & scaling questions", "domain": "Deployment & Scaling"}, {"term": "Tensor Parallelism", "definition": "Splitting a single large model's individual layers/matrices across multiple GPUs so each GPU computes part of the same operation \u2014 needed when a model doesn't fit on one GPU.", "example": "A 70B-parameter LLM's attention/MLP weight matrices are sharded across 8 GPUs, each computing a slice of every layer's matmul.", "mnemonic": "Tensor parallel = slice the math itself across GPUs.", "usage": "Large-model inference/training infra questions", "domain": "Deployment & Scaling"}, {"term": "Pipeline Parallelism", "definition": "Splitting a model's layers across GPUs stage-by-stage (GPU1 does layers 1-10, GPU2 does layers 11-20, etc.), with micro-batches flowing through like an assembly line.", "example": "A model too big for tensor parallelism alone also splits its 80 transformer layers across 4 GPU 'stages'.", "mnemonic": "Pipeline parallel = assembly line of layers.", "usage": "Large-model training/inference infra questions", "domain": "Deployment & Scaling"}, {"term": "CUDA Graphs benefit", "definition": "CUDA Graphs capture a sequence of GPU kernel launches as a single reusable graph, cutting the CPU-side launch overhead for repeated workloads (like inference loops).", "example": "An inference server replays a captured CUDA Graph for each request instead of re-issuing dozens of individual kernel launches, reducing per-request CPU overhead.", "mnemonic": "CUDA Graph = 'record once, replay many times' for kernel launches.", "usage": "Inference optimization questions", "domain": "NVIDIA Platform Implementation"}, {"term": "Speculative Decoding", "definition": "A small/fast 'draft' model proposes several tokens ahead, and the large 'target' model verifies them in one parallel pass \u2014 accepted tokens are kept, rejected ones fall back to normal generation. Speeds up wall-clock latency by trading extra GPU compute, but doesn't always reduce cost or increase throughput (works best when the draft model's guesses are frequently correct).", "example": "A 7B draft model proposes 4 tokens; the 70B target model verifies all 4 in one forward pass instead of 4 sequential passes, cutting response latency when acceptance rate is high.", "mnemonic": "Draft, then verify \u2014 like a fast intern drafting an email a senior exec quickly approves in bulk.", "usage": "Inference latency-optimization questions \u2014 common exam trap: it costs extra compute and its benefit depends on the draft model's acceptance rate", "domain": "Deployment & Scaling"}, {"term": "LoRA (Low-Rank Adaptation)", "definition": "A parameter-efficient fine-tuning method that freezes the original model weights and injects small trainable low-rank matrices into each layer, drastically cutting the number of trainable parameters and memory needed versus full fine-tuning.", "example": "Using NVIDIA NeMo Customizer with LoRA to adapt a base LLM to legal-clause classification with a few thousand examples instead of retraining all parameters.", "mnemonic": "LoRA = 'Low-Rank' = a small patch bolted onto a frozen base model.", "usage": "Fine-tuning method questions", "domain": "Agent Development"}, {"term": "SFT vs DPO Selection", "definition": "SFT (Supervised Fine-Tuning) trains a model directly on labeled input-output pairs. DPO (Direct Preference Optimization) trains on pairs of preferred vs. rejected outputs to align behavior/style without needing a separate reward model (unlike RLHF). Choose SFT when you have clean gold-label data; choose DPO when you have comparative human preference data and want alignment/style tuning.", "example": "SFT: teach a model to output valid JSON from labeled examples. DPO: teach a model to prefer more concise, polite responses using pairs of 'better' vs 'worse' replies.", "mnemonic": "SFT = 'do this exactly'; DPO = 'prefer this over that'.", "usage": "Fine-tuning/alignment strategy questions", "domain": "Agent Development"}, {"term": "Meta-learning", "definition": "'Learning to learn' \u2014 training a model/system across many tasks so it can adapt quickly to a new, unseen task with very few examples, rather than training from scratch each time.", "example": "A few-shot classifier that, after seeing meta-training across hundreds of classification tasks, can learn a brand-new category from just 3 examples.", "mnemonic": "Meta-learning = learning the skill of learning fast.", "usage": "Advanced training-strategy questions", "domain": "Agent Development"}, {"term": "Ablation Studies", "definition": "Systematically removing or varying one component/parameter at a time (while holding others constant) to isolate that component's individual contribution to performance.", "example": "Testing an agent's accuracy with and without its memory module, holding everything else fixed, to prove memory is what's driving the score gain.", "mnemonic": "Ablation = 'cut one thing off and see what changes'.", "usage": "Evaluation & tuning methodology questions", "domain": "Evaluation & Tuning"}, {"term": "G-Eval (Liu et al.)", "definition": "An LLM-based evaluation framework that uses chain-of-thought prompting plus a form-filling paradigm to have an LLM score generated text (NLG) against criteria like coherence, relevance, and fluency \u2014 correlates better with human judgment than older metrics like BLEU/ROUGE for open-ended generation.", "example": "Using G-Eval to score an agent's summary for 'coherence' on a 1-5 scale instead of relying purely on ROUGE overlap.", "mnemonic": "G-Eval = 'GPT/LLM grades the essay'.", "usage": "LLM-as-judge evaluation questions", "domain": "Evaluation & Tuning"}, {"term": "ROUGE, BLEU, BERTScore", "definition": "ROUGE: measures n-gram/sequence overlap, common for summarization recall. BLEU: measures n-gram precision, common for translation. BERTScore: uses contextual embeddings to measure semantic similarity rather than exact word overlap, better for paraphrase-tolerant scoring.", "example": "ROUGE-L to score a generated summary's overlap with a reference; BERTScore to still give credit when the agent uses different words with the same meaning.", "mnemonic": "BLEU = precision-flavored (translation), ROUGE = recall-flavored (summarization), BERTScore = meaning-flavored (semantic).", "usage": "Text-generation evaluation metric questions", "domain": "Evaluation & Tuning"}, {"term": "Rigor in human-graded evaluation", "definition": "Applying consistent, well-defined rubrics and inter-annotator agreement checks when humans score model outputs, so subjective grading doesn't introduce noise or bias into the evaluation signal.", "example": "Having 3 independent human raters score agent responses against the same rubric and checking their agreement (e.g., Cohen's kappa) before trusting the scores.", "mnemonic": "Rigor = 'consistent rules, checked agreement' not vibes-based grading.", "usage": "Human evaluation methodology questions", "domain": "Evaluation & Tuning"}, {"term": "Bayesian Hyperparameter Optimization (Optuna, W&B Sweeps)", "definition": "Uses a probabilistic model of the objective function to intelligently choose the next hyperparameter combination to try, rather than exhaustive grid search or pure random search \u2014 converges to good configs with fewer trials.", "example": "Using Optuna to tune an agent's temperature, top-p, and retrieval top-k jointly, letting the optimizer focus trials on promising regions instead of testing every combination.", "mnemonic": "Bayesian tuning = 'smart guessing, learns from every trial' vs. blind grid search.", "usage": "Hyperparameter tuning questions", "domain": "Evaluation & Tuning"}, {"term": "Exploration-Exploitation Tradeoff", "definition": "The tension between trying new/uncertain actions to gather information (exploration) versus using the current best-known action to maximize reward (exploitation).", "example": "An agent choosing between trying a new tool it's unsure about (exploration) versus reusing the tool that's worked reliably before (exploitation).", "mnemonic": "Explore = try new restaurants; exploit = go back to your favorite.", "usage": "Reinforcement learning / agent decision-making questions", "domain": "Cognition, Planning & Memory"}, {"term": "Inductive Reasoning", "definition": "Drawing general conclusions/patterns from specific observations (bottom-up) \u2014 contrasted with deductive reasoning (top-down, applying general rules to specific cases) and abductive reasoning (inferring the most likely explanation).", "example": "An agent noticing that the last 20 failed API calls all timed out after 30s, and inferring a general rule 'this API is slow under load'.", "mnemonic": "Inductive = specific \u2192 general (induce a rule from examples).", "usage": "Agent reasoning-type questions", "domain": "Cognition, Planning & Memory"}, {"term": "Procedural memory (agent)", "definition": "Memory of 'how to do things' \u2014 learned skills, routines, or tool-use procedures the agent has internalized, as opposed to memory of specific facts or events.", "example": "An agent 'remembering' the correct sequence of API calls to book a flight, without needing to re-derive that procedure each time.", "mnemonic": "Procedural = 'how-to' memory (like riding a bike).", "usage": "Agent memory-type questions", "domain": "Cognition, Planning & Memory"}, {"term": "Semantic memory (agent)", "definition": "Memory of general facts and world knowledge, independent of when/how the agent learned them.", "example": "An agent knowing 'Python is a programming language' regardless of which specific conversation taught it that.", "mnemonic": "Semantic = 'facts about the world' (like an encyclopedia).", "usage": "Agent memory-type questions", "domain": "Cognition, Planning & Memory"}, {"term": "Episodic memory (agent)", "definition": "Memory of specific past events/experiences tied to a particular time and context \u2014 'what happened in this conversation/session'.", "example": "An agent recalling that a specific user asked about refunds three sessions ago and referencing that history now.", "mnemonic": "Episodic = 'episodes' of specific past experience.", "usage": "Agent memory-type questions", "domain": "Cognition, Planning & Memory"}, {"term": "Context propagation", "definition": "Passing relevant state/context (user identity, conversation history, trace IDs) consistently across chained agent calls, tool invocations, or microservices so downstream components have what they need.", "example": "A trace ID generated at the start of a user request is propagated through the planner agent, tool-calling service, and logging system so the full request can be debugged end-to-end.", "mnemonic": "Context propagation = 'carry the backpack of state' through every hop.", "usage": "Multi-agent/distributed-systems reliability questions", "domain": "Agent Architecture & Design"}, {"term": "Catastrophic Interference (Catastrophic Forgetting)", "definition": "When a neural network, after being fine-tuned/trained on new data, abruptly loses previously learned knowledge/skills because new weight updates overwrite old ones.", "example": "Fine-tuning a model heavily on legal text causes it to lose its previous general conversational ability.", "mnemonic": "Catastrophic forgetting = 'learn the new, forget the old' overnight.", "usage": "Fine-tuning risk questions", "domain": "Agent Development"}, {"term": "FLARE (Forward-Looking Active REtrieval)", "definition": "A RAG technique where the model actively decides when it needs more retrieved information mid-generation (e.g., when it's about to generate a low-confidence token) rather than retrieving once up front \u2014 it predicts the next sentence, checks confidence, and retrieves if needed.", "example": "An agent drafting an answer pauses when it's uncertain about a specific fact, issues a fresh retrieval query for just that piece, then continues generating.", "mnemonic": "FLARE = 'look ahead, retrieve only when you're about to get it wrong'.", "usage": "Advanced RAG technique questions", "domain": "Knowledge Integration & Data Handling"}, {"term": "Ontologies in AI knowledge (graphs)", "definition": "A formal, structured representation of concepts, their properties, and the relationships between them within a domain \u2014 the schema/vocabulary that a knowledge graph is built on.", "example": "An ontology defining that 'Invoice' has-a 'Customer' and 'LineItem', used to structure a knowledge graph for an enterprise RAG system doing entity-aware retrieval.", "mnemonic": "Ontology = the 'rulebook of concepts and relationships' behind a knowledge graph.", "usage": "Knowledge-graph / structured-retrieval questions", "domain": "Knowledge Integration & Data Handling"}, {"term": "Back-translation", "definition": "A data augmentation technique: translate text to another language and back to the original, producing a paraphrased variant that preserves meaning but varies phrasing \u2014 used to expand/augment limited training data.", "example": "Translating English support tickets to French and back to English to generate paraphrased training examples for an intent classifier.", "mnemonic": "Back-translation = 'round trip through another language' to get a paraphrase.", "usage": "Data augmentation questions", "domain": "Agent Development"}, {"term": "Data Augmentation", "definition": "Techniques to artificially expand/diversify a training dataset (paraphrasing, back-translation, synthetic generation, noise injection) \u2014 typically applied AFTER data cleaning/preprocessing, not before (a common exam trap).", "example": "Generating paraphrased customer queries to increase training data volume for an intent classifier, after the raw data has already been cleaned.", "mnemonic": "Augmentation = 'multiply your clean data', not a substitute for cleaning it first.", "usage": "Data pipeline questions \u2014 remember augmentation comes after cleaning/normalization", "domain": "Knowledge Integration & Data Handling"}, {"term": "Stratified Sampling", "definition": "Splitting/sampling data so that each subgroup (class, category) is represented in the sample proportionally to its representation in the full population \u2014 prevents rare classes from being underrepresented in train/test splits.", "example": "Ensuring a fraud-detection train/test split keeps the same ~2% fraud rate in both sets rather than randomly sampling and risking zero fraud cases in the test set.", "mnemonic": "Stratified = 'sample each layer/stratum proportionally'.", "usage": "Data splitting / evaluation setup questions", "domain": "Evaluation & Tuning"}, {"term": "Tokenization vs Stemming vs Lemmatization", "definition": "Tokenization: splitting text into units (words/subwords) for the model to process. Stemming: crudely chopping word endings to a root form (e.g., 'running' \u2192 'run', sometimes not a real word). Lemmatization: reducing a word to its true dictionary base form using vocabulary/grammar rules (e.g., 'better' \u2192 'good').", "example": "Tokenization turns 'agents are running' into subword tokens; stemming might reduce 'running' to 'runn'; lemmatization correctly reduces it to 'run'.", "mnemonic": "Stemming = quick and dirty; lemmatization = grammatically correct.", "usage": "NLP preprocessing questions", "domain": "Knowledge Integration & Data Handling"}, {"term": "Differential Privacy", "definition": "A formal mathematical guarantee that adding or removing any single individual's data from a dataset doesn't significantly change the output of an analysis/model \u2014 achieved by injecting calibrated noise, protecting individual privacy even if the model/data is later exposed.", "example": "Training a model with differential privacy so it can't be reverse-engineered to reveal whether a specific customer's record was in the training set.", "mnemonic": "Differential privacy = 'noise so no single person's data can be singled out'.", "usage": "Safety/privacy/compliance questions", "domain": "Safety, Ethics & Compliance"}, {"term": "Cryptographic verification / provenance", "definition": "Using cryptographic techniques (hashing, digital signatures) to make data or model outputs tamper-evident and verifiable \u2014 proving content hasn't been altered and tracing its origin.", "example": "Cryptographically signing model outputs or a dataset's checksum so downstream consumers can verify it wasn't tampered with in transit.", "mnemonic": "Cryptographic = 'math-proof that nothing was tampered with'.", "usage": "Safety/compliance/data-integrity questions", "domain": "Safety, Ethics & Compliance"}, {"term": "NIST AI Risk Management Framework (AI RMF)", "definition": "A U.S. NIST framework organizing AI risk management into four functions \u2014 Govern, Map, Measure, Manage \u2014 to help organizations identify, assess, and mitigate AI risks (bias, safety, security) throughout the AI lifecycle.", "example": "Using the AI RMF's 'Measure' function to define concrete metrics for an agent's fairness/bias before deployment, not just after an incident.", "mnemonic": "AI RMF = Govern \u2192 Map \u2192 Measure \u2192 Manage.", "usage": "AI governance/compliance questions", "domain": "Safety, Ethics & Compliance"}, {"term": "Layered Safety Framework", "definition": "A defense-in-depth approach to AI safety with multiple independent layers (input filtering/guardrails, output validation, monitoring, human review) so that if one layer misses a harmful case, another layer can still catch it.", "example": "An agent has an input guardrail blocking prompt injection, an output guardrail blocking PII leakage, and a human-review escalation path for low-confidence responses \u2014 three independent layers.", "mnemonic": "Layered safety = 'Swiss cheese' with multiple slices so holes don't line up.", "usage": "Safety architecture questions", "domain": "Safety, Ethics & Compliance"}, {"term": "Counterfactual Explanations", "definition": "An explainability technique that answers 'what minimal change to the input would have flipped the model's decision?' \u2014 useful for interpretability and fairness auditing.", "example": "'If this loan applicant's income had been $5,000 higher, the model would have approved the loan' \u2014 explaining a denial via the smallest change that flips the outcome.", "mnemonic": "Counterfactual = 'what if, just slightly different'.", "usage": "Explainability/fairness questions", "domain": "Safety, Ethics & Compliance"}, {"term": "Human-on-the-loop", "definition": "A supervision mode where the agent acts autonomously but a human monitors and can intervene/override in near-real-time \u2014 distinct from human-in-the-loop (human must approve every action before it happens) and fully autonomous (no human oversight at all).", "example": "An agent auto-approves low-risk refunds but a human dashboard shows every action live, with the ability to pause/reverse it \u2014 that's on-the-loop, not in-the-loop.", "mnemonic": "In-the-loop = human approves each step; on-the-loop = human watches and can jump in; out-of-the-loop = fully autonomous.", "usage": "Human-AI interaction/oversight questions", "domain": "Human-AI Interaction & Oversight"}, {"term": "Topical alignment (guardrails)", "definition": "A guardrail category that keeps an agent's responses restricted to approved topics/domains, refusing or redirecting off-topic or out-of-scope requests.", "example": "A banking support agent's guardrail refuses to answer medical questions, redirecting the user back to banking topics.", "mnemonic": "Topical alignment = 'stay in your lane'.", "usage": "Guardrails/safety questions", "domain": "Safety, Ethics & Compliance"}, {"term": "MMLU / GSM8K", "definition": "MMLU (Massive Multitask Language Understanding): a broad benchmark testing knowledge across 57 academic/professional subjects via multiple-choice questions. GSM8K: a benchmark of grade-school math word problems testing multi-step arithmetic reasoning.", "example": "Reporting a new model's MMLU score to show broad knowledge, and its GSM8K score to show it can do multi-step reasoning, not just recall facts.", "mnemonic": "MMLU = 'how much do you know'; GSM8K = 'can you actually reason through math steps'.", "usage": "Model benchmark/evaluation questions", "domain": "Evaluation & Tuning"}, {"term": "Purpose of ASR (Automatic Speech Recognition)", "definition": "Converts spoken audio into text so downstream NLP/agent systems (which operate on text) can process voice input \u2014 the entry point of any voice-based agent pipeline.", "example": "A voice assistant agent uses ASR (e.g., NVIDIA Riva) to transcribe a customer's spoken question before the LLM reasons over the text.", "mnemonic": "ASR = the 'ears' of a voice agent, turning sound into words.", "usage": "Multimodal/voice pipeline questions", "domain": "NVIDIA Platform Implementation"}, {"term": "RunnableParallel (LCEL)", "definition": "A LangChain Expression Language (LCEL) construct that runs multiple chains/steps concurrently on the same input and merges their outputs into a single dict \u2014 used to parallelize independent sub-tasks instead of running them sequentially.", "example": "Running a retrieval chain and a query-rewriting chain in parallel via RunnableParallel, then combining both outputs before the final generation step.", "mnemonic": "RunnableParallel = 'fan out, then gather' in LCEL.", "usage": "LangChain/agent-orchestration implementation questions", "domain": "Agent Development"}, {"term": "Geocoding API", "definition": "A service/tool that converts addresses to geographic coordinates (or vice versa) \u2014 a common external tool an agent calls when it needs location data.", "example": "A logistics agent calls a geocoding API to turn a customer's delivery address into lat/long coordinates before route-planning.", "mnemonic": "Geocoding = 'address \u2194 coordinates' translator.", "usage": "Tool-integration example questions", "domain": "Agent Development"}, {"term": "Transient network failures (retry/backoff)", "definition": "Temporary, self-resolving connectivity errors (timeouts, brief 5xx errors) that should be handled with retry logic and exponential backoff rather than immediate hard failure \u2014 a robustness pattern for external API/tool calls.", "example": "An agent's tool-calling layer retries a failed payment-API call 3 times with increasing delay before surfacing an error to the user.", "mnemonic": "Transient = 'temporary blip' \u2014 retry with backoff, don't give up immediately.", "usage": "Agent robustness/reliability questions", "domain": "Deployment & Scaling"}, {"term": "GIAI (likely: Generative AI, or a specific NCP-AAI acronym)", "definition": "Not a standard widely-documented acronym \u2014 most likely shorthand for 'Generative AI' as used loosely in a question stem. If it appeared as a specific term in a question, flag the exact question text so we can confirm the intended meaning precisely.", "example": "Generic usage: 'GIAI systems' = generative AI systems that create new content (text, image, code) rather than just classifying/predicting.", "mnemonic": "When unsure, default reading: GIAI \u2248 Generative AI.", "usage": "Flagged as uncertain \u2014 verify against the source question if it reappears", "domain": "Agent Development"}, {"term": "L2 Regularization", "definition": "A training technique that adds a penalty proportional to the sum of squared weights to the loss function, discouraging overly large weights and reducing overfitting.", "example": "Adding L2 regularization (weight decay) when fine-tuning a small model on limited data to prevent it from memorizing the training set.", "mnemonic": "L2 = 'penalize big weights, squared' to keep the model simple.", "usage": "Training/fine-tuning fundamentals questions", "domain": "Agent Development"}, {"term": "Gradient Accumulation", "definition": "Simulating a larger training batch size by accumulating gradients over several smaller mini-batches before performing a single weight-update step \u2014 used when GPU memory can't fit the desired large batch directly.", "example": "Training with an effective batch size of 128 on a GPU that only fits 16 samples at once, by accumulating gradients over 8 mini-batches before each optimizer step.", "mnemonic": "Gradient accumulation = 'save up small paychecks to make one big deposit'.", "usage": "Training infra / memory-constraint questions", "domain": "Agent Development"}, {"term": "Model Parameters", "definition": "The learned weights of a neural network (distinct from hyperparameters, which are set before training, like learning rate). Parameter count is often used as a rough proxy for model capacity/size.", "example": "A '70B parameter model' has 70 billion learned weights; contrast with hyperparameters like temperature or top-p which are set at inference time, not learned.", "mnemonic": "Parameters = learned by training; hyperparameters = chosen by you before training.", "usage": "Model fundamentals questions", "domain": "Agent Development"}];
+
+// ---------- render: stat tiles ----------
+const certyiqAvg = scores.filter(s=>s.platform==='certyiq').reduce((a,s)=>a+s.pct,0)/4;
+const preporatoAvg = scores.filter(s=>s.platform==='preporato').reduce((a,s)=>a+s.pct,0)/5;
+document.getElementById('stat-row').innerHTML = `
+  <div class="stat-tile"><div class="label">CertyIQ avg</div><div class="value">${certyiqAvg.toFixed(1)}%</div><div class="sub">4 attempts</div></div>
+  <div class="stat-tile"><div class="label">Preporato avg</div><div class="value">${preporatoAvg.toFixed(1)}%</div><div class="sub">5 attempts</div></div>
+  <div class="stat-tile"><div class="label">Wrong answers analyzed</div><div class="value">94</div><div class="sub">50 CertyIQ + 44 Preporato</div></div>
+  <div class="stat-tile"><div class="label">Exact-repeat misses</div><div class="value">13</div><div class="sub">same question, same wrong pick</div></div>
+`;
+
+// ---------- render: score list ----------
+const scoreColor = p => p >= 90 ? 'var(--good)' : p >= 80 ? 'var(--warning)' : 'var(--critical)';
+document.getElementById('score-list').innerHTML = scores.map(s => `
+  <div class="score-row">
+    <div class="name">${s.name}</div>
+    <div class="track"><div class="fill" style="width:${s.pct}%; background:${scoreColor(s.pct)}"></div></div>
+    <div class="pct" style="color:${scoreColor(s.pct)}">${s.pct}%</div>
+  </div>
+`).join('');
+
+// ---------- render: domain chart ----------
+const domColor = p => p >= 90 ? 'var(--good)' : p >= 80 ? 'var(--warning)' : p >= 70 ? 'var(--serious)' : 'var(--critical)';
+document.getElementById('domain-chart').innerHTML = domainAvg.map(d => `
+  <div class="domain-bar-row">
+    <div class="name">${d.domain}${d.note ? ' <span style="color:var(--muted);font-size:11px;">(' + d.note + ')</span>' : ''}</div>
+    <div class="track"><div class="fill" style="width:${d.pct}%; background:${domColor(d.pct)}"></div></div>
+    <div class="pct" style="color:${domColor(d.pct)}">${d.pct}%</div>
+  </div>
+`).join('');
+
+// ---------- render: repeated mistakes ----------
+const chipColor = t => t >= 5 ? 'var(--critical)' : t >= 3 ? 'var(--serious)' : 'var(--warning)';
+document.getElementById('mistake-list').innerHTML = repeatedMistakes.map(m => `
+  <div class="mistake-card">
+    <div class="mistake-head">
+      <span class="count-chip" style="background:${chipColor(m.times)}">MISSED ${m.times}×</span>
+      <span class="topic-tag">${m.topic}</span>
+    </div>
+    <p class="mistake-q">${m.q}</p>
+    <p class="mistake-fix">Kept picking: <em>${m.wrong}</em><br/>Correct concept: <b>${m.correct}</b></p>
+  </div>
+`).join('');
+
+// ---------- render: plan ----------
+document.getElementById('plan-list').innerHTML = plan.map((p,i) => `
+  <li class="plan-item">
+    <div class="plan-rank">${i+1}</div>
+    <div><h3>${p.h}</h3><p>${p.p}</p></div>
+  </li>
+`).join('');
+
+// ---------- render: glossary ----------
+const gGrid = document.getElementById('gloss-grid');
+const gCount = document.getElementById('gloss-count');
+function renderGlossary(filter) {
+  const f = (filter || '').toLowerCase();
+  const items = glossary.filter(g =>
+    !f || g.term.toLowerCase().includes(f) || g.definition.toLowerCase().includes(f) || g.usage.toLowerCase().includes(f)
+  );
+  gCount.textContent = `${items.length} of ${glossary.length} terms`;
+  gGrid.innerHTML = items.map(g => `
+    <details class="gloss-card">
+      <summary>${g.term}<span class="chev">▶</span></summary>
+      <div class="gloss-domain">${g.domain}</div>
+      <div class="gloss-body">
+        <div class="row"><b>What it is</b><span>${g.definition}</span></div>
+        <div class="row"><b>Real-world example</b><span>${g.example}</span></div>
+        <div class="row"><b>Memory hook</b><span>${g.mnemonic}</span></div>
+        <div class="row"><b>Where it's used</b><span>${g.usage}</span></div>
+      </div>
+    </details>
+  `).join('');
+}
+renderGlossary('');
+document.getElementById('gloss-search').addEventListener('input', e => renderGlossary(e.target.value));
+</script>
+
+</body>
+</html>

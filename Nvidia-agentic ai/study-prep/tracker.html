@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NCP-AAI Question Tracker</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --line:#2a2e38; --text:#e6e8ec; --muted:#9aa2b1;
+          --green:#3ecf8e; --red:#ef5f5f; --amber:#e8b33e; --accent:#6ea8fe; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:20px 28px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+  h1 { font-size:18px; margin:0; }
+  main { max-width:1000px; margin:0 auto; padding:24px 28px 80px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .stat .num { font-size:26px; font-weight:700; }
+  .stat .label { color:var(--muted); font-size:12px; margin-top:2px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin-bottom:20px; }
+  .card h2 { font-size:14px; margin:0 0 14px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  form { display:grid; gap:10px; grid-template-columns: 1fr 1fr; }
+  form .full { grid-column: 1 / -1; }
+  label { font-size:12px; color:var(--muted); display:block; margin-bottom:4px; }
+  input, select, textarea { width:100%; background:#12141a; border:1px solid var(--line); color:var(--text);
+    border-radius:6px; padding:8px 10px; font-size:13px; font-family:inherit; }
+  textarea { resize:vertical; min-height:44px; }
+  .row { display:flex; gap:10px; align-items:center; }
+  button { background:var(--accent); border:none; color:#0b1220; font-weight:600; padding:9px 16px;
+    border-radius:6px; cursor:pointer; font-size:13px; }
+  button.secondary { background:transparent; border:1px solid var(--line); color:var(--text); }
+  button.danger { background:var(--red); color:#fff; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:600; }
+  .tag.correct { background:rgba(62,207,142,.15); color:var(--green); }
+  .tag.wrong { background:rgba(239,95,95,.15); color:var(--red); }
+  .bar-wrap { background:#12141a; border-radius:4px; overflow:hidden; height:8px; width:100%; }
+  .bar { height:100%; background:var(--red); }
+  .topic-row { display:grid; grid-template-columns: 160px 1fr 50px 60px; gap:10px; align-items:center; padding:6px 0; font-size:13px; }
+  .toolbar { display:flex; gap:8px; margin-bottom:14px; }
+  .empty { color:var(--muted); font-size:13px; padding:20px 0; text-align:center; }
+  .del { color:var(--red); cursor:pointer; font-size:12px; }
+  .small { font-size:11px; color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>NCP-AAI &mdash; Question Tracker</h1>
+  <div class="toolbar">
+    <button class="secondary" onclick="exportData()">Export JSON</button>
+    <button class="secondary" onclick="document.getElementById('importFile').click()">Import</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    <button class="secondary" onclick="loadFlagged()">Load flagged questions</button>
+  </div>
+</header>
+<main>
+
+  <div class="grid" id="statsGrid"></div>
+
+  <div class="card">
+    <h2>Log an Attempt</h2>
+    <form id="attemptForm">
+      <div class="full">
+        <label>Question (paste text or short summary)</label>
+        <textarea id="q_text" required></textarea>
+      </div>
+      <div>
+        <label>Topic / Tag</label>
+        <select id="q_topic">
+          <option>RAG Architecture</option>
+          <option>RAG Guardrails / Safety</option>
+          <option>RAGAS / Evaluation</option>
+          <option>Multi-Agent Design</option>
+          <option>Agent Memory</option>
+          <option>ReAct / Reasoning Loop</option>
+          <option>Tool/API Integration</option>
+          <option>Observability / Monitoring</option>
+          <option>GPU / Deployment Optimization</option>
+          <option>Fine-tuning / Reliability</option>
+          <option>UI / Human Oversight</option>
+          <option>Fleet / Production Ops</option>
+          <option>Ethics / Compliance</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Result</label>
+        <select id="q_result">
+          <option value="wrong">Wrong</option>
+          <option value="correct">Correct</option>
+        </select>
+      </div>
+      <div>
+        <label>Time spent (seconds)</label>
+        <input type="number" id="q_time" min="0" placeholder="e.g. 45">
+      </div>
+      <div>
+        <label>Test batch (e.g. "75Q Day1", "200Q", "100Q Jul1")</label>
+        <input type="text" id="q_batch" placeholder="100Q Jul1">
+      </div>
+      <div class="full">
+        <label>Notes (why you got it wrong / what the correct reasoning is)</label>
+        <textarea id="q_notes"></textarea>
+      </div>
+      <div class="full row">
+        <button type="submit">Add Attempt</button>
+        <span class="small">Saved locally in your browser (localStorage) &mdash; use Export to back up.</span>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Weak Topics (wrong-answer rate)</h2>
+    <div id="topicBreakdown"></div>
+  </div>
+
+  <div class="card">
+    <h2>History</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Batch</th><th>Topic</th><th>Result</th><th>Time</th><th>Question / Notes</th><th></th></tr></thead>
+      <tbody id="historyBody"></tbody>
+    </table>
+    <div class="empty" id="emptyMsg" style="display:none">No attempts logged yet.</div>
+  </div>
+
+</main>
+
+<script>
+const KEY = "ncp_aai_tracker_v1";
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch(e) { return []; } }
+function save(data) { localStorage.setItem(KEY, JSON.stringify(data)); }
+let attempts = load();
+
+document.getElementById('attemptForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  attempts.unshift({
+    id: Date.now(),
+    date: new Date().toISOString(),
+    text: document.getElementById('q_text').value.trim(),
+    topic: document.getElementById('q_topic').value,
+    result: document.getElementById('q_result').value,
+    time: Number(document.getElementById('q_time').value) || null,
+    batch: document.getElementById('q_batch').value.trim() || 'unspecified',
+    notes: document.getElementById('q_notes').value.trim(),
+  });
+  save(attempts);
+  this.reset();
+  render();
+});
+
+function deleteAttempt(id) {
+  attempts = attempts.filter(a => a.id !== id);
+  save(attempts);
+  render();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(attempts, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ncp-aai-tracker-backup.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (Array.isArray(imported)) {
+        attempts = imported;
+        save(attempts);
+        render();
+      }
+    } catch(err) { alert('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+}
+
+function render() {
+  // stats
+  const total = attempts.length;
+  const wrong = attempts.filter(a => a.result === 'wrong').length;
+  const correct = total - wrong;
+  const acc = total ? Math.round(correct/total*100) : 0;
+  const timed = attempts.filter(a => a.time);
+  const avgTime = timed.length ? Math.round(timed.reduce((s,a)=>s+a.time,0)/timed.length) : 0;
+  const avgTimeWrong = (() => {
+    const w = timed.filter(a=>a.result==='wrong');
+    return w.length ? Math.round(w.reduce((s,a)=>s+a.time,0)/w.length) : 0;
+  })();
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat"><div class="num">${total}</div><div class="label">Total logged</div></div>
+    <div class="stat"><div class="num" style="color:var(--green)">${acc}%</div><div class="label">Accuracy</div></div>
+    <div class="stat"><div class="num" style="color:var(--red)">${wrong}</div><div class="label">Wrong</div></div>
+    <div class="stat"><div class="num">${avgTime||'-'}s</div><div class="label">Avg time / question</div></div>
+    <div class="stat"><div class="num" style="color:var(--amber)">${avgTimeWrong||'-'}s</div><div class="label">Avg time on wrong Qs</div></div>
+  `;
+
+  // topic breakdown
+  const byTopic = {};
+  attempts.forEach(a => {
+    byTopic[a.topic] = byTopic[a.topic] || {wrong:0, total:0};
+    byTopic[a.topic].total++;
+    if (a.result === 'wrong') byTopic[a.topic].wrong++;
+  });
+  const topics = Object.entries(byTopic).sort((a,b) => (b[1].wrong/b[1].total) - (a[1].wrong/a[1].total));
+  document.getElementById('topicBreakdown').innerHTML = topics.length ? topics.map(([topic,d]) => {
+    const pct = Math.round(d.wrong/d.total*100);
+    return `<div class="topic-row">
+      <span>${topic}</span>
+      <span class="bar-wrap"><span class="bar" style="width:${pct}%"></span></span>
+      <span>${pct}%</span>
+      <span class="small">${d.wrong}/${d.total}</span>
+    </div>`;
+  }).join('') : '<div class="empty">No data yet — log some attempts above.</div>';
+
+  // history
+  document.getElementById('historyBody').innerHTML = attempts.map(a => `
+    <tr>
+      <td>${fmtDate(a.date)}</td>
+      <td>${a.batch}</td>
+      <td>${a.topic}</td>
+      <td><span class="tag ${a.result}">${a.result}</span></td>
+      <td>${a.time ? a.time+'s' : '-'}</td>
+      <td>${a.text ? a.text.slice(0,80)+(a.text.length>80?'…':'') : ''}${a.notes ? '<br><span class="small">'+a.notes.slice(0,100)+'</span>' : ''}</td>
+      <td><span class="del" onclick="deleteAttempt(${a.id})">delete</span></td>
+    </tr>
+  `).join('');
+  document.getElementById('emptyMsg').style.display = attempts.length ? 'none' : 'block';
+}
+
+const FLAGGED_SEED = [
+  {text:"Agent processes task-management API event logs containing both metadata and structured data — most prudent way for the agent to interpret/process it?", topic:"Tool/API Integration", batch:"flagged mix", occurrences:2},
+  {text:"Legal assistant repeats incorrect legal terms — which tuning method best improves factual reliability?", topic:"Fine-tuning / Reliability", batch:"flagged mix", occurrences:1},
+  {text:"RAG Fusion — most effective approach for combining information from multiple retrieved chunks?", topic:"RAG Architecture", batch:"flagged mix", occurrences:2},
+  {text:"Evaluating GPU utilization inefficiencies deploying Llama Nemotron across A100 and H100 clusters — which approaches identify optimal resource allocation? (Choose two)", topic:"GPU / Deployment Optimization", batch:"flagged mix", occurrences:3},
+  {text:"Financial assistant agent: users report inconsistent transaction categorization — best first step for diagnosing the issue?", topic:"Observability / Monitoring", batch:"flagged mix", occurrences:2},
+  {text:"Primary purpose of implementing semantic guardrails within a RAG system?", topic:"RAG Guardrails / Safety", batch:"flagged mix", occurrences:6},
+  {text:"How can RAGAS be utilized for implementing safety checks and guardrails in agentic AI applications?", topic:"RAGAS / Evaluation", batch:"flagged mix", occurrences:5},
+  {text:"Logistics company multi-agent supply chain system — which UI design approach BEST supports human oversight for managers with varying technical expertise?", topic:"UI / Human Oversight", batch:"flagged mix", occurrences:4},
+  {text:"Evaluating agent integration with external tools/APIs for data retrieval and action execution — which analysis approaches identify reliability/performance issues? (Choose two)", topic:"Tool/API Integration", batch:"flagged mix", occurrences:3},
+  {text:"Autonomous vehicle fleet, multi-agent system — which monitoring/observability approach BEST meets fleet-scale, safety-critical requirements (GPU util, inference time, memory, predictive safety)?", topic:"Fleet / Production Ops", batch:"flagged mix", occurrences:3},
+  {text:"Multi-agent customer service system with unpredictable scaling costs and peak-hour bottlenecks — which analysis approaches identify optimization opportunities for infrastructure + reliability? (Choose two)", topic:"Observability / Monitoring", batch:"flagged mix", occurrences:3},
+  {text:"LLM-as-a-Judge evaluating a RAG pipeline — primary benefit of synthetically generating QA pairs vs relying solely on human-created test cases?", topic:"RAGAS / Evaluation", batch:"flagged mix", occurrences:1},
+  {text:"Oil & gas multi-agent system (subsurface modeling, risk analysis, resource allocation) needing shared context, sequential reasoning, CoT, memory persistence — which implementation best supports this design?", topic:"Multi-Agent Design", batch:"flagged mix", occurrences:3},
+  {text:"Which memory architecture is most appropriate for an agent that must track conversation flow and remember user preferences across multiple interactions?", topic:"Agent Memory", batch:"flagged mix", occurrences:1},
+  {text:"In a ReAct agent architecture, correct sequence of operations when encountering a complex multi-step problem requiring external tool usage?", topic:"ReAct / Reasoning Loop", batch:"flagged mix", occurrences:1},
+  {text:"Large enterprise rolling out AI customer support agents worldwide — which solution most effectively ensures reliable operation and simplified management at scale?", topic:"Fleet / Production Ops", batch:"flagged mix", occurrences:1},
+  {text:"Which two validation approaches are MOST critical for ensuring agent reliability in production deployments? (Choose two)", topic:"Fine-tuning / Reliability", batch:"flagged mix", occurrences:2},
+  {text:"Using a classifier branch as part of a semantic guardrail system to assess risk of generated text — key benefit vs relying solely on prompt filtering?", topic:"RAG Guardrails / Safety", batch:"flagged mix", occurrences:1},
+  {text:"Stakeholders want greater insight into how multi-agent supply chain system decides on actions — best approach to improve decision transparency WITHOUT modifying the underlying model architecture?", topic:"Multi-Agent Design", batch:"flagged mix", occurrences:1},
+  {text:"RAG architecture design concerned with data freshness and minimizing latency — most important consideration?", topic:"RAG Architecture", batch:"flagged mix", occurrences:1},
+  {text:"Healthcare diagnostic agents needing sub-100ms inference across varied NVIDIA hardware (RTX 6000 to DGX) — which optimization strategy gives BEST performance while maintaining deployment flexibility?", topic:"GPU / Deployment Optimization", batch:"flagged mix", occurrences:1},
+];
+
+function loadFlagged() {
+  const existingTexts = new Set(attempts.map(a => a.text));
+  let added = 0;
+  FLAGGED_SEED.forEach(seed => {
+    if (existingTexts.has(seed.text)) return;
+    attempts.unshift({
+      id: Date.now() + added,
+      date: new Date().toISOString(),
+      text: seed.text,
+      topic: seed.topic,
+      result: "wrong",
+      time: null,
+      batch: seed.batch,
+      notes: seed.occurrences > 1 ? `Recurred ${seed.occurrences}x across your test sittings — high-priority review.` : "",
+    });
+    added++;
+  });
+  save(attempts);
+  render();
+  alert(added ? `Loaded ${added} flagged question(s).` : "These are already loaded.");
+}
+
+render();
+</script>
+</body>
+</html>
